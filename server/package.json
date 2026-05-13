@@ -1,0 +1,16 @@
+{
+  "name": "eve-quantum-fax-update-server",
+  "version": "1.0.0",
+  "description": "EVEQuantumFAX EasyClick IEC hot update server",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1"
+  }
+}

@@ -1,0 +1,21 @@
+# EasyClick build output
+.idea/build/
+.idea/out/
+out/
+
+# Node hot update server dependencies
+server/node_modules/
+
+# Server local environment
+server/.env
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Cursor/JetBrains local workspace noise
+.idea/workspace.xml
+.idea/shelf/
+.idea/httpRequests/
+.idea/dataSources/
+.idea/dataSources.local.xml

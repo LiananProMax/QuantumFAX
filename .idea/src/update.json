@@ -1,0 +1,7 @@
+{
+  "update_url": "",
+  "version": "1",
+  "appendDeviceInfo": true,
+  "timeout": 15000,
+  "_comment": "Keep update_url empty; EVEQuantumFAX uses js/core/hotupdateConfig.js for the self-hosted update server."
+}
