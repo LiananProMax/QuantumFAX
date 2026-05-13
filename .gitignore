@@ -14,6 +14,7 @@ server/.env
 *.tmp
 
 # Cursor/JetBrains local workspace noise
+.idea/vcs.xml
 .idea/workspace.xml
 .idea/shelf/
 .idea/httpRequests/
