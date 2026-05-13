@@ -15,6 +15,7 @@ EVEQuantumFAX.createContext = function (extra) {
 EVEQuantumFAX.hooks = {
     onStart: function (context) {
         context.logger.success("启动钩子已执行");
+        EVEQuantumFAX.hooks._showHealthToast(context);
     },
 
     onPause: function (context) {
@@ -36,5 +37,15 @@ EVEQuantumFAX.hooks = {
     onTick: function (context) {
         var iteration = context.extra.iteration || 0;
         context.logger.info(EVEQuantumFAX.appInfo.tickMessage + " #" + iteration);
+        EVEQuantumFAX.hooks._showHealthToast(context);
+    },
+
+    _showHealthToast: function (context) {
+        if (!EVEQuantumFAX.healthMonitor) {
+            context.logger.warn("血量检测服务未加载");
+            return;
+        }
+
+        EVEQuantumFAX.healthMonitor.showHealthToast();
     }
 };

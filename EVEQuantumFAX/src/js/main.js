@@ -5,6 +5,7 @@ require("js/core/config.js");
 require("js/services/logger.js");
 require("js/core/hotupdateConfig.js");
 require("js/services/updater.js");
+require("js/services/healthMonitor.js");
 require("js/core/hooks.js");
 require("js/services/demoTask.js");
 require("js/ui/xmlLayouts.js");
