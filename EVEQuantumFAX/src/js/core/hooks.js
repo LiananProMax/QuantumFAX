@@ -15,7 +15,6 @@ EVEQuantumFAX.createContext = function (extra) {
 EVEQuantumFAX.hooks = {
     onStart: function (context) {
         context.logger.success("启动钩子已执行");
-        EVEQuantumFAX.hooks._showHealthToast(context);
     },
 
     onPause: function (context) {
@@ -36,8 +35,22 @@ EVEQuantumFAX.hooks = {
 
     onTick: function (context) {
         var iteration = context.extra.iteration || 0;
-        context.logger.info(EVEQuantumFAX.appInfo.tickMessage + " #" + iteration);
-        EVEQuantumFAX.hooks._showHealthToast(context);
+        EVEQuantumFAX.hooks._checkDamageControl(context, iteration);
+    },
+
+    _checkDamageControl: function (context, iteration) {
+        var canActivate;
+        var message;
+
+        if (!EVEQuantumFAX.healthMonitor) {
+            context.logger.warn("损控检测服务未加载");
+            return;
+        }
+
+        canActivate = EVEQuantumFAX.healthMonitor.canActivateDamageControl();
+        message = canActivate ? "损控可以开启" : "损控已激活或冷却中";
+        context.logger.info("损控检测 #" + iteration + "：" + message);
+        EVEQuantumFAX.toast(message);
     },
 
     _showHealthToast: function (context) {

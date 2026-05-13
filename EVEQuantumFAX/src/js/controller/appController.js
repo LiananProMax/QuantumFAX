@@ -43,11 +43,11 @@ EVEQuantumFAX.controller = {
             EVEQuantumFAX.logger.error("后台任务启动失败");
             EVEQuantumFAX.ui.updateMiniStatus("停止");
             EVEQuantumFAX.ui.updatePanelStatus();
-            toast("后台任务启动失败");
+            EVEQuantumFAX.toast("后台任务启动失败");
             return;
         }
 
-        toast(appInfo.title + "已启动");
+        EVEQuantumFAX.toast(appInfo.title + "已启动");
     },
 
     _doPause: function () {
@@ -59,7 +59,7 @@ EVEQuantumFAX.controller = {
         EVEQuantumFAX.ui.updateMiniStatus("暂停");
         EVEQuantumFAX.ui.updatePanelStatus();
         EVEQuantumFAX.ui.refreshPanel();
-        toast("已暂停");
+        EVEQuantumFAX.toast("已暂停");
     },
 
     _doResume: function () {
@@ -71,7 +71,7 @@ EVEQuantumFAX.controller = {
         EVEQuantumFAX.ui.updateMiniStatus("运行");
         EVEQuantumFAX.ui.updatePanelStatus();
         EVEQuantumFAX.ui.refreshPanel();
-        toast("已继续");
+        EVEQuantumFAX.toast("已继续");
     },
 
     onStopClick: function () {
@@ -93,7 +93,7 @@ EVEQuantumFAX.controller = {
         EVEQuantumFAX.ui.updateMiniStatus("停止");
         EVEQuantumFAX.ui.updatePanelStatus();
         EVEQuantumFAX.ui.refreshPanel();
-        toast("已停止");
+        EVEQuantumFAX.toast("已停止");
     },
 
     exitApp: function () {
@@ -101,7 +101,7 @@ EVEQuantumFAX.controller = {
         this._invokeHook("onExit");
         this.onStopClick();
         EVEQuantumFAX.ui.closeAll();
-        toast("正在退出");
+        EVEQuantumFAX.toast("正在退出");
         sleep(300);
         exit();
     },

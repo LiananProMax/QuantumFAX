@@ -1,36 +1,17 @@
 var EVEQuantumFAX = EVEQuantumFAX || {};
 
 EVEQuantumFAX.healthMonitor = {
-    COLOR_TOLERANCE: 16,
-    HEALTH_TOAST_WIDTH: 520,
-    HEALTH_TOAST_HEIGHT: 72,
-    HEALTH_TOAST_Y_RATIO: 0.18,
+    COLOR_TOLERANCE: EVEQuantumFAX.healthMonitorColors.COLOR_TOLERANCE,
+    DAMAGE_CONTROL_ICON: "sunkong.png",
+    DAMAGE_CONTROL_REGION: { x: 1200, y: 631, ex: 1263, ey: 692 },
+    DAMAGE_CONTROL_WEAK_THRESHOLD: 0.7,
+    DAMAGE_CONTROL_THRESHOLD: 0.9,
+    DAMAGE_CONTROL_MATCH_LIMIT: 1,
+    DAMAGE_CONTROL_MATCH_METHOD: 5,
+    DAMAGE_CONTROL_ACTIVE_POINT: { x: 1232, y: 633 },
 
-    TARGET_COLORS: [
-        "#741C1B",
-        "#6A1C1C",
-        "#731718",
-        "#651111",
-        "#751B1B",
-        "#5F1313",
-        "#681716",
-        "#680E0E",
-        "#641415",
-        "#68100F",
-        "#692526",
-        "#771D1D",
-        "#761B1A",
-        "#C51D1C",
-        "#CC1E1F",
-        "#CA2020",
-        "#C41C1C",
-        "#C81E1E",
-        "#C71A1C",
-        "#B32121",
-        "#AE2628",
-        "#C8201F",
-        "#D42625"
-    ],
+    EQUIPMENT_ACTIVE_COLORS: EVEQuantumFAX.healthMonitorColors.EQUIPMENT_ACTIVE_COLORS,
+    TARGET_COLORS: EVEQuantumFAX.healthMonitorColors.TARGET_COLORS,
 
     SHIELD_POINTS: [
         { percent: 0, x: 597, y: 670 },
@@ -59,7 +40,9 @@ EVEQuantumFAX.healthMonitor = {
     ],
 
     _screenCaptureReady: false,
+    _openCvReady: false,
     _targetRgbList: null,
+    _equipmentActiveRgbList: null,
 
     ensureScreenCapture: function () {
         var requested;
@@ -115,14 +98,66 @@ EVEQuantumFAX.healthMonitor = {
         }
     },
 
+    canActivateDamageControl: function () {
+        var screenImage = null;
+        var templateImage = null;
+        var matches;
+        var region = this.DAMAGE_CONTROL_REGION;
+
+        if (!this.ensureScreenCapture() || !this._ensureOpenCV()) {
+            return false;
+        }
+
+        try {
+            templateImage = readResAutoImage(this.DAMAGE_CONTROL_ICON);
+            if (templateImage == null) {
+                logw("damage control template missing: " + this.DAMAGE_CONTROL_ICON);
+                return false;
+            }
+
+            screenImage = this._captureScreen();
+            if (screenImage == null) {
+                return false;
+            }
+
+            matches = image.findImage(
+                screenImage,
+                templateImage,
+                region.x,
+                region.y,
+                region.ex,
+                region.ey,
+                this.DAMAGE_CONTROL_WEAK_THRESHOLD,
+                this.DAMAGE_CONTROL_THRESHOLD,
+                this.DAMAGE_CONTROL_MATCH_LIMIT,
+                this.DAMAGE_CONTROL_MATCH_METHOD
+            );
+
+            if (!(matches && matches.length > 0)) {
+                return false;
+            }
+
+            if (this._isDamageControlActiveByColor(screenImage)) {
+                return false;
+            }
+
+            return true;
+        } catch (error) {
+            logw("damage control detection failed: " + error);
+            return false;
+        } finally {
+            this._recycleImage(screenImage);
+            this._recycleImage(templateImage);
+        }
+    },
+
     showHealthToast: function () {
         var result = this.detect();
         var message;
-        var toastExtra = this._getHealthToastExtra();
 
         if (!result.ok) {
             message = "血量检测失败：" + result.error;
-            toast(message, toastExtra);
+            EVEQuantumFAX.toast(message);
             if (EVEQuantumFAX.logger) {
                 EVEQuantumFAX.logger.warn(message);
             }
@@ -130,26 +165,12 @@ EVEQuantumFAX.healthMonitor = {
         }
 
         message = "护盾: " + result.shield + " | 装甲: " + result.armor;
-        toast(message, toastExtra);
+        EVEQuantumFAX.toast(message);
         return result;
     },
 
     _getHealthToastExtra: function () {
-        var screen = EVEQuantumFAX.screen || {};
-        var width = this.HEALTH_TOAST_WIDTH;
-        var height = this.HEALTH_TOAST_HEIGHT;
-        var screenWidth = screen.width || device.getScreenWidth() || 1080;
-        var screenHeight = screen.height || device.getScreenHeight() || 1920;
-
-        return {
-            x: Math.max(0, Math.round((screenWidth - width) / 2)),
-            y: Math.max(40, Math.round(screenHeight * this.HEALTH_TOAST_Y_RATIO)),
-            duration: 1000,
-            textColor: "#FFFFFF",
-            width: width,
-            height: height,
-            draggable: false
-        };
+        return EVEQuantumFAX.utils.getToastExtra();
     },
 
     _captureScreen: function () {
@@ -158,6 +179,21 @@ EVEQuantumFAX.healthMonitor = {
         }
 
         return image.captureFullScreen();
+    },
+
+    _ensureOpenCV: function () {
+        if (this._openCvReady) {
+            return true;
+        }
+
+        try {
+            this._openCvReady = image.initOpenCV();
+        } catch (error) {
+            logw("init OpenCV failed: " + error);
+            this._openCvReady = false;
+        }
+
+        return this._openCvReady;
     },
 
     _detectByPoints: function (screenImage, points) {
@@ -189,11 +225,25 @@ EVEQuantumFAX.healthMonitor = {
     },
 
     _matchesAnyTargetColor: function (colorValue) {
+        return this._matchesAnyColor(colorValue, this._getTargetRgbList(), this.COLOR_TOLERANCE);
+    },
+
+    _isDamageControlActiveByColor: function (screenImage) {
+        var point = this.DAMAGE_CONTROL_ACTIVE_POINT;
+        var colorValue;
+
+        if (screenImage == null) {
+            return false;
+        }
+
+        colorValue = image.pixelInImage(screenImage, point.x, point.y);
+        return this._matchesAnyColor(colorValue, this._getEquipmentActiveRgbList(), this.COLOR_TOLERANCE);
+    },
+
+    _matchesAnyColor: function (colorValue, targets, tolerance) {
         var rgb;
-        var targets = this._getTargetRgbList();
         var i;
         var target;
-        var tolerance = this.COLOR_TOLERANCE;
 
         if (colorValue == null || colorValue == undefined) {
             return false;
@@ -211,6 +261,21 @@ EVEQuantumFAX.healthMonitor = {
         }
 
         return false;
+    },
+
+    _getEquipmentActiveRgbList: function () {
+        var i;
+
+        if (this._equipmentActiveRgbList) {
+            return this._equipmentActiveRgbList;
+        }
+
+        this._equipmentActiveRgbList = [];
+        for (i = 0; i < this.EQUIPMENT_ACTIVE_COLORS.length; i++) {
+            this._equipmentActiveRgbList.push(this._hexToRgb(this.EQUIPMENT_ACTIVE_COLORS[i]));
+        }
+
+        return this._equipmentActiveRgbList;
     },
 
     _getTargetRgbList: function () {

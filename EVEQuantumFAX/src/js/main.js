@@ -5,6 +5,7 @@ require("js/core/config.js");
 require("js/services/logger.js");
 require("js/core/hotupdateConfig.js");
 require("js/services/updater.js");
+require("js/constants/healthMonitorColors.js");
 require("js/services/healthMonitor.js");
 require("js/core/hooks.js");
 require("js/services/demoTask.js");
@@ -57,7 +58,7 @@ function runHotUpdateCheck() {
         }
 
         EVEQuantumFAX.logger.info("发现热更新：v" + newVersion);
-        toast("发现更新 v" + newVersion);
+        EVEQuantumFAX.toast("发现更新 v" + newVersion);
         if (EVEQuantumFAX.hotupdate.updater.performUpdate(newVersion)) {
             return true;
         }
@@ -92,14 +93,14 @@ function main() {
 
     if (!hasPermission) {
         EVEQuantumFAX.logger.error("未授予悬浮窗权限");
-        toast("请授予悬浮窗权限后重试");
+        EVEQuantumFAX.toast("请授予悬浮窗权限后重试");
         sleep(1500);
         return;
     }
 
     EVEQuantumFAX.ui.showMiniFloat();
     EVEQuantumFAX.logger.success("迷你悬浮窗已就绪");
-    toast(EVEQuantumFAX.appInfo.title + "已就绪");
+    EVEQuantumFAX.toast(EVEQuantumFAX.appInfo.title + "已就绪");
 
     while (!isScriptExit()) {
         EVEQuantumFAX.ui.syncOrientation();
@@ -123,7 +124,7 @@ function safeMain() {
             logw("Cleanup failed: " + cleanupError);
         }
 
-        toast("QuantumFAX 发生异常：" + error);
+        EVEQuantumFAX.toast("QuantumFAX 发生异常：" + error);
     }
 }
 

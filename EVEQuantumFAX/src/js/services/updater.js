@@ -195,14 +195,14 @@ EVEQuantumFAX.hotupdate.updater = {
             logd("[Updater] ===== 开始更新流程 =====");
             logd("[Updater] 目标版本: " + newVersion);
             if (logger) logger.info("开始下载更新...");
-            toast("正在下载更新...");
+            EVEQuantumFAX.toast("正在下载更新...");
             var iecPath = hotupdater.updateDownload();
             logd("[Updater] 下载路径: " + iecPath);
             if (!iecPath || iecPath.length === 0) {
                 var errMsg = hotupdater.getErrorMsg();
                 logd("[Updater] 下载失败: " + errMsg);
                 if (logger) logger.error("下载更新失败: " + errMsg);
-                toast("下载失败: " + errMsg);
+                EVEQuantumFAX.toast("下载失败: " + errMsg);
                 return false;
             }
             if (newVersion) {
@@ -212,13 +212,13 @@ EVEQuantumFAX.hotupdate.updater = {
             logd("[Updater] 下载成功，准备重启");
             if (logger) logger.success("更新下载完成");
             if (logger) logger.info("正在重启以应用更新...");
-            toast("更新完成，正在重启...");
+            EVEQuantumFAX.toast("更新完成，正在重启...");
             sleep(1000);
             var success = restartScript(iecPath, true, 2);
             if (!success) {
                 logd("[Updater] 重启脚本失败");
                 if (logger) logger.error("重启脚本失败");
-                toast("重启失败，请手动重启");
+                EVEQuantumFAX.toast("重启失败，请手动重启");
                 return false;
             }
             logd("[Updater] 重启指令已发送");
@@ -226,7 +226,7 @@ EVEQuantumFAX.hotupdate.updater = {
         } catch (e) {
             loge("[Updater] 执行更新异常: " + e);
             if (logger) logger.error("更新异常: " + e);
-            toast("更新异常: " + e);
+            EVEQuantumFAX.toast("更新异常: " + e);
             return false;
         }
     },
@@ -250,7 +250,7 @@ EVEQuantumFAX.hotupdate.updater = {
             if (result.force) {
                 logd("[Updater] 强制更新模式");
                 if (logger) logger.warn("强制更新: v" + result.versionName);
-                toast("发现重要更新，正在更新...");
+                EVEQuantumFAX.toast("发现重要更新，正在更新...");
                 return this.performUpdate(newVersion);
             }
             if (result.dialog) {
@@ -258,7 +258,7 @@ EVEQuantumFAX.hotupdate.updater = {
                 if (result.msg) {
                     msg += "\n" + result.msg;
                 }
-                toast(msg);
+                EVEQuantumFAX.toast(msg);
                 sleep(2000);
                 return this.performUpdate(newVersion);
             }

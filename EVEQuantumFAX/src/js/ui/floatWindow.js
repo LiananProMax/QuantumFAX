@@ -321,11 +321,11 @@ EVEQuantumFAX.ui = {
                     bind("btnClearLog", function () {
                         EVEQuantumFAX.logger.clear();
                         EVEQuantumFAX.ui.refreshLogPanel();
-                        toast("日志已清空");
+                        EVEQuantumFAX.toast("日志已清空");
                     });
                     bind("btnRefreshLog", function () {
                         EVEQuantumFAX.ui.refreshLogPanel();
-                        toast("日志已刷新");
+                        EVEQuantumFAX.toast("日志已刷新");
                     });
                     bind("btnExit", function () {
                         EVEQuantumFAX.controller.exitApp();
