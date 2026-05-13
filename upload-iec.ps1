@@ -10,7 +10,7 @@ param(
 # ==================== 配置（请修改）====================
 $ServerUrl = if ($env:EC_UPDATE_SERVER_URL) { $env:EC_UPDATE_SERVER_URL } else { "http://127.0.0.1:3000" }
 $ApiToken = if ($env:EC_UPDATE_API_TOKEN) { $env:EC_UPDATE_API_TOKEN } else { "" }
-$IecPath = if ($env:EC_IEC_PATH) { $env:EC_IEC_PATH } else { Join-Path $PSScriptRoot ".idea\build\release.iec" }
+$IecPath = if ($env:EC_IEC_PATH) { $env:EC_IEC_PATH } else { Join-Path $PSScriptRoot "EVEQuantumFAX\build\release.iec" }
 
 # ==================== 检查文件 ====================
 if (-not (Test-Path $IecPath)) {

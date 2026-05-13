@@ -1,31 +1,10 @@
 # EVEQuantumFAX
 
-EVEQuantumFAX is an EasyClick template project that combines a floating control panel with a self-hosted IEC hot update flow.
+## 启动说明
 
-## Project Layout
+### 1. 启动热更新服务（本地调试时需先开启）
 
-- `.idea/src/js/main.js` starts the app, checks for hot updates, and then shows the floating control panel.
-- `.idea/src/js/core` contains shared runtime, state, panel config, hooks, and hot update config.
-- `.idea/src/js/services/updater.js` handles update check, download, version persistence, and script restart.
-- `.idea/src/js/services/demoTask.js` is the placeholder task loop. Replace it with your real EVEQuantumFAX logic.
-- `server` is the Node update server used by the client hot update flow.
-- `upload-iec.ps1` and `upload-iec.bat` upload `.idea/build/release.iec` to the update server.
-
-## EasyClick Client
-
-1. Open this root directory as the EasyClick project.
-2. For local debugging, `.idea/src/js/core/hotupdateConfig.js` points to `http://192.168.31.141:3000`. If your LAN IP changes, update `EVE_QUANTUM_FAX_UPDATE_SERVER_URL`.
-3. Keep `.idea/src/update.json` `update_url` empty. The client uses the self-hosted server URL from `hotupdateConfig.js`.
-4. Build and run the project. On first launch, grant floating window permission when prompted.
-
-Startup order:
-
-1. Load panel/runtime modules.
-2. Check hot update through `/api/update/check`.
-3. If a new IEC is downloaded, call `restartScript` and stop the current startup.
-4. If no update is available or update fails, show the mini floating control ball.
-
-## Update Server
+在项目根目录下执行：
 
 ```powershell
 cd server
@@ -33,29 +12,23 @@ npm install
 npm start
 ```
 
-The server listens on `PORT` from `server/.env`, or `3000` by default. The local debug config is initialized as:
+首次启动前，若没有 `server/.env`，可复制 `server/.env.example` 为 `server/.env` 并按需修改。端口默认 `3000`，由 `.env` 中的 `PORT` 控制。
 
-```env
-PORT=3000
-ENABLE_AUTH=false
-API_TOKEN=
-```
+### 2. 启动 EasyClick 客户端
 
-## Upload IEC
+1. 用 EasyClick 打开本项目根目录作为工程目录。
+2. 本地调试时，若本机局域网 IP 与配置不一致，请修改 `EVEQuantumFAX/src/js/core/hotupdateConfig.js` 中的 `EVE_QUANTUM_FAX_UPDATE_SERVER_URL`，使其指向当前运行中的更新服务地址（例如 `http://你的IP:端口`）。
+3. 保持 `EVEQuantumFAX/src/update.json` 里的 `update_url` 为空；客户端会使用 `hotupdateConfig.js` 中的自建服务地址进行检查。
+4. 在 EasyClick 中构建并运行工程。首次运行若提示悬浮窗权限，请按系统提示授予。
 
-After EasyClick builds `.idea/build/release.iec`, upload it with:
+建议在调试时：**先启动 `server`**，再在 EasyClick 中运行客户端。
+
+### 3. 上传 IEC 热更新包
+
+EasyClick 构建完成后，默认产物路径为 `EVEQuantumFAX/build/release.iec`。可在项目根目录执行：
 
 ```powershell
-$env:EC_UPDATE_SERVER_URL="http://127.0.0.1:3000"
-$env:EC_UPDATE_API_TOKEN="change-me"
 .\upload-iec.ps1 -Message "release notes"
 ```
 
-If auth is disabled on the server, `EC_UPDATE_API_TOKEN` can be omitted. The upload endpoint increments the server version automatically and writes `server/data/appVersion.json`.
-
-## Runtime Notes
-
-- Floating window storage namespace: `EVEQuantumFAX`.
-- Hot update storage namespace: `EVEQuantumFAXHotupdate`.
-- Floating tags: `eve_quantum_fax_mini`, `eve_quantum_fax_panel`, `eve_quantum_fax_overlay`.
-- Replace `demoTask.js` and `hooks.js` with your real automation logic while keeping `setStopCallback` cleanup intact.
+如果产物路径不同，可通过环境变量 `EC_IEC_PATH` 覆盖。

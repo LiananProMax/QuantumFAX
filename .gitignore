@@ -1,6 +1,6 @@
 # EasyClick build output
-.idea/build/
-.idea/out/
+EVEQuantumFAX/build/
+EVEQuantumFAX/out/
 out/
 
 # Node hot update server dependencies

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/EVEQuantumFAX.iml" filepath="$PROJECT_DIR$/.idea/EVEQuantumFAX.iml" />
+      <module fileurl="file://$PROJECT_DIR$/EVEQuantumFAX.iml" filepath="$PROJECT_DIR$/EVEQuantumFAX.iml" />
     </modules>
   </component>
 </project>
