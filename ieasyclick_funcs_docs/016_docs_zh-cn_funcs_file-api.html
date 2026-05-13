@@ -1,0 +1,103 @@
+<article><div><button>本页总览</button></div><div><h2>说明<a href="https://ieasyclick.com/docs/zh-cn/funcs/file-api" title="说明的直接链接">​</a></h2>
+<ul>
+<li>文件模块函数主要是跟文件信息相关联</li>
+<li>文件模块的对象前缀是file，例如 file.readFile()这样调用</li>
+</ul>
+<h2>file.readFile 读取为字符串<a href="https://ieasyclick.com/docs/zh-cn/funcs/file-api" title="file.readFile 读取为字符串的直接链接">​</a></h2>
+<ul>
+<li>将文件读取为字符串</li>
+<li>@param path 文件路径</li>
+<li>@return 字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> data </span><span>=</span><span> file</span><span>.</span><span>readFile</span><span>(</span><span>"/sdcard/test.txt"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>data</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>file.deleteLine 删除文件某一行<a href="https://ieasyclick.com/docs/zh-cn/funcs/file-api" title="file.deleteLine 删除文件某一行的直接链接">​</a></h2>
+<ul>
+<li>删除文件某一行或者根据包含条件删除</li>
+<li>注意: 如果删除不成功，可以使用读取所有数据函数，循环找到行号删除，在进行保存</li>
+<li>@param path 文件路径</li>
+<li>@param line 行数，如果是-1 代表这个条件不生效</li>
+<li>@param contains 包含某个字符串就删除，如果为null代表这个条件不生效</li>
+<li></li>
+<li>@return <code>{bool}</code> true 成功 false 失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//删除包含 时间 字符串的行</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> r </span><span>=</span><span> file</span><span>.</span><span>deleteLine</span><span>(</span><span>"/sdcard/a.txt"</span><span>,</span><span> </span><span>-</span><span>1</span><span>,</span><span> </span><span>"时间"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"r "</span><span> </span><span>+</span><span> r</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//删除第3行</span><span></span></span><br/></span><span><span></span><span><span>    r </span><span>=</span><span> file</span><span>.</span><span>deleteLine</span><span>(</span><span>"/sdcard/a.txt"</span><span>,</span><span> </span><span>3</span><span>,</span><span> </span><span>null</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"r "</span><span> </span><span>+</span><span> r</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>file.listDir 列出所有文件<a href="https://ieasyclick.com/docs/zh-cn/funcs/file-api" title="file.listDir 列出所有文件的直接链接">​</a></h2>
+<ul>
+<li>列出文件下的所有文件</li>
+<li>@param path 路径</li>
+<li>@return 路径字符串数组</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> data </span><span>=</span><span> file</span><span>.</span><span>listDir</span><span>(</span><span>"/sdcard/"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>for</span><span> </span><span>(</span><span>var</span><span> i </span><span>=</span><span> </span><span>0</span><span>;</span><span> i </span><span>&lt;</span><span> data</span><span>.</span><span>length</span><span>;</span><span> i</span><span>++</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>logd</span><span>(</span><span>"path "</span><span> </span><span>+</span><span> data</span><span>[</span><span>i</span><span>]</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>file.writeFile 写入文件<a href="https://ieasyclick.com/docs/zh-cn/funcs/file-api" title="file.writeFile 写入文件的直接链接">​</a></h2>
+<ul>
+<li>将字符串存储到文件中</li>
+<li>@param data 字符串 数据</li>
+<li>@param path 文件路径</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> data </span><span>=</span><span> </span><span>"Test"</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    file</span><span>.</span><span>writeFile</span><span>(</span><span>data</span><span>,</span><span> </span><span>"/sdcard/test.txt"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>file.create 创建<a href="https://ieasyclick.com/docs/zh-cn/funcs/file-api" title="file.create 创建的直接链接">​</a></h2>
+<ul>
+<li>创建一个文件</li>
+<li>@param path 文件路径</li>
+<li>@return 布尔型 true 代表创建成功</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> create </span><span>=</span><span> file</span><span>.</span><span>create</span><span>(</span><span>"/sdcard/test.txt"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>create</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>file.mkdirs 创建文件夹<a href="https://ieasyclick.com/docs/zh-cn/funcs/file-api" title="file.mkdirs 创建文件夹的直接链接">​</a></h2>
+<ul>
+<li>创建文件夹</li>
+<li>@param path 路径</li>
+<li>@return 布尔型 true 代表成功，false代表失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> t </span><span>=</span><span> file</span><span>.</span><span>mkdirs</span><span>(</span><span>"/sdcard/testdir/"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>t</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>file.readAssets 读取assets<a href="https://ieasyclick.com/docs/zh-cn/funcs/file-api" title="file.readAssets 读取assets的直接链接">​</a></h2>
+<ul>
+<li>从APK的assets文件夹中读取数据为字符串</li>
+<li>@param path assets文件夹中的文件路径，例如 data/a.txt</li>
+<li>@return 字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> data </span><span>=</span><span> file</span><span>.</span><span>readAssets</span><span>(</span><span>"data/test.txt"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>data</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>file.deleteAllFile 删除<a href="https://ieasyclick.com/docs/zh-cn/funcs/file-api" title="file.deleteAllFile 删除的直接链接">​</a></h2>
+<ul>
+<li>删除所有文件或者文件夹</li>
+<li>@param path 文件或者文件路径</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// 删除文件</span><span></span></span><br/></span><span><span></span><span><span>    file</span><span>.</span><span>deleteAllFile</span><span>(</span><span>"/sdcard/test.txt"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// 删除文件夹</span><span></span></span><br/></span><span><span></span><span><span>    file</span><span>.</span><span>deleteAllFile</span><span>(</span><span>"/sdcard/testdir/"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>file.appendLine 追加字符串<a href="https://ieasyclick.com/docs/zh-cn/funcs/file-api" title="file.appendLine 追加字符串的直接链接">​</a></h2>
+<ul>
+<li>写入一行到文件中,追加模式</li>
+<li>@param data 行数据</li>
+<li>@param path 文件或者文件路径</li>
+<li>@return 布尔型 true代表成功 false代表失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> data </span><span>=</span><span> </span><span>"sss"</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> t </span><span>=</span><span> file</span><span>.</span><span>appendLine</span><span>(</span><span>data</span><span>,</span><span> </span><span>"/sdcard/test.txt"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>t</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>file.readLine 读取一行<a href="https://ieasyclick.com/docs/zh-cn/funcs/file-api" title="file.readLine 读取一行的直接链接">​</a></h2>
+<ul>
+<li>读取一行数据，如果行号不对，返回的是空</li>
+<li>@param path 路径</li>
+<li>@param lineNo 行号</li>
+<li>@return 字符串 返回一行字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> t </span><span>=</span><span> file</span><span>.</span><span>readLine</span><span>(</span><span>"/sdcard/test.txt"</span><span>,</span><span> </span><span>1</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>t</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>file.readAllLines 读取所有行<a href="https://ieasyclick.com/docs/zh-cn/funcs/file-api" title="file.readAllLines 读取所有行的直接链接">​</a></h2>
+<ul>
+<li>读取所有数据</li>
+<li>@param path 路径</li>
+<li>@return 字符串数组|null</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> t </span><span>=</span><span> file</span><span>.</span><span>readAllLines</span><span>(</span><span>"/sdcard/test.txt"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>t</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>file.exists 是否存在<a href="https://ieasyclick.com/docs/zh-cn/funcs/file-api" title="file.exists 是否存在的直接链接">​</a></h2>
+<ul>
+<li>文件或者文件夹是否存在</li>
+<li>@param path 路径</li>
+<li>@return 布尔型 true 代表成功，false代表失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> t </span><span>=</span><span> file</span><span>.</span><span>exists</span><span>(</span><span>"/sdcard/testdir/"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>t</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>file.copy 文件复制<a href="https://ieasyclick.com/docs/zh-cn/funcs/file-api" title="file.copy 文件复制的直接链接">​</a></h2>
+<ul>
+<li>复制文件</li>
+<li></li>
+<li>@param src 源文件路径</li>
+<li>@param dest 目标文件路径</li>
+<li>@return 布尔型 true 代表成功</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> t </span><span>=</span><span> file</span><span>.</span><span>copy</span><span>(</span><span>"/sdcard/a.png"</span><span>,</span><span> </span><span>"/sdcard/b.png"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>t</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div></div></article>

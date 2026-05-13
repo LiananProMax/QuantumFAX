@@ -1,0 +1,137 @@
+<article><div><button>本页总览</button></div><div><h2>说明<a href="https://ieasyclick.com/docs/zh-cn/funcs/device-api" title="说明的直接链接">​</a></h2>
+<ul>
+<li>设备模块函数主要是跟设备信息相关联</li>
+<li>设备模块的对象前缀是device，例如 device.getIMEI()这样调用</li>
+</ul>
+<h2>device.tcDeviceId 三方统计唯一设备标识<a href="https://ieasyclick.com/docs/zh-cn/funcs/device-api" title="device.tcDeviceId 三方统计唯一设备标识的直接链接">​</a></h2>
+<ul>
+<li>取得talkingdata三方统计定义的唯一设备标识</li>
+<li>10.25+版本已经失效，请另选其他方式替代</li>
+<li>@return <code>{string}</code></li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> d </span><span>=</span><span> device</span><span>.</span><span>tcDeviceId</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//如果想传给对象,需强转一下,否则会报错</span><span></span></span><br/></span><span><span></span><span><span>    d </span><span>+=</span><span> </span><span>""</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>d</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>device.getIMEI 获取IMEI<a href="https://ieasyclick.com/docs/zh-cn/funcs/device-api" title="device.getIMEI 获取IMEI的直接链接">​</a></h2>
+<ul>
+<li>安卓高版本不要调用了 获取不到值</li>
+<li>获取手机的IMEI</li>
+<li>@return 字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> imei </span><span>=</span><span> device</span><span>.</span><span>getIMEI</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>imei</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>device.getScreenWidth 屏幕宽度<a href="https://ieasyclick.com/docs/zh-cn/funcs/device-api" title="device.getScreenWidth 屏幕宽度的直接链接">​</a></h2>
+<ul>
+<li>取得屏幕宽度</li>
+<li>@return 整型</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> width </span><span>=</span><span> device</span><span>.</span><span>getScreenWidth</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>width</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>device.getScreenHeight 屏幕高度<a href="https://ieasyclick.com/docs/zh-cn/funcs/device-api" title="device.getScreenHeight 屏幕高度的直接链接">​</a></h2>
+<ul>
+<li>取得屏幕高度</li>
+<li>@return 整型</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> height </span><span>=</span><span> device</span><span>.</span><span>getScreenHeight</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>height</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>device.getAndroidId 取得Android ID<a href="https://ieasyclick.com/docs/zh-cn/funcs/device-api" title="device.getAndroidId 取得Android ID的直接链接">​</a></h2>
+<ul>
+<li>取得Android ID</li>
+<li>@return 字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> androidId </span><span>=</span><span> device</span><span>.</span><span>getAndroidId</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>androidId</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>device.getBrand 取得品牌<a href="https://ieasyclick.com/docs/zh-cn/funcs/device-api" title="device.getBrand 取得品牌的直接链接">​</a></h2>
+<ul>
+<li>取得手机品牌</li>
+<li>@return 字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> brand </span><span>=</span><span> device</span><span>.</span><span>getBrand</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>brand</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>device.getModel 取得机型<a href="https://ieasyclick.com/docs/zh-cn/funcs/device-api" title="device.getModel 取得机型的直接链接">​</a></h2>
+<ul>
+<li>取得手机机型</li>
+<li>@return 字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> model </span><span>=</span><span> device</span><span>.</span><span>getModel</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>model</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>device.getImsi 取得卡号<a href="https://ieasyclick.com/docs/zh-cn/funcs/device-api" title="device.getImsi 取得卡号的直接链接">​</a></h2>
+<ul>
+<li>安卓高版本不要调用了 获取不到值</li>
+<li>取得手机卡号</li>
+<li>@return 字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> imsi </span><span>=</span><span> device</span><span>.</span><span>getImsi</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>imsi</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>device.getSerial 取得手机串号<a href="https://ieasyclick.com/docs/zh-cn/funcs/device-api" title="device.getSerial 取得手机串号的直接链接">​</a></h2>
+<ul>
+<li>安卓高版本不要调用了 获取不到值</li>
+<li>取得手机串号</li>
+<li>@return 字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> serial </span><span>=</span><span> device</span><span>.</span><span>getSerial</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>serial</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>device.getSdkInt 取得SDK 版本号<a href="https://ieasyclick.com/docs/zh-cn/funcs/device-api" title="device.getSdkInt 取得SDK 版本号的直接链接">​</a></h2>
+<ul>
+<li>取得手机SDK 版本号，例如 23</li>
+<li>@return 字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> sdkInt </span><span>=</span><span> device</span><span>.</span><span>getSdkInt</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>sdkInt</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>device.getOSVersion 取得手机版本号<a href="https://ieasyclick.com/docs/zh-cn/funcs/device-api" title="device.getOSVersion 取得手机版本号的直接链接">​</a></h2>
+<ul>
+<li>取得手机版本号,例如 6.0等字符串</li>
+<li>@return 字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> osVersion </span><span>=</span><span> device</span><span>.</span><span>getOSVersion</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>osVersion</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>device.getMacAddress 获取mac地址<a href="https://ieasyclick.com/docs/zh-cn/funcs/device-api" title="device.getMacAddress 获取mac地址的直接链接">​</a></h2>
+<ul>
+<li>安卓高版本不要调用了 获取可能是固定值或者没有值</li>
+<li>获取mac地址</li>
+<li>@return 字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> res </span><span>=</span><span> device</span><span>.</span><span>getMacAddress</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>res</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>device.getBattery 取得电量<a href="https://ieasyclick.com/docs/zh-cn/funcs/device-api" title="device.getBattery 取得电量的直接链接">​</a></h2>
+<ul>
+<li>取得电量</li>
+<li>@return int型</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> res </span><span>=</span><span> device</span><span>.</span><span>getBattery</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>res</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>device.getTotalMem 取得总内存<a href="https://ieasyclick.com/docs/zh-cn/funcs/device-api" title="device.getTotalMem 取得总内存的直接链接">​</a></h2>
+<ul>
+<li>取得总内存</li>
+<li>@return long型</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> res </span><span>=</span><span> device</span><span>.</span><span>getTotalMem</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>res</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>device.getAvailMem 取得可用内存<a href="https://ieasyclick.com/docs/zh-cn/funcs/device-api" title="device.getAvailMem 取得可用内存的直接链接">​</a></h2>
+<ul>
+<li>取得可用内存</li>
+<li>@return long型</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> res </span><span>=</span><span> device</span><span>.</span><span>getAvailMem</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>res</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>device.isCharging 是否正在充电<a href="https://ieasyclick.com/docs/zh-cn/funcs/device-api" title="device.isCharging 是否正在充电的直接链接">​</a></h2>
+<ul>
+<li>是否正在充电</li>
+<li>@return 布尔型</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> res </span><span>=</span><span> device</span><span>.</span><span>isCharging</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>res</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>device.vibrate 发出震动<a href="https://ieasyclick.com/docs/zh-cn/funcs/device-api" title="device.vibrate 发出震动的直接链接">​</a></h2>
+<ul>
+<li>发出震动 单位是毫秒</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    device</span><span>.</span><span>vibrate</span><span>(</span><span>1</span><span> </span><span>*</span><span> </span><span>1000</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>device.cancelVibration 取消震动<a href="https://ieasyclick.com/docs/zh-cn/funcs/device-api" title="device.cancelVibration 取消震动的直接链接">​</a></h2>
+<ul>
+<li>取消震动</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    device</span><span>.</span><span>cancelVibration</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>device.keepAwake 保持设备唤醒<a href="https://ieasyclick.com/docs/zh-cn/funcs/device-api" title="device.keepAwake 保持设备唤醒的直接链接">​</a></h2>
+<ul>
+<li>保持设备唤醒</li>
+<li>@param flag 参考安卓PowerManager中的唤醒标准</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>importClass</span><span>(</span><span>android</span><span>.</span><span>os</span><span>.</span><span>PowerManager</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    device</span><span>.</span><span>keepAwake</span><span>(</span><span>PowerManager</span><span>.</span><span>SCREEN_DIM_WAKE_LOCK</span><span> </span><span>|</span><span> </span><span>PowerManager</span><span>.</span><span>ACQUIRE_CAUSES_WAKEUP</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>device.keepScreenOn 保持屏幕唤醒状态<a href="https://ieasyclick.com/docs/zh-cn/funcs/device-api" title="device.keepScreenOn 保持屏幕唤醒状态的直接链接">​</a></h2>
+<ul>
+<li>保持屏幕唤醒状态</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    device</span><span>.</span><span>keepScreenOn</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>device.keepScreenDim 保持设备昏暗状态<a href="https://ieasyclick.com/docs/zh-cn/funcs/device-api" title="device.keepScreenDim 保持设备昏暗状态的直接链接">​</a></h2>
+<ul>
+<li>保持设备昏暗状态</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    device</span><span>.</span><span>keepScreenDim</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>device.cancelKeepingAwake 取消保持唤醒状态<a href="https://ieasyclick.com/docs/zh-cn/funcs/device-api" title="device.cancelKeepingAwake 取消保持唤醒状态的直接链接">​</a></h2>
+<ul>
+<li>取消保持唤醒状态</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    device</span><span>.</span><span>cancelKeepingAwake</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div></div></article>

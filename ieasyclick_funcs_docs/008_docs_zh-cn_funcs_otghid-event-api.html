@@ -1,0 +1,182 @@
+<article><div><button>本页总览</button></div><div><h2>说明<a href="https://ieasyclick.com/docs/zh-cn/funcs/otghid-event-api" title="说明的直接链接">​</a></h2>
+<ul>
+<li>OTG HID事件模块运行的所有函数，需要借助硬件的方式才能使用</li>
+<li>具体请看OTG HID配置 高级功能 - OTG HID硬件 : <a href="https://ieasyclick.com/docs/zh-cn/advance/otghid">OTGHID硬件</a></li>
+<li>代理事件模块的对象前缀是 otgEvent，例如 otgEvent.click 这样调用</li>
+</ul>
+<div><div><span></span>提示</div><div><ul>
+<li>OTG hid只是一种点击模式，无障碍、代理模式、root都含有点击和获取节点功能，如果你用不了节点，就使用图色</li>
+<li>图色权限请使用 <code>image.requestScreenCapture</code> 函数的 type=1 带权限截图方式</li>
+<li>OTG hid除了不能使用节点，其他功能都是一样，无需特殊处理</li>
+</ul></div></div>
+<h2>init 初始化 OTG 串口<a href="https://ieasyclick.com/docs/zh-cn/funcs/otghid-event-api" title="init 初始化 OTG 串口的直接链接">​</a></h2>
+<ul>
+<li>初始化 OTG 串口</li>
+<li>适配版本 EC 安卓 11.40.0+</li>
+<li>@return <code>{null|string}</code> null 代表成功，其他代表错误消息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>// 这个只是测试的例子 方便大家观看</span><span></span></span><br/></span><span><span></span><span><span></span><span>var</span><span> </span><span>OTG_STEP_DELAY_MS</span><span> </span><span>=</span><span> </span><span>2000</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>/** 是否执行 home / back / recents / systemKey 等导航类测试 */</span><span></span></span><br/></span><span><span></span><span><span></span><span>var</span><span> </span><span>OTG_TEST_RUN_NAV_KEYS</span><span> </span><span>=</span><span> </span><span>false</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>/** 触控测试坐标（按对端分辨率修改） */</span><span></span></span><br/></span><span><span></span><span><span></span><span>var</span><span> </span><span>OTG_TEST_X</span><span> </span><span>=</span><span> </span><span>200</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>var</span><span> </span><span>OTG_TEST_Y</span><span> </span><span>=</span><span> </span><span>200</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>var</span><span> </span><span>OTG_TEST_X2</span><span> </span><span>=</span><span> </span><span>400</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>var</span><span> </span><span>OTG_TEST_Y2</span><span> </span><span>=</span><span> </span><span>400</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>function</span><span> </span><span>_ok</span><span>(</span><span>name</span><span>,</span><span> err</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>if</span><span> </span><span>(</span><span>err </span><span>==</span><span> </span><span>null</span><span> </span><span>||</span><span> err </span><span>===</span><span> </span><span>""</span><span> </span><span>||</span><span> err </span><span>===</span><span> </span><span>undefined</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>logd</span><span>(</span><span>"[OTG-TEST] OK  "</span><span> </span><span>+</span><span> name</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>return</span><span> </span><span>true</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>loge</span><span>(</span><span>"[OTG-TEST] FAIL "</span><span> </span><span>+</span><span> name </span><span>+</span><span> </span><span>" -&gt; "</span><span> </span><span>+</span><span> err</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>return</span><span> </span><span>false</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>function</span><span> </span><span>runOtgEventTests</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"[OTG-TEST] ========== start =========="</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>_ok</span><span>(</span><span>"init"</span><span>,</span><span> otgEvent</span><span>.</span><span>init</span><span>(</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>OTG_STEP_DELAY_MS</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>_ok</span><span>(</span><span>"connectFirst"</span><span>,</span><span> otgEvent</span><span>.</span><span>connectFirst</span><span>(</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>OTG_STEP_DELAY_MS</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"[OTG-TEST] isConnected = "</span><span> </span><span>+</span><span> otgEvent</span><span>.</span><span>isConnected</span><span>(</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span></span><br/></span><span><span></span><span><span>    </span><span>// 如果获取不到 就sleep 3s 后重新获取</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"mac "</span><span>+</span><span>otgEvent</span><span>.</span><span>getMacAddress</span><span>(</span><span>)</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span></span><br/></span><span><span></span><span><span>    </span><span>_ok</span><span>(</span><span>"setTimeouts(800,1500,2500)"</span><span>,</span><span> otgEvent</span><span>.</span><span>setTimeouts</span><span>(</span><span>2000</span><span>,</span><span> </span><span>2000</span><span>,</span><span> </span><span>3000</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>OTG_STEP_DELAY_MS</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>_ok</span><span>(</span><span>"clickPoint"</span><span>,</span><span> otgEvent</span><span>.</span><span>clickPoint</span><span>(</span><span>200</span><span>,</span><span> </span><span>300</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>OTG_STEP_DELAY_MS</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>_ok</span><span>(</span><span>"doubleClickPoint"</span><span>,</span><span> otgEvent</span><span>.</span><span>doubleClickPoint</span><span>(</span><span>400</span><span>,</span><span> </span><span>500</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>OTG_STEP_DELAY_MS</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>_ok</span><span>(</span><span>"press(600ms)"</span><span>,</span><span> otgEvent</span><span>.</span><span>press</span><span>(</span><span>600</span><span>,</span><span> </span><span>700</span><span>,</span><span> </span><span>5000</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>OTG_STEP_DELAY_MS</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>_ok</span><span>(</span><span>"swipe"</span><span>,</span><span> otgEvent</span><span>.</span><span>swipe</span><span>(</span><span>OTG_TEST_X</span><span>,</span><span> </span><span>OTG_TEST_Y</span><span>,</span><span> </span><span>OTG_TEST_X2</span><span>,</span><span> </span><span>OTG_TEST_Y2</span><span>,</span><span> </span><span>400</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>OTG_STEP_DELAY_MS</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>_ok</span><span>(</span><span>"touchDown"</span><span>,</span><span> otgEvent</span><span>.</span><span>touchDown</span><span>(</span><span>OTG_TEST_X</span><span>,</span><span> </span><span>OTG_TEST_Y</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>OTG_STEP_DELAY_MS</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>_ok</span><span>(</span><span>"touchMove(pressed=true)"</span><span>,</span><span> otgEvent</span><span>.</span><span>touchMove</span><span>(</span><span>OTG_TEST_X</span><span> </span><span>+</span><span> </span><span>30</span><span>,</span><span> </span><span>OTG_TEST_Y</span><span> </span><span>+</span><span> </span><span>30</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>OTG_STEP_DELAY_MS</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>_ok</span><span>(</span><span>"touchMove(pressed=false)"</span><span>,</span><span> otgEvent</span><span>.</span><span>touchMove</span><span>(</span><span>OTG_TEST_X</span><span> </span><span>+</span><span> </span><span>60</span><span>,</span><span> </span><span>OTG_TEST_Y</span><span> </span><span>+</span><span> </span><span>60</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>OTG_STEP_DELAY_MS</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>_ok</span><span>(</span><span>"touchUp"</span><span>,</span><span> otgEvent</span><span>.</span><span>touchUp</span><span>(</span><span>OTG_TEST_X</span><span> </span><span>+</span><span> </span><span>60</span><span>,</span><span> </span><span>OTG_TEST_Y</span><span> </span><span>+</span><span> </span><span>60</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>OTG_STEP_DELAY_MS</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>if</span><span> </span><span>(</span><span>OTG_TEST_RUN_NAV_KEYS</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>_ok</span><span>(</span><span>"systemKey(home)"</span><span>,</span><span> otgEvent</span><span>.</span><span>systemKey</span><span>(</span><span>"home"</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>sleep</span><span>(</span><span>OTG_STEP_DELAY_MS</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>_ok</span><span>(</span><span>"systemKey(back)"</span><span>,</span><span> otgEvent</span><span>.</span><span>systemKey</span><span>(</span><span>"back"</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>sleep</span><span>(</span><span>OTG_STEP_DELAY_MS</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>_ok</span><span>(</span><span>"systemKey(recents)"</span><span>,</span><span> otgEvent</span><span>.</span><span>systemKey</span><span>(</span><span>"recents"</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>sleep</span><span>(</span><span>OTG_STEP_DELAY_MS</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>        </span><span>_ok</span><span>(</span><span>"recents()"</span><span>,</span><span> otgEvent</span><span>.</span><span>recents</span><span>(</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>sleep</span><span>(</span><span>OTG_STEP_DELAY_MS</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>_ok</span><span>(</span><span>"back()"</span><span>,</span><span> otgEvent</span><span>.</span><span>back</span><span>(</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>sleep</span><span>(</span><span>OTG_STEP_DELAY_MS</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>_ok</span><span>(</span><span>"home()"</span><span>,</span><span> otgEvent</span><span>.</span><span>home</span><span>(</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>sleep</span><span>(</span><span>OTG_STEP_DELAY_MS</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span> </span><span>else</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>logd</span><span>(</span><span>"[OTG-TEST] skip systemKey / recents / back / home (set OTG_TEST_RUN_NAV_KEYS = true to run)"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>_ok</span><span>(</span><span>"keyPressChar a"</span><span>,</span><span> otgEvent</span><span>.</span><span>keyPressChar</span><span>(</span><span>""</span><span>,</span><span> </span><span>"a"</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>OTG_STEP_DELAY_MS</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>_ok</span><span>(</span><span>"keyPress 97 (a)"</span><span>,</span><span> otgEvent</span><span>.</span><span>keyPress</span><span>(</span><span>""</span><span>,</span><span> </span><span>97</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>OTG_STEP_DELAY_MS</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> seq </span><span>=</span><span> </span><span>[</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>{</span><span>"action"</span><span>:</span><span> </span><span>0</span><span>,</span><span> </span><span>"x"</span><span>:</span><span> </span><span>OTG_TEST_X</span><span>,</span><span> </span><span>"y"</span><span>:</span><span> </span><span>OTG_TEST_Y</span><span>,</span><span> </span><span>"pointer"</span><span>:</span><span> </span><span>1</span><span>,</span><span> </span><span>"delay"</span><span>:</span><span> </span><span>40</span><span>}</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>{</span><span>"action"</span><span>:</span><span> </span><span>2</span><span>,</span><span> </span><span>"x"</span><span>:</span><span> </span><span>OTG_TEST_X</span><span> </span><span>+</span><span> </span><span>50</span><span>,</span><span> </span><span>"y"</span><span>:</span><span> </span><span>OTG_TEST_Y</span><span> </span><span>+</span><span> </span><span>50</span><span>,</span><span> </span><span>"pointer"</span><span>:</span><span> </span><span>1</span><span>,</span><span> </span><span>"delay"</span><span>:</span><span> </span><span>40</span><span>}</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>{</span><span>"action"</span><span>:</span><span> </span><span>2</span><span>,</span><span> </span><span>"x"</span><span>:</span><span> </span><span>OTG_TEST_X</span><span> </span><span>+</span><span> </span><span>100</span><span>,</span><span> </span><span>"y"</span><span>:</span><span> </span><span>OTG_TEST_Y</span><span> </span><span>+</span><span> </span><span>100</span><span>,</span><span> </span><span>"pointer"</span><span>:</span><span> </span><span>1</span><span>,</span><span> </span><span>"delay"</span><span>:</span><span> </span><span>40</span><span>}</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>{</span><span>"action"</span><span>:</span><span> </span><span>1</span><span>,</span><span> </span><span>"x"</span><span>:</span><span> </span><span>OTG_TEST_X</span><span> </span><span>+</span><span> </span><span>100</span><span>,</span><span> </span><span>"y"</span><span>:</span><span> </span><span>OTG_TEST_Y</span><span> </span><span>+</span><span> </span><span>100</span><span>,</span><span> </span><span>"pointer"</span><span>:</span><span> </span><span>1</span><span>,</span><span> </span><span>"delay"</span><span>:</span><span> </span><span>40</span><span>}</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>]</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>_ok</span><span>(</span><span>"multiTouch"</span><span>,</span><span> otgEvent</span><span>.</span><span>multiTouch</span><span>(</span><span>seq</span><span>,</span><span> </span><span>5000</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>OTG_STEP_DELAY_MS</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>_ok</span><span>(</span><span>"close"</span><span>,</span><span> otgEvent</span><span>.</span><span>close</span><span>(</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>OTG_STEP_DELAY_MS</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"[OTG-TEST] ========== end =========="</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>runOtgEventTests</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>connectFirst 连接第一个串口设备<a href="https://ieasyclick.com/docs/zh-cn/funcs/otghid-event-api" title="connectFirst 连接第一个串口设备的直接链接">​</a></h2>
+<ul>
+<li>连接第一个 串口设备</li>
+<li>适配版本 EC 安卓 11.40.0+</li>
+<li>注意：如果没有授权，会弹权限框，此时会返回错误信息，授权后再调用一次即可</li>
+<li>@return <code>{null|string}</code> null 代表成功，其他代表错误消息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 init 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>isConnected 连接状态<a href="https://ieasyclick.com/docs/zh-cn/funcs/otghid-event-api" title="isConnected 连接状态的直接链接">​</a></h2>
+<ul>
+<li>连接状态</li>
+<li>适配版本 EC 安卓 11.40.0+</li>
+<li>@return <code>{boolean}</code> true 代表链接成功</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 init 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>setTimeouts 设置超时<a href="https://ieasyclick.com/docs/zh-cn/funcs/otghid-event-api" title="setTimeouts 设置超时的直接链接">​</a></h2>
+<ul>
+<li>设置超时（全局生效）</li>
+<li>适配版本 EC 安卓 11.40.0+</li>
+<li>@param writeTimeoutMs 写入超时（ms），默认 1000</li>
+<li>@param replyTimeoutMs 等待回复超时（ms），默认 2000</li>
+<li>@param durationExtraTimeoutMs 对 press/swipe 等带 duration 的动作额外等待（ms），默认 3000</li>
+<li>@return <code>{null|string}</code> null和空代表成功，其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 init 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>clickPoint 点击<a href="https://ieasyclick.com/docs/zh-cn/funcs/otghid-event-api" title="clickPoint 点击的直接链接">​</a></h2>
+<ul>
+<li>点击</li>
+<li>适配版本 EC 安卓 11.40.0+</li>
+<li>@param x x坐标</li>
+<li>@param y y坐标</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 init 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>press 长按<a href="https://ieasyclick.com/docs/zh-cn/funcs/otghid-event-api" title="press 长按的直接链接">​</a></h2>
+<ul>
+<li>长按</li>
+<li>适配版本 EC 安卓 11.40.0+</li>
+<li>@param x x坐标</li>
+<li>@param y y坐标</li>
+<li>@param holdMs 延迟时间 单位毫秒</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 init 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>doubleClick 双击<a href="https://ieasyclick.com/docs/zh-cn/funcs/otghid-event-api" title="doubleClick 双击的直接链接">​</a></h2>
+<ul>
+<li>双击</li>
+<li>适配版本 EC 安卓 11.40.0+</li>
+<li>@param x x坐标</li>
+<li>@param y y坐标</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 init 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>touchDown 按下<a href="https://ieasyclick.com/docs/zh-cn/funcs/otghid-event-api" title="touchDown 按下的直接链接">​</a></h2>
+<ul>
+<li>按下</li>
+<li>适配版本 EC 安卓 11.40.0+</li>
+<li>@param x x坐标</li>
+<li>@param y y坐标</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 init 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>touchMove 移动<a href="https://ieasyclick.com/docs/zh-cn/funcs/otghid-event-api" title="touchMove 移动的直接链接">​</a></h2>
+<ul>
+<li>移动</li>
+<li>适配版本 EC 安卓 11.40.0+</li>
+<li>@param x x坐标</li>
+<li>@param y y坐标</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 init 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>touchUp 抬起<a href="https://ieasyclick.com/docs/zh-cn/funcs/otghid-event-api" title="touchUp 抬起的直接链接">​</a></h2>
+<ul>
+<li>抬起</li>
+<li>适配版本 EC 安卓 11.40.0+</li>
+<li>@param x x坐标</li>
+<li>@param y y坐标</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 init 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>swipe 滑动<a href="https://ieasyclick.com/docs/zh-cn/funcs/otghid-event-api" title="swipe 滑动的直接链接">​</a></h2>
+<ul>
+<li>滑动</li>
+<li>适配版本 EC 安卓 11.40.0+</li>
+<li>@param x x坐标</li>
+<li>@param y y坐标</li>
+<li>@param ex 终点x坐标</li>
+<li>@param ey 终点y坐标</li>
+<li>@param delay 总计滑动时间单位是毫秒</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 init 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>multiTouch 多点触摸<a href="https://ieasyclick.com/docs/zh-cn/funcs/otghid-event-api" title="multiTouch 多点触摸的直接链接">​</a></h2>
+<ul>
+<li>多点触摸</li>
+<li>适配版本 EC 安卓 11.40.0+</li>
+<li>触摸参数: action :一般情况下 按下为0，弹起为1，移动为2</li>
+<li>x: X坐标</li>
+<li>y: Y坐标</li>
+<li>pointer：设置第几个手指触摸点，分别是 1，2，3 等，代表第n个手指</li>
+<li>delay: 该动作延迟多少毫秒执行, 大于40ms，否则可能出现坐标漂移的现象</li>
+<li>@param touch1 第1个手指的触摸点数组,例如：
+<code>[{"action":0,"x":1,"y":1,"pointer":1,"delay":30},{"action":2,"x":1,"y":1,"pointer":1,"delay":30}]</code></li>
+<li>@param timeout 多点触摸执行的超时时间，单位是毫秒</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 init 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>systemKey 系统按键<a href="https://ieasyclick.com/docs/zh-cn/funcs/otghid-event-api" title="systemKey 系统按键的直接链接">​</a></h2>
+<ul>
+<li>系统按键</li>
+<li>适配版本 EC 安卓 11.40.0+</li>
+<li>@param key 值有=home back recents</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 init 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>recents 任务列表<a href="https://ieasyclick.com/docs/zh-cn/funcs/otghid-event-api" title="recents 任务列表的直接链接">​</a></h2>
+<ul>
+<li>任务列表</li>
+<li>可能在有的手机不生效，因为不是标准按键</li>
+<li>适配版本 EC 安卓 11.40.0+</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 init 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>back 返回<a href="https://ieasyclick.com/docs/zh-cn/funcs/otghid-event-api" title="back 返回的直接链接">​</a></h2>
+<ul>
+<li>返回</li>
+<li>适配版本 EC 安卓 11.40.0+</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 init 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>home 主页<a href="https://ieasyclick.com/docs/zh-cn/funcs/otghid-event-api" title="home 主页的直接链接">​</a></h2>
+<ul>
+<li>主页</li>
+<li>适配版本 EC 安卓 11.40.0+</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 init 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>keyPress 键盘按键<a href="https://ieasyclick.com/docs/zh-cn/funcs/otghid-event-api" title="keyPress 键盘按键的直接链接">​</a></h2>
+<ul>
+<li>键盘按键</li>
+<li>适配版本 EC 安卓 11.40.0+</li>
+<li>@param prefix 值分别有，不写或者null默认就是普通的按键，
+alt=按住alt键,ctrl=按住ctrl键,gui=按住win键,r_ctrl=按住右侧的ctrl键,r_shift=按住右侧的shift键,shift=按住shift键</li>
+<li>@param code ascii码，直接百度即可</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 init 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>keyPressChar 键盘按键字符<a href="https://ieasyclick.com/docs/zh-cn/funcs/otghid-event-api" title="keyPressChar 键盘按键字符的直接链接">​</a></h2>
+<ul>
+<li>键盘按键字符</li>
+<li>适配版本 EC 安卓 11.40.0+</li>
+<li>@param prefix 值分别有，不写或者null默认就是普通的按键，
+alt=按住alt键,ctrl=按住ctrl键,gui=按住win键,r_ctrl=按住右侧的ctrl键,r_shift=按住右侧的shift键,shift=按住shift键</li>
+<li>@param c 单个字符，例如 a，系统内部自动转换为 ascii码，参开地址 <a href="https://tool.oschina.net/commons?type=4">https://tool.oschina.net/commons?type=4</a></li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>// 参开 init 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>getMacAddress 固件MAC地址<a href="https://ieasyclick.com/docs/zh-cn/funcs/otghid-event-api" title="getMacAddress 固件MAC地址的直接链接">​</a></h2>
+<ul>
+<li>读取固件MAC地址</li>
+<li>适配版本 EC 安卓 11.41.0+</li>
+<li>@returns <code>{string|null}</code> 成功为 aa:bb:cc:dd:ee<!-- -->:ff<!-- --> 形式；失败为 null</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>// 参开 init 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div></div></article>

@@ -1,0 +1,540 @@
+<article><div><button>本页总览</button></div><div><h2>说明<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="说明的直接链接">​</a></h2>
+<p>全局模块是指直接调用方法就可以使用的模块，无需使用前缀对象名称</p>
+<h2>CLI相关<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="CLI相关的直接链接">​</a></h2>
+<h3>getCliArgs 获取CLI命令行提交的参数<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="getCliArgs 获取CLI命令行提交的参数的直接链接">​</a></h3>
+<ul>
+<li>获取CLI命令行提交的参数</li>
+<li>如果配合AI使用，可以优先从cli获取参数，如果获取不到在从其他地方获取</li>
+<li>这样就能做到AI 自动传参，打包后从其他地方获取参数的AI自动测试</li>
+<li>适合版本 EC 安卓 12.0.0+</li>
+<li>@return <!-- -->0<!-- --> JSON对象，如果是null说明不是CLI运行过来的</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> a </span><span>=</span><span> </span><span>getCliArgs</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>if</span><span> </span><span>(</span><span>a </span><span>==</span><span> </span><span>null</span><span>)</span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>// 从其他地方获取</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>JSON</span><span>.</span><span>stringify</span><span>(</span><span>a</span><span>)</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>版本判断<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="版本判断的直接链接">​</a></h2>
+<h3>checkApkVersion8<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="checkApkVersion8的直接链接">​</a></h3>
+<ul>
+<li>检查apk主版本是否是8版本，如果不是会有异常发生</li>
+<li>该函数可以在程序中调用，防止iec和apk版本不一致</li>
+<li>适合版本 EC 8.2.0+</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>checkApkVersion8</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>checkApkVersion9<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="checkApkVersion9的直接链接">​</a></h3>
+<ul>
+<li>检查apk主版本是否是9版本，如果不是会有异常发生</li>
+<li>该函数可以在程序中调用，防止iec和apk版本不一致</li>
+<li>适合版本 EC 9.1.0+</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>checkApkVersion9</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>中控投屏相关<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="中控投屏相关的直接链接">​</a></h2>
+<h3>getCenterTaskInfo 获取中控任务<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="getCenterTaskInfo 获取中控任务的直接链接">​</a></h3>
+<ul>
+<li>取得中控发过来的任务参数信息</li>
+<li>中控启动脚本，可以配置参数，在这里使用本函数获取参数，给脚本使用</li>
+<li>适合版本 EC 安卓 9.27.0+</li>
+<li>注意：这个需要使用参数配置,读取顺序是 优先读取单个设备配置 ，如果单个设备配置无任何数据，就读取 全局配置，</li>
+<li>返回参数中 含有 <strong>from_global</strong> 这样的key，代表是来源于全局参数</li>
+<li>@return <code>{json}</code> 对象</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>while</span><span> </span><span>(</span><span>true</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>logd</span><span>(</span><span>"---&gt; "</span><span> </span><span>+</span><span> </span><span>new</span><span> </span><span>Date</span><span>(</span><span>)</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>sleep</span><span>(</span><span>2000</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>let</span><span> info </span><span>=</span><span> </span><span>getCenterTaskInfo</span><span>(</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>logd</span><span>(</span><span>"info -&gt; "</span><span> </span><span>+</span><span> </span><span>JSON</span><span>.</span><span>stringify</span><span>(</span><span>info</span><span>)</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>        </span><span>if</span><span> </span><span>(</span><span>info</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>            </span><span>logd</span><span>(</span><span>"test param =&gt; "</span><span> </span><span>+</span><span> info</span><span>[</span><span>'valueJson'</span><span>]</span><span>[</span><span>'test'</span><span>]</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>}</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>sleep</span><span>(</span><span>2000</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>插件模块加载<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="插件模块加载的直接链接">​</a></h2>
+<h3>loadDex 载入dex或者apk<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="loadDex 载入dex或者apk的直接链接">​</a></h3>
+<ul>
+<li>载入dex文件</li>
+<li>@param path 路径，加载顺序分别是插件目录(例如 ab.apk)或者是文件路径(例如 /sdcard/ab.apk)加载</li>
+<li>@return true 载入成功， false载入失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//类似这样会先从IEC文件的插件目录查找</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//loadDex("ocr.apk");</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//下面这个是从sdcard查找</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>loadDex</span><span>(</span><span>"/sdcard/a.apk"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// a.apk中存在com.A这个这个类，可以直接使用</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> obj </span><span>=</span><span> </span><span>new</span><span> </span><span>com</span><span>.</span><span>A</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>setRepeatLoadDex 设置重复加载dex或者apk<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="setRepeatLoadDex 设置重复加载dex或者apk的直接链接">​</a></h3>
+<ul>
+<li>设置重复加载dex，apk，防止插件过大导致加载时间过长</li>
+<li>适合版本 EC 7.1.0+</li>
+<li>@param r 是否重复加载，true 可以重复加载，false 不可以重复加载</li>
+<li>@return true 载入成功， false载入失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>setRepeatLoadDex</span><span>(</span><span>false</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//类似这样会先从IEC文件的插件目录查找</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//loadDex("ocr.apk");</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//下面这个是从sdcard查找</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>loadDex</span><span>(</span><span>"/sdcard/a.apk"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// a.apk中存在com.A这个这个类，可以直接使用</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> obj </span><span>=</span><span> </span><span>new</span><span> </span><span>com</span><span>.</span><span>A</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>require 导入JS<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="require 导入JS的直接链接">​</a></h3>
+<ul>
+<li>导入JS模块</li>
+<li>@param path 路径，例如 本地/sdcard/a.js或者 EC工程中的文件路径 slib/a.js</li>
+<li>@return 模块对象</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//注意,js文件不要放在js目录或下级目录中</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//注意,EC3.5版本不支持,EC已经6.15了兄弟</span><span></span></span><br/></span><span><span></span><span><span>    test </span><span>=</span><span> </span><span>require</span><span>(</span><span>"slib/a.js"</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>test</span><span>.</span><span>c</span><span>(</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>//视频介绍:https://www.bilibili.com/video/BV1ES4y1f7qV?vd_source=2abc6be820f5a6382ebc0ceafc5dbe00&amp;p=39&amp;spm_id_from=333.788.videopod.episodes</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>importClass 导入JAVA类<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="importClass 导入JAVA类的直接链接">​</a></h3>
+<ul>
+<li>导入java的class给js用</li>
+<li>@param clz class的名称例如: com.A</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>importClass</span><span>(</span><span>com</span><span>.</span><span>A</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> obj </span><span>=</span><span> </span><span>new</span><span> </span><span>com</span><span>.</span><span>A</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>importPackage 导入JAVA包<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="importPackage 导入JAVA包的直接链接">​</a></h3>
+<ul>
+<li>导入java包下面所有类给js用</li>
+<li>@param clz class的名称例如: com.b</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>importPackage</span><span>(</span><span>com</span><span>.</span><span>b</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> obj </span><span>=</span><span> </span><span>new</span><span> </span><span>com</span><span>.</span><span>b</span><span>.</span><span>A</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>脚本启停和暂停<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="脚本启停和暂停的直接链接">​</a></h2>
+<h3>exit 退出脚本<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="exit 退出脚本的直接链接">​</a></h3>
+<div><div><pre><code><span><span></span><span><span>exit</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>isScriptExit 是否已退出脚本<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="isScriptExit 是否已退出脚本的直接链接">​</a></h3>
+<ul>
+<li>判断EC运行的当前线程是否处于退出状态，可用判断脚本是否退出，或者子线程是否退出</li>
+<li>适用版本(EC 6.2.0+)</li>
+<li>@return true 已退出</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>try</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>while</span><span> </span><span>(</span><span>true</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>            </span><span>sleep</span><span>(</span><span>1000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>            </span><span>logd</span><span>(</span><span>"222"</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>            </span><span>if</span><span> </span><span>(</span><span>isScriptExit</span><span>(</span><span>)</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>                </span><span>break</span><span></span></span><br/></span><span><span></span><span><span>            </span><span>}</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>}</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>logd</span><span>(</span><span>"222"</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span> </span><span>catch</span><span> </span><span>(</span><span>e</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>logd</span><span>(</span><span>e</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>if</span><span> </span><span>(</span><span>isScriptExit</span><span>(</span><span>)</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>            </span><span>return</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>}</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>sleep 暂停执行<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="sleep 暂停执行的直接链接">​</a></h3>
+<ul>
+<li>休眠</li>
+<li>@param miSecond 毫秒</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>1000</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>execScript 载入JS<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="execScript 载入JS的直接链接">​</a></h3>
+<ul>
+<li>执行JS文件或者内容, [如果出现illegalStateException，可以尝试修改<strong>eval</strong>函数执行js脚本]</li>
+<li>eval函数是js自带的，直接传入js内容就行</li>
+<li>@param type 1=文件，2=直接是JS内容</li>
+<li>@param content 路径例如/sdcard/a.js或者js的内容</li>
+<li>@return 布尔型，true代表执行成功， false代表失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> d </span><span>=</span><span> </span><span>'while(true){sleep(1000);logd(111111);}'</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    thread</span><span>.</span><span>execAsync</span><span>(</span><span>function</span><span> </span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>//execScript(1,"/sdcard/ad.js")</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>execScript</span><span>(</span><span>2</span><span>,</span><span> d</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>while</span><span> </span><span>(</span><span>true</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>sleep</span><span>(</span><span>2000</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>loge</span><span>(</span><span>"fsadffsad"</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>restartScript 重启脚本<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="restartScript 重启脚本的直接链接">​</a></h3>
+<ul>
+<li>重启脚本，适合无限循环，或者有异常的情况可以下载最新的iec再次执行，避免进入UI才能热更新,</li>
+<li>注意: 该方法威力巨大，请自行控制好是否自动重启，否则只能强杀进程才能停止</li>
+<li>@param path 新的IEC路径，如果不需要可以填写null</li>
+<li>@param stopCurrent 是否停止当前的脚本</li>
+<li>@param delay 延迟多少秒后执行</li>
+<li>@return bool true 代表成功 false 代表失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"我是在脚本运行的"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>setStopCallback</span><span>(</span><span>function</span><span> </span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>restartScript</span><span>(</span><span>null</span><span>,</span><span> </span><span>true</span><span>,</span><span> </span><span>3</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//setExceptionCallback(function (){</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//    restartScript(null,true,3)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//});</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>1000</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"脚本结束"</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>setScriptPause 设置脚本暂停或者继续<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="setScriptPause 设置脚本暂停或者继续的直接链接">​</a></h3>
+<ul>
+<li>设置脚本暂停或者继续</li>
+<li>适配 EC 10.0.0+</li>
+<li>@param pause true 代表暂停脚本，false代表继续</li>
+<li>@param timeout 自动恢复时间单位毫秒，0 代表不自动恢复，等待外部交互后恢复，大于0代表到了时间自动恢复运行</li>
+<li>@return <code>{boolean}</code> true 代表脚本处于暂停中，false 代表继续运行中</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>1000</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"start...."</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// 代表暂停脚本执行，3秒后会自动化继续</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// 这里仅仅是演示，实际情况需要根据自己的业务逻辑做判断或者从ui进行暂停脚本</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>setScriptPause</span><span>(</span><span>true</span><span>,</span><span> </span><span>3000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"我是三秒后的日志"</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>isScriptPause 脚本是否处于暂停中<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="isScriptPause 脚本是否处于暂停中的直接链接">​</a></h3>
+<ul>
+<li>脚本是否处于暂停中</li>
+<li>适配 EC 10.0.0+</li>
+<li>@return <code>{boolean}</code> true 代表脚本处于暂停中</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>1000</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"start...."</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// 代表暂停脚本执行，3秒后会自动化继续</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// 这里仅仅是演示，实际情况需要根据自己的业务逻辑做判断或者从ui进行暂停脚本</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// 仅仅是函数调用演示，实际情况根据业务处理</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"isScriptPause "</span><span> </span><span>+</span><span> </span><span>isScriptPause</span><span>(</span><span>)</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>setScriptPause</span><span>(</span><span>true</span><span>,</span><span> </span><span>3000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"isScriptPause "</span><span> </span><span>+</span><span> </span><span>isScriptPause</span><span>(</span><span>)</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"我是三秒后的日志"</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>JSON处理<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="JSON处理的直接链接">​</a></h2>
+<h3>JSON.stringify 格式化为JSON字符串<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="JSON.stringify 格式化为JSON字符串的直接链接">​</a></h3>
+<ul>
+<li>格式化对象为JSON字符串</li>
+<li>@param 对象</li>
+<li>@return 字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> m </span><span>=</span><span> </span><span>{</span><span>"sss"</span><span>:</span><span> </span><span>"a"</span><span>}</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> d </span><span>=</span><span> </span><span>JSON</span><span>.</span><span>stringify</span><span>(</span><span>m</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>d</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>JSON.parse 转换为JSON对象<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="JSON.parse 转换为JSON对象的直接链接">​</a></h3>
+<ul>
+<li>格式化JSON字符串为对象</li>
+<li>@param 字符串</li>
+<li>@return 对象</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> m </span><span>=</span><span> </span><span>{</span><span>"sss"</span><span>:</span><span> </span><span>"a"</span><span>}</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> d </span><span>=</span><span> </span><span>JSON</span><span>.</span><span>stringify</span><span>(</span><span>m</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    d </span><span>=</span><span> </span><span>JSON</span><span>.</span><span>parse</span><span>(</span><span>d</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>d</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>监听脚本和服务<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="监听脚本和服务的直接链接">​</a></h2>
+<h3>setStopCallback 脚本停止监听<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="setStopCallback 脚本停止监听的直接链接">​</a></h3>
+<ul>
+<li>脚本开头执行一次即可</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>setStopCallback</span><span>(</span><span>function</span><span> </span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>logd</span><span>(</span><span>"fdsafsad 我是停止回调"</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> result </span><span>=</span><span> </span><span>sleep</span><span>(</span><span>1000</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>if</span><span> </span><span>(</span><span>result</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>toast</span><span>(</span><span>"成功"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span> </span><span>else</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>toast</span><span>(</span><span>"失败"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>setExceptionCallback 脚本异常停止监听<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="setExceptionCallback 脚本异常停止监听的直接链接">​</a></h3>
+<ul>
+<li>脚本开头执行一次即可</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>setExceptionCallback</span><span>(</span><span>function</span><span> </span><span>(</span><span>msg</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>logd</span><span>(</span><span>" 异常停止消息: "</span><span> </span><span>+</span><span> msg</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> result </span><span>=</span><span> </span><span>sleep</span><span>(</span><span>1000</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>if</span><span> </span><span>(</span><span>result</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>toast</span><span>(</span><span>"成功"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span> </span><span>else</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>toast</span><span>(</span><span>"失败"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//这里有异常抛出</span><span></span></span><br/></span><span><span></span><span><span>    result</span><span>.</span><span>length</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>observeEvent 对系统事件进行监听<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="observeEvent 对系统事件进行监听的直接链接">​</a></h3>
+<ul>
+<li>对系统事件进行监听</li>
+<li>代理模式适用版本(EC 6.0.0+)</li>
+<li>@param event 事件类型 类型有:</li>
+<li>activity-change 页面切换，支持无障碍和代理模式</li>
+<li>notification-show：状态栏通知展示， 支持无障碍和代理模式</li>
+<li>toast-show：Toast消息展示， 支持无障碍和代理模式</li>
+<li>key-down：按键按下， 支持无障碍</li>
+<li>key-up：按键弹起 支持无障碍</li>
+<li>acc-service-interrupt：无障碍服务被中断 支持无障碍</li>
+<li>acc-service-destroy： 无障碍服务被销毁 支持无障碍</li>
+<li>acc-event：无障碍节点事件 支持无障碍和代理模式</li>
+<li>acc-service-connected: 无障碍服务连接成功 支持无障碍</li>
+<li>auto-service-status: 自动化服务可用状态 支持无障碍</li>
+<li>@param callback 事件回调</li>
+<li>@return <code>{bool}</code> | true 成功，false失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>startEnv</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"开始监听"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>observeEvent</span><span>(</span><span>"activity-change"</span><span>,</span><span> </span><span>function</span><span> </span><span>(</span><span>key</span><span>,</span><span> data</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>logd</span><span>(</span><span>"页面切换: "</span><span> </span><span>+</span><span> </span><span>typeof</span><span> data</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>logd</span><span>(</span><span>"页面切换: "</span><span> </span><span>+</span><span> data</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//监听无障碍节点事件</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>observeEvent</span><span>(</span><span>"acc-event"</span><span>,</span><span> </span><span>function</span><span> </span><span>(</span><span>key</span><span>,</span><span> data</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>logd</span><span>(</span><span>"acc-event: "</span><span> </span><span>+</span><span> </span><span>typeof</span><span> data</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>logd</span><span>(</span><span>"acc-event: "</span><span> </span><span>+</span><span> data</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>while</span><span> </span><span>(</span><span>true</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>sleep</span><span>(</span><span>1000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//取消事件监听</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>cancelObserveEvent</span><span>(</span><span>"acc-event"</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>cancelObserveEvent 取消对系统事件监听<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="cancelObserveEvent 取消对系统事件监听的直接链接">​</a></h3>
+<ul>
+<li>取消事件监听</li>
+<li>@param event 事件类型</li>
+<li>@return <code>{bool}</code> | true 成功，false失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>startEnv</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"开始监听"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>observeEvent</span><span>(</span><span>"activity-change"</span><span>,</span><span> </span><span>function</span><span> </span><span>(</span><span>key</span><span>,</span><span> data</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>logd</span><span>(</span><span>"页面切换: "</span><span> </span><span>+</span><span> </span><span>typeof</span><span> data</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>logd</span><span>(</span><span>"页面切换: "</span><span> </span><span>+</span><span> data</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//监听无障碍节点事件</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>observeEvent</span><span>(</span><span>"acc-event"</span><span>,</span><span> </span><span>function</span><span> </span><span>(</span><span>key</span><span>,</span><span> data</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>logd</span><span>(</span><span>"acc-event: "</span><span> </span><span>+</span><span> </span><span>typeof</span><span> data</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>logd</span><span>(</span><span>"acc-event: "</span><span> </span><span>+</span><span> data</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>10000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//取消事件监听</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>cancelObserveEvent</span><span>(</span><span>"acc-event"</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>告警发送<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="告警发送的直接链接">​</a></h2>
+<h3>sendDingDingMsg 发送钉钉消息<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="sendDingDingMsg 发送钉钉消息的直接链接">​</a></h3>
+<ul>
+<li>发送钉钉消息</li>
+<li>适合EC 9.11.0+</li>
+<li>@param url 群组/部门 机器人Webhook地址</li>
+<li>@param secret 群组/部门 机器人Webhook密钥, 可以不写使用关键字过滤方式</li>
+<li>@param msg 要发送的消息</li>
+<li>@param atMobile at手机号，多个用英文逗号隔开</li>
+<li>@param atAll 是否at所有人，写true或者false</li>
+<li>@return <code>{string}</code> 调用钉钉返回的json字符串结果,格式 <code>{"errcode":0,"errmsg":"ok"}</code>，errcode=0代表成功其他都是错误</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// 演示的地址和密钥，具体获取参考这个网页： https://www.dingtalk.com/qidian/help-detail-20781541.html</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// https://blog.csdn.net/weixin_44646065/article/details/110637713</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> url </span><span>=</span><span> </span><span>"https://oapi.dingtalk.com/robot/send?access_token=59735fa75d835dbfaa502bb42886fca982960d20sac5e1df6bba4dd1aba02999c"</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> sec </span><span>=</span><span> </span><span>"SEC2305788ab08e9534a33b86ae376697d3c9ee3095f331345d5ccd6e2e065ca8069"</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> res </span><span>=</span><span> </span><span>sendDingDingMsg</span><span>(</span><span>url</span><span>,</span><span> sec</span><span>,</span><span> </span><span>"我是消息"</span><span>,</span><span> </span><span>""</span><span>,</span><span> </span><span>true</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"sendDingDingMsg:"</span><span> </span><span>+</span><span> res</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>日志消息方法<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="日志消息方法的直接链接">​</a></h2>
+<h3>setSaveLog 保存日志<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="setSaveLog 保存日志的直接链接">​</a></h3>
+<ul>
+<li>设置保存日志信息到文件中</li>
+<li>@param save 是否保存</li>
+<li>@param path 自定义的文件夹</li>
+<li>@param size 每个文件分隔的尺寸</li>
+<li>@return 保存日志文件的目录</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> s </span><span>=</span><span> </span><span>setSaveLog</span><span>(</span><span>true</span><span>,</span><span> </span><span>"/sdcard/aaa/"</span><span>,</span><span> </span><span>1024</span><span> </span><span>*</span><span> </span><span>1024</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"save dir is:"</span><span> </span><span>+</span><span> s</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>setSaveLogEx 保存日志<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="setSaveLogEx 保存日志的直接链接">​</a></h3>
+<ul>
+<li>设置保存日志信息到文件中</li>
+<li>@param save 是否保存</li>
+<li>@param path 自定义的文件夹</li>
+<li>@param size 每个文件分隔的尺寸</li>
+<li>@param fileName 日志的自定义文件名称</li>
+<li>@return 保存日志文件的目录</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> s </span><span>=</span><span> </span><span>setSaveLogEx</span><span>(</span><span>true</span><span>,</span><span> </span><span>"/sdcard/aaa/"</span><span>,</span><span> </span><span>1024</span><span> </span><span>*</span><span> </span><span>1024</span><span>,</span><span> </span><span>"testlog"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"save dir is:"</span><span> </span><span>+</span><span> s</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>setFloatDisplayLineNumber 打印日志行号<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="setFloatDisplayLineNumber 打印日志行号的直接链接">​</a></h3>
+<ul>
+<li>打印日志的时候，悬浮窗是否展示行号，正式发布，可以不展示行号，不影响调试和保存在文件的日志中</li>
+<li>@param ds true 代表显示， false 不显示</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>setFloatDisplayLineNumber</span><span>(</span><span>true</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>toast 带参数Toast消息<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="toast 带参数Toast消息的直接链接">​</a></h3>
+<ul>
+<li>显示Toast消息</li>
+<li>适用版本(EC 5.21.0+)</li>
+<li>@param msg 消息字符串</li>
+<li>@param extra 扩展map参数，只有在有悬浮窗权限情况下参数才会生效<!-- -->
+<ul>
+<li>x : X坐标</li>
+<li>y : Y坐标</li>
+<li>duration : 持续时长 单位是毫秒</li>
+<li>textColor : 16进制文字颜色，例如#888888</li>
+<li>width : toast宽度</li>
+<li>height : toast高度</li>
+<li>draggable : 是否能够拖动true 代表可以</li>
+</ul>
+</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> toastExtra </span><span>=</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>"x"</span><span>:</span><span> </span><span>100</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>"y"</span><span>:</span><span> </span><span>1200</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>"duration"</span><span>:</span><span> </span><span>1000</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>"textColor"</span><span>:</span><span> </span><span>"#778899"</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>"width"</span><span>:</span><span> </span><span>200</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>"height"</span><span>:</span><span> </span><span>200</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>"draggable"</span><span>:</span><span> </span><span>true</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>for</span><span> </span><span>(</span><span>var</span><span> i </span><span>=</span><span> </span><span>0</span><span>;</span><span> i </span><span>&lt;</span><span> </span><span>3</span><span>;</span><span> i</span><span>++</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>sleep</span><span>(</span><span>500</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>toast</span><span>(</span><span>time</span><span>(</span><span>)</span><span> </span><span>+</span><span> </span><span>"ddd"</span><span>,</span><span> toastExtra</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>time</span><span>(</span><span>)</span><span> </span><span>+</span><span> </span><span>"  222"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>toast1 Toast1消息<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="toast1 Toast1消息的直接链接">​</a></h3>
+<ul>
+<li>显示Toast消息 (扩展方法)</li>
+<li>@param msg 消息字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast1</span><span>(</span><span>"msg"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>toast2  Toast2消息<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="toast2  Toast2消息的直接链接">​</a></h3>
+<ul>
+<li>显示Toast消息(扩展方法)</li>
+<li>@param msg 消息字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast2</span><span>(</span><span>"msg"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>setLogLevel 设置日志的等级<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="setLogLevel 设置日志的等级的直接链接">​</a></h3>
+<ul>
+<li>设置日志的等级,可以根据情况关闭或开启日志</li>
+<li>适用版本(EC 5.21.0+)</li>
+<li>@param level 日志等级，值分别是 debug,info,warn,error,off，排序分别是debug &lt; info &lt; warn &lt; error &lt; off，</li>
+<li>例如 off代表关闭所有级别日志，debug代表打印包含logd,logi,logw,loge的日志，info代表打印包含logi,logw,loge的日志，warn 代表打印包含logw,loge的日志</li>
+<li>@param displayToast 是否展示toast消息</li>
+<li>@return <code>{bool}</code> 布尔型 true代表成功 false代表失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>setLogLevel</span><span>(</span><span>"info"</span><span>,</span><span> </span><span>false</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>for</span><span> </span><span>(</span><span>var</span><span> i </span><span>=</span><span> </span><span>0</span><span>;</span><span> i </span><span>&lt;</span><span> </span><span>1</span><span>;</span><span> i</span><span>++</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>sleep</span><span>(</span><span>10</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>//logd(time()+" debug");</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>logi</span><span>(</span><span>time</span><span>(</span><span>)</span><span> </span><span>+</span><span> </span><span>" info"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>//logw(time()+" warn");</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>//loge(time()+" error");</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>toast</span><span>(</span><span>"--- "</span><span> </span><span>+</span><span> </span><span>time</span><span>(</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//logd(time()+"  222");</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>logd 调试日志<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="logd 调试日志的直接链接">​</a></h3>
+<ul>
+<li>调试日志</li>
+<li>@param msg 消息字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"msg"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//可变参数写法</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"我是消息{},{}"</span><span>,</span><span> </span><span>"测试1"</span><span>,</span><span> </span><span>2</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>loge 错误日志<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="loge 错误日志的直接链接">​</a></h3>
+<ul>
+<li>错误日志</li>
+<li>@param msg 消息字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>loge</span><span>(</span><span>"msg"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//可变参数写法</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>loge</span><span>(</span><span>"我是消息{},{}"</span><span>,</span><span> </span><span>"测试1"</span><span>,</span><span> </span><span>2</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>logw 警告日志<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="logw 警告日志的直接链接">​</a></h3>
+<ul>
+<li>警告日志</li>
+<li>@param msg 消息字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logw</span><span>(</span><span>"msg"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//可变参数写法</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logw</span><span>(</span><span>"我是消息{},{}"</span><span>,</span><span> </span><span>"测试1"</span><span>,</span><span> </span><span>2</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>logi 信息日志<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="logi 信息日志的直接链接">​</a></h3>
+<ul>
+<li>信息日志</li>
+<li>@param msg 消息字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logi</span><span>(</span><span>"msg"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//可变参数写法</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logi</span><span>(</span><span>"我是消息{},{}"</span><span>,</span><span> </span><span>"测试1"</span><span>,</span><span> </span><span>2</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>clearLog 清除日志<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="clearLog 清除日志的直接链接">​</a></h3>
+<ul>
+<li>清除日志</li>
+<li>@param lines 整型，要清除的行数，-1 代表全部清除</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>showLogWindow</span><span>(</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>1000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>for</span><span> </span><span>(</span><span>var</span><span> i </span><span>=</span><span> </span><span>0</span><span>;</span><span> i </span><span>&lt;</span><span> </span><span>4</span><span>;</span><span> i</span><span>++</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>logd</span><span>(</span><span>" "</span><span> </span><span>+</span><span> i</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>2000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//清除前三行</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>clearLog</span><span>(</span><span>3</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//清除所有</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>clearLog</span><span>(</span><span>-</span><span>1</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>读取IEC包资源<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="读取IEC包资源的直接链接">​</a></h2>
+<h3>readIECFileAsString 读取IEC内部文件为字符串<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="readIECFileAsString 读取IEC内部文件为字符串的直接链接">​</a></h3>
+<ul>
+<li>读取IEC文件中的资源文件，并返回字符串</li>
+<li>@param fileName 文件名称，如果放在某个文件夹下 需要加上文件名称</li>
+<li>@return <code>{string}</code> 如果是null代表没内容</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> testData </span><span>=</span><span> </span><span>readIECFileAsString</span><span>(</span><span>"res/a.txt"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>testData</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>readIECFileAsByte 读取IEC内部文件为数组资源<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="readIECFileAsByte 读取IEC内部文件为数组资源的直接链接">​</a></h3>
+<ul>
+<li>读取IEC文件中的资源文件，并返回java的直接数组</li>
+<li>@param fileName 文件名称，如果放在某个文件夹下 需要加上文件名称</li>
+<li>@return <code>{字节数组}</code> 如果是null代表没内容</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span></span><span>//这里已读取图片为例子</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> d </span><span>=</span><span> </span><span>readIECFileAsByte</span><span>(</span><span>"res/a.png"</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>importPackage</span><span>(</span><span>android</span><span>.</span><span>graphics</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> ad </span><span>=</span><span> </span><span>BitmapFactory</span><span>.</span><span>decodeByteArray</span><span>(</span><span>d</span><span>,</span><span> </span><span>0</span><span>,</span><span> d</span><span>.</span><span>length</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>d</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>d</span><span>.</span><span>length</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>ad</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>readResString 读取字符串资源<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="readResString 读取字符串资源的直接链接">​</a></h3>
+<ul>
+<li>读取res文件夹中的资源文件,并返回字符串</li>
+<li>@param fileName 文件名称，不要加res前缀</li>
+<li>@return string 如果是null代表没内容</li>
+</ul>
+<div><div><span></span>注意</div><div><ul>
+<li>不要用<code>运行选中</code>功能执行,此功能不会带着附件文件执行,必须运行整个项目</li>
+</ul></div></div>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> testData </span><span>=</span><span> </span><span>readResString</span><span>(</span><span>"a.txt"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>readResBitmap 读取Bitmap资源<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="readResBitmap 读取Bitmap资源的直接链接">​</a></h3>
+<ul>
+<li>读取res文件夹中的资源文件，并返Bitmap图片对象</li>
+<li>@param fileName 文件名称，不要加res前缀</li>
+<li>@return Bitmap 如果是null代表没内容</li>
+</ul>
+<div><div><span></span>注意</div><div><ul>
+<li>不要用<code>运行选中</code>功能执行,此功能不会带着附件文件执行,必须运行整个项目</li>
+</ul></div></div>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> b </span><span>=</span><span> </span><span>readResBitmap</span><span>(</span><span>"a.txt"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>readResAutoImage 读取Image资源<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="readResAutoImage 读取Image资源的直接链接">​</a></h3>
+<ul>
+<li>读取res文件夹中的资源文件，并返 AutoImage 图片对象</li>
+<li>@param fileName 文件名称，不要加res前缀</li>
+<li>@return AutoImage 如果是null代表没内容</li>
+</ul>
+<div><div><span></span>注意</div><div><ul>
+<li>不要用<code>运行选中</code>功能执行,此功能不会带着附件文件执行,必须运行整个项目</li>
+</ul></div></div>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> b </span><span>=</span><span> </span><span>readResAutoImage</span><span>(</span><span>"img/a.png"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>saveResToFile 保存资源为文件<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="saveResToFile 保存资源为文件的直接链接">​</a></h3>
+<ul>
+<li>保存res文件夹中的资源文件到指定的路径</li>
+<li>@param fileName 文件名称，不要加res前缀</li>
+<li>@param path 要保存到的路径地址，例如/sdcard/aa.txt</li>
+<li>@return <code>{boolean|布尔型}</code> true代表保存成功</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> b </span><span>=</span><span> </span><span>saveResToFile</span><span>(</span><span>"img/a.png"</span><span>,</span><span> </span><span>"/sdcard/a.png"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>findIECFile 查找IEC的文件<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="findIECFile 查找IEC的文件的直接链接">​</a></h3>
+<ul>
+<li>查找IEC的文件</li>
+<li>适合版本 EC 8.0.0+</li>
+<li>@param dir 文件夹名称，null代表只读res/文件夹，没有默认是res文件夹，可以是类似 res/aaa/这样的文件夹</li>
+<li>@param names 文件名称前缀,null代表不匹配， 例如aaa,多个前缀用|分割，例如 aaa|bb|cc</li>
+<li>@param ext 文件扩展名 ,null代表不匹配，例如.png,多个扩展用|分割，例如 .png|.jpg|.bmp</li>
+<li>@param recursion 是否递归子目录，true代表递归</li>
+<li>@return <code>{array}</code> 文件名称JSON数组</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> res </span><span>=</span><span> </span><span>findIECFile</span><span>(</span><span>"res/"</span><span>,</span><span> </span><span>"dd2"</span><span>,</span><span> </span><span>".png|.jpg"</span><span>,</span><span> </span><span>true</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"findIECFile {}"</span><span>,</span><span> </span><span>JSON</span><span>.</span><span>stringify</span><span>(</span><span>res</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>UI参数读取<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="UI参数读取的直接链接">​</a></h2>
+<h3>deleteConfig 删除配置值<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="deleteConfig 删除配置值的直接链接">​</a></h3>
+<ul>
+<li>@param key 在UI界面中配置的key</li>
+<li>@return <code>{bool}</code> true 代表成功 false 代表失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> testData </span><span>=</span><span> </span><span>deleteConfig</span><span>(</span><span>"test_key"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>readConfigInt 读取整型配置<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="readConfigInt 读取整型配置的直接链接">​</a></h3>
+<ul>
+<li>@description 读取UI界面中的参数,返回是整型</li>
+<li>@param key 在UI界面中配置的key</li>
+<li>@return 整型，找不到就返回0</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> testData </span><span>=</span><span> </span><span>readConfigInt</span><span>(</span><span>"test_key"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>readConfigString 读取字符串配置<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="readConfigString 读取字符串配置的直接链接">​</a></h3>
+<ul>
+<li>读取UI界面中的参数,返回是字符串</li>
+<li>@param key 在UI界面中配置的key</li>
+<li>@return 字符串 找不到就返回空字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> testData </span><span>=</span><span> </span><span>readConfigString</span><span>(</span><span>"test_key"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>readConfigDouble 读取double配置<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="readConfigDouble 读取double配置的直接链接">​</a></h3>
+<ul>
+<li>读取UI界面中的参数,返回是Double型</li>
+<li>@param key 在UI界面中配置的key</li>
+<li>@return double</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> testData </span><span>=</span><span> </span><span>readConfigDouble</span><span>(</span><span>"test_key"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>readConfigBoolean 读取布尔型配置<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="readConfigBoolean 读取布尔型配置的直接链接">​</a></h3>
+<ul>
+<li>读取UI界面中的参数,返回是布尔型</li>
+<li>@param key 在UI界面中配置的key</li>
+<li>@return true 或者 false</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> testData </span><span>=</span><span> </span><span>readConfigBoolean</span><span>(</span><span>"test_key"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>getConfigJSON 取所有配置<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="getConfigJSON 取所有配置的直接链接">​</a></h3>
+<ul>
+<li>取得配置的JSON</li>
+<li>@return JSON数据</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> testData </span><span>=</span><span> </span><span>getConfigJSON</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>updateConfig 更新配置<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="updateConfig 更新配置的直接链接">​</a></h3>
+<ul>
+<li>更新配置</li>
+<li>@param key 键</li>
+<li>@param value 值</li>
+<li>@return <code>{boolean}</code> true 成功，false失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>updateConfig</span><span>(</span><span>"a"</span><span>,</span><span> </span><span>"sss"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>EC 系统设置<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="EC 系统设置的直接链接">​</a></h2>
+<h3>setECSystemConfig 设置EC参数<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="setECSystemConfig 设置EC参数的直接链接">​</a></h3>
+<ul>
+<li>设置EC的系统参数</li>
+<li>@param params map形式例如 <code>{"running_mode":"无障碍"}</code>,</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>{</span><span></span></span><br/></span><span><span></span><span><span>  </span><span>"running_mode"</span><span>:</span><span> </span><span>"无障碍"</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>  </span><span>"auto_start_service"</span><span>:</span><span> </span><span>"是"</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>  </span><span>"log_float_window"</span><span>:</span><span> </span><span>"否"</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>  </span><span>"ctrl_float_window"</span><span>:</span><span> </span><span>"否"</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<ul>
+<li>参数解释有：<br/></li>
+<li>running_mode : 运行模式 值有 无障碍，代理两种</li>
+<li>auto_start_service： 开机自启动 值有 是，否 两种</li>
+<li>log_float_window : 日志悬浮窗展示 值有 是，否 两种</li>
+<li>ctrl_float_window : 启停控制悬浮窗展示 值有 是，否 两种</li>
+<li>ctrl_float_window_h: 启停控制悬浮窗 横向 展示 值有 是，否 两种</li>
+<li>agent_node_support: 代理模式是否支持节点 值分别是1=默认 2=shelldump 3=不启动节点服务</li>
+<li>@return 布尔型 true 是 false 否</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> m </span><span>=</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>"node_service"</span><span>:</span><span> </span><span>"需要"</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>"proxy_service"</span><span>:</span><span> </span><span>"不需要"</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>"running_mode"</span><span>:</span><span> </span><span>"无障碍"</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>"log_float_window"</span><span>:</span><span> </span><span>"否"</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>"ctrl_float_window"</span><span>:</span><span> </span><span>"否"</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>setECSystemConfig</span><span>(</span><span>m</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>openECSystemSetting 打开EC系统界面<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="openECSystemSetting 打开EC系统界面的直接链接">​</a></h3>
+<ul>
+<li>打开EC系统设置页面</li>
+<li>@return true 成功 false 失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> result </span><span>=</span><span> </span><span>openECSystemSetting</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>setWallpaperService 设置壁纸服务函数<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="setWallpaperService 设置壁纸服务函数的直接链接">​</a></h3>
+<ul>
+<li>设置壁纸服务函数</li>
+<li>适用版本(EC 6.1.0+)</li>
+<li>@return 布尔型 true代表启动成功，false代表启动失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> result </span><span>=</span><span> </span><span>setWallpaperService</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>isWallpaperServiceSet 是否设置壁纸成功<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="isWallpaperServiceSet 是否设置壁纸成功的直接链接">​</a></h3>
+<ul>
+<li>是否设置壁纸成功</li>
+<li>适用版本(EC 6.1.0+)</li>
+<li>@return 布尔型 true代表启动成功，false代表启动失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> result </span><span>=</span><span> </span><span>isWallpaperServiceSet</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>openECloudSetting 打开EC云控界面<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="openECloudSetting 打开EC云控界面的直接链接">​</a></h3>
+<ul>
+<li>打开EC云控界面</li>
+<li>@return true 成功 false 失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> result </span><span>=</span><span> </span><span>openECloudSetting</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>设置IEC文件(脚本中的热更新)<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="设置IEC文件(脚本中的热更新)的直接链接">​</a></h2>
+<h3>setIECPath 设置脚本路径<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="setIECPath 设置脚本路径的直接链接">​</a></h3>
+<ul>
+<li>设置要执行的IEC文件路径</li>
+<li>@return true 成功 false 失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> result </span><span>=</span><span> </span><span>setIECPath</span><span>(</span><span>"/sdcard/release.iec"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"result : "</span><span> </span><span>+</span><span> result</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"当前路径 "</span><span> </span><span>+</span><span> </span><span>getIECPath</span><span>(</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//开启定时任务准备下一次执行</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> id2 </span><span>=</span><span> </span><span>startJob</span><span>(</span><span>"task2"</span><span>,</span><span> </span><span>"2"</span><span>,</span><span> </span><span>true</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"job id "</span><span> </span><span>+</span><span> id2</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>运行模式<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="运行模式的直接链接">​</a></h2>
+<h3>activeSelf 激活自己<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="activeSelf 激活自己的直接链接">​</a></h3>
+<ul>
+<li>激活自己,条件：1 开启USB调试，2 开启本机ADB WIFI调试,请参考激活章节文档</li>
+<li>适用版本(EC 5.15.0+)</li>
+<li>@param activeType 激活类型，0 自动，1 模式1 2 模式2</li>
+<li>@param timeout 超时时间</li>
+<li>@return <code>{string}</code> 激活成功：代表成功，其他都是错误消息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> result </span><span>=</span><span> </span><span>activeSelf</span><span>(</span><span>0</span><span>,</span><span> </span><span>10</span><span> </span><span>*</span><span> </span><span>1000</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>result</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>activeDevice 通过IP激活其他设备<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="activeDevice 通过IP激活其他设备的直接链接">​</a></h3>
+<ul>
+<li>ip 设备的IP,条件：1 开启目标设备USB调试，2 开启目标设备ADB WIFI调试,请参考激活章节文档</li>
+<li>适用版本(EC 5.15.0+)</li>
+<li>@param ip 设备的IP</li>
+<li>@param activeType 激活类型，0 自动，1 模式1 2 模式2</li>
+<li>@param timeout 超时时间</li>
+<li>@return <code>{string}</code> 激活成功：代表成功，其他都是错误消息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> result </span><span>=</span><span> </span><span>activeDevice</span><span>(</span><span>"192.168.1.108"</span><span>,</span><span> </span><span>0</span><span>,</span><span> </span><span>10</span><span> </span><span>*</span><span> </span><span>1000</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>result</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>isAccMode 无障碍模式判断<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="isAccMode 无障碍模式判断的直接链接">​</a></h3>
+<ul>
+<li>是否是无障碍模式</li>
+<li>@return true或者false</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> result </span><span>=</span><span> </span><span>isAccMode</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>isAgentMode 代理模式判断<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="isAgentMode 代理模式判断的直接链接">​</a></h3>
+<ul>
+<li>是否是代理模式</li>
+<li>@return true或者false</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> result </span><span>=</span><span> </span><span>isAgentMode</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>isServiceOk 自动化服务状态<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="isServiceOk 自动化服务状态的直接链接">​</a></h3>
+<ul>
+<li>自动化服务是否正常</li>
+<li>@return true或者false</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> result </span><span>=</span><span> </span><span>isServiceOk</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>startEnv 启动自动化<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="startEnv 启动自动化的直接链接">​</a></h3>
+<ul>
+<li>启动自动化服务环境</li>
+<li>@return true或者false</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> result </span><span>=</span><span> </span><span>startEnv</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>daemonEnv 守护自动化环境<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="daemonEnv 守护自动化环境的直接链接">​</a></h3>
+<ul>
+<li>守护自动化环境</li>
+<li>如果是激活或者无障碍保活的情况下，尽量保证自动服务不掉线</li>
+<li>适合版本<!-- -->:EC<!-- --> 6.7.0+</li>
+<li>@param daemon 是否守护自动化环境 true 是，false 否</li>
+<li>@return 布尔型 true代表启动成功，false代表启动失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> result </span><span>=</span><span> </span><span>daemonEnv</span><span>(</span><span>true</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>closeEnv 关闭自动化<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="closeEnv 关闭自动化的直接链接">​</a></h3>
+<ul>
+<li>关闭自动化环境</li>
+<li>@param skinAccPage 无障碍模式停止失败 是否跳转到开启无障碍页面</li>
+<li>@return 布尔型 true代表启动成功，false代表启动失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> result </span><span>=</span><span> </span><span>closeEnv</span><span>(</span><span>false</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>时间相关<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="时间相关的直接链接">​</a></h2>
+<h3>time 毫秒级当前时间戳<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="time 毫秒级当前时间戳的直接链接">​</a></h3>
+<ul>
+<li>适用版本(EC 5.14.0+)</li>
+<li>毫秒级当前时间戳</li>
+<li>@return <code>{long}</code> 毫秒级别的long时间</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>time</span><span>(</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>timeFormat 格式化时间<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="timeFormat 格式化时间的直接链接">​</a></h3>
+<ul>
+<li>适用版本(EC 5.14.0+)</li>
+<li>格式化时间函数例如：<code>yyyy-MM-dd HH:mm:ss</code></li>
+<li>@return <code>{string}</code> 格式化之后的当前时间</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>timeFormat</span><span>(</span><span>"yyyy-MM-dd HH:mm:ss"</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>console.time 计时开始<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="console.time 计时开始的直接链接">​</a></h3>
+<ul>
+<li>适用版本(EC 5.14.0+)</li>
+<li>计时开始,和timeEnd成对出现计算用时</li>
+<li>@param label 标签</li>
+<li>@return <code>{long}</code> 当前时间</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>console</span><span>.</span><span>time</span><span>(</span><span>"1"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>1000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>console</span><span>.</span><span>timeEnd</span><span>(</span><span>"1"</span><span>)</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>console.timeEnd 计时结束<a href="https://ieasyclick.com/docs/zh-cn/funcs/global/" title="console.timeEnd 计时结束的直接链接">​</a></h3>
+<ul>
+<li>适用版本(EC 5.14.0+)</li>
+<li>计时结束,和timeEnd成对出现计算用时</li>
+<li>@param label 标签</li>
+<li>@return <code>{long}</code> 与计时开始的差值</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>console</span><span>.</span><span>time</span><span>(</span><span>"1"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>1000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>console</span><span>.</span><span>timeEnd</span><span>(</span><span>"1"</span><span>)</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div></div></article>

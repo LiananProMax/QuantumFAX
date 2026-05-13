@@ -1,0 +1,87 @@
+<article><div><button>本页总览</button></div><div><h2>说明<a href="https://ieasyclick.com/docs/zh-cn/funcs/shell-api" title="说明的直接链接">​</a></h2>
+<ul>
+<li>代理模式下才能使用该函数，用户执行shell命令</li>
+<li>shell模块的对象前缀是shell，例如 shell.installApp()这样调用</li>
+</ul>
+<h2>shell.installApp 安装APP<a href="https://ieasyclick.com/docs/zh-cn/funcs/shell-api" title="shell.installApp 安装APP的直接链接">​</a></h2>
+<ul>
+<li>安装 apk</li>
+<li>@param path 文件路径</li>
+<li>@return true 代表安装成功，false 代表安装失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> result </span><span>=</span><span> shell</span><span>.</span><span>installApp</span><span>(</span><span>"/sdcard/app.apk"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>shell.uninstallApp 卸载APP<a href="https://ieasyclick.com/docs/zh-cn/funcs/shell-api" title="shell.uninstallApp 卸载APP的直接链接">​</a></h2>
+<ul>
+<li>卸载应用程序</li>
+<li>@param packageName 应用程序的包名</li>
+<li>@return true 代表卸载成功，false 代表卸载失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> result </span><span>=</span><span> shell</span><span>.</span><span>uninstallApp</span><span>(</span><span>"com.xx"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>shell.stopApp 停止APP<a href="https://ieasyclick.com/docs/zh-cn/funcs/shell-api" title="shell.stopApp 停止APP的直接链接">​</a></h2>
+<ul>
+<li>停止正在执行的应用</li>
+<li>@param packageName 应用程序的包名</li>
+<li>@return true 代表成功，false 代表失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> result </span><span>=</span><span> shell</span><span>.</span><span>stopApp</span><span>(</span><span>"com.xx"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>shell.execCommand 执行Shell命令<a href="https://ieasyclick.com/docs/zh-cn/funcs/shell-api" title="shell.execCommand 执行Shell命令的直接链接">​</a></h2>
+<ul>
+<li>执行Shell命令，会自动区分代理还是root</li>
+<li>@param command 命令，例如安装App ： pm install /sdcard/app.apk</li>
+<li>@return 命令执行后返回的字符串结果</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> result </span><span>=</span><span> shell</span><span>.</span><span>execCommand</span><span>(</span><span>"pm install /sdcard/app.apk"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>shell.sudo 执行ROOT下命令<a href="https://ieasyclick.com/docs/zh-cn/funcs/shell-api" title="shell.sudo 执行ROOT下命令的直接链接">​</a></h2>
+<ul>
+<li>执行root模式下，相关的命令，需要有root权限</li>
+<li>@param command 命令，例如安装App ： pm install /sdcard/app.apk</li>
+<li>@return 命令执行后返回的字符串结果</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> result </span><span>=</span><span> shell</span><span>.</span><span>sudo</span><span>(</span><span>"pm install /sdcard/app.apk"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>shell.su 请求授予root<a href="https://ieasyclick.com/docs/zh-cn/funcs/shell-api" title="shell.su 请求授予root的直接链接">​</a></h2>
+<ul>
+<li>请求授予root权限</li>
+<li>适用版本(EC 6.0.0+)</li>
+<li>运行环境: 无限制</li>
+<li>@return <code>{boolean}</code> true代表有root权限</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> result </span><span>=</span><span> shell</span><span>.</span><span>su</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>shell.execAgentCommand 代理模式下执行shell<a href="https://ieasyclick.com/docs/zh-cn/funcs/shell-api" title="shell.execAgentCommand 代理模式下执行shell的直接链接">​</a></h2>
+<ul>
+<li>执行shell命令。需要启动代理服务</li>
+<li>@param command 命令，例如安装App ： pm install /sdcard/app.apk</li>
+<li>@return 命令执行后返回的字符串结果</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> result </span><span>=</span><span> shell</span><span>.</span><span>execAgentCommand</span><span>(</span><span>"pm install /sdcard/app.apk"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>shell.execAgentCommandEx 代理模式下执行shell<a href="https://ieasyclick.com/docs/zh-cn/funcs/shell-api" title="shell.execAgentCommandEx 代理模式下执行shell的直接链接">​</a></h2>
+<ul>
+<li>执行shell命令，包含正常和错误结果，返回的是JSON数组，自己判断正确还是错误</li>
+<li>适合EC 7.6.0+ 版本</li>
+<li>@param command 命令字符串</li>
+<li>@return JSON数组 shell结果</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>startEnv</span><span>(</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> cmd </span><span>=</span><span> </span><span>"ls /sdcard/"</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> d </span><span>=</span><span> agentEvent</span><span>.</span><span>execShellCommandEx</span><span>(</span><span>cmd</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>if</span><span> </span><span>(</span><span>d</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>for</span><span> </span><span>(</span><span>var</span><span> i </span><span>=</span><span> </span><span>0</span><span>;</span><span> i </span><span>&lt;</span><span> d</span><span>.</span><span>length</span><span>;</span><span> i</span><span>++</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>            </span><span>var</span><span> value </span><span>=</span><span> d</span><span>[</span><span>i</span><span>]</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>            </span><span>logd</span><span>(</span><span>value</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>        </span><span>}</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>shell.addSuBin 新增root命令<a href="https://ieasyclick.com/docs/zh-cn/funcs/shell-api" title="shell.addSuBin 新增root命令的直接链接">​</a></h2>
+<ul>
+<li>新增root命令</li>
+<li>运行环境: 无限制</li>
+<li>@param cmd 新的命令</li>
+<li>@return <code>{boolean}</code> true</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    shell</span><span>.</span><span>addSuBin</span><span>(</span><span>"222ddd"</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//增加完成后 使用su请求一下root授权</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> result </span><span>=</span><span> shell</span><span>.</span><span>su</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>shell.execShizukuCommand 执行shell Shizuku命令<a href="https://ieasyclick.com/docs/zh-cn/funcs/shell-api" title="shell.execShizukuCommand 执行shell Shizuku命令的直接链接">​</a></h2>
+<ul>
+<li>执行shell - Shizuku命令</li>
+<li>运行环境: 代理模式,需要启动代理服务</li>
+<li>支持EC 9.9.0+</li>
+<li>@param command 命令字符串</li>
+<li>@return 字符串 shell结果</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> cmd </span><span>=</span><span> </span><span>"ls /sdcard/"</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> d </span><span>=</span><span> shell</span><span>.</span><span>execShizukuCommand</span><span>(</span><span>cmd</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>d</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>shell.isShizukuOk Shizuku服务是否正常<a href="https://ieasyclick.com/docs/zh-cn/funcs/shell-api" title="shell.isShizukuOk Shizuku服务是否正常的直接链接">​</a></h2>
+<ul>
+<li>Shizuku服务是否正常</li>
+<li>支持EC 9.9.0+</li>
+<li>@return bool true代表支持 false代表不正常</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> d </span><span>=</span><span> shell</span><span>.</span><span>isShizukuOk</span><span>(</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>d</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div></div></article>

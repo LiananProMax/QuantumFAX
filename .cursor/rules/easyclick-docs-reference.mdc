@@ -1,0 +1,20 @@
+---
+description: EasyClick API 不确定时优先查阅本地函数文档备份
+alwaysApply: true
+---
+
+# EasyClick 函数文档参考
+
+当编写、修改或解释 EasyClick 项目代码时，如果对 EasyClick 内置函数、模块 API、参数、返回值或调用方式不确定，先查阅 `ieasyclick_funcs_docs/` 中的本地文档备份，不要凭记忆猜测。
+
+## 查阅方式
+
+- 先从 `ieasyclick_funcs_docs/README.md` 判断对应模块。
+- 优先阅读对应的 `.md` 文档；需要结构化检索时可参考同名 `.json`，必要时再看 `.html`。
+- 如果知道函数名或模块名，使用搜索工具在 `ieasyclick_funcs_docs/` 内定位。
+- 实现时应按文档中的函数签名、参数约束、返回值和示例写法处理。
+
+## 适用范围
+
+- EasyClick 全局函数、选择器/节点、事件、图色、OCR、设备、文件、网络、线程、Shell、SQLite、MySQL、网络验证等 API。
+- 对文档未覆盖或仍不明确的行为，应在回答或代码注释中说明不确定点，并避免伪造不存在的 API。

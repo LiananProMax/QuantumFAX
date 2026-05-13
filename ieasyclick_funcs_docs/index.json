@@ -1,0 +1,122 @@
+[
+  {
+    "url": "https://ieasyclick.com/docs/zh-cn/funcs/global/",
+    "title": "全局模块",
+    "files": "001_docs_zh-cn_funcs_global"
+  },
+  {
+    "url": "https://ieasyclick.com/docs/zh-cn/funcs/global/global-shortcut",
+    "title": "全局快捷事件",
+    "files": "002_docs_zh-cn_funcs_global_global-shortcut"
+  },
+  {
+    "url": "https://ieasyclick.com/docs/zh-cn/funcs/global/selector-node",
+    "title": "选择器&节点",
+    "files": "003_docs_zh-cn_funcs_global_selector-node"
+  },
+  {
+    "url": "https://ieasyclick.com/docs/zh-cn/funcs/acevent-api",
+    "title": "无障碍事件",
+    "files": "004_docs_zh-cn_funcs_acevent-api"
+  },
+  {
+    "url": "https://ieasyclick.com/docs/zh-cn/funcs/event-api",
+    "title": "代理事件",
+    "files": "005_docs_zh-cn_funcs_event-api"
+  },
+  {
+    "url": "https://ieasyclick.com/docs/zh-cn/funcs/hid-event-api",
+    "title": "HID事件",
+    "files": "006_docs_zh-cn_funcs_hid-event-api"
+  },
+  {
+    "url": "https://ieasyclick.com/docs/zh-cn/funcs/blehid-event-api",
+    "title": "蓝牙 HID事件",
+    "files": "007_docs_zh-cn_funcs_blehid-event-api"
+  },
+  {
+    "url": "https://ieasyclick.com/docs/zh-cn/funcs/otghid-event-api",
+    "title": "OTG HID事件",
+    "files": "008_docs_zh-cn_funcs_otghid-event-api"
+  },
+  {
+    "url": "https://ieasyclick.com/docs/zh-cn/funcs/adbClient-api",
+    "title": "ADB函数",
+    "files": "009_docs_zh-cn_funcs_adbClient-api"
+  },
+  {
+    "url": "https://ieasyclick.com/docs/zh-cn/funcs/center-api",
+    "title": "中控投屏模块",
+    "files": "010_docs_zh-cn_funcs_center-api"
+  },
+  {
+    "url": "https://ieasyclick.com/docs/zh-cn/funcs/image-api",
+    "title": "图色函数",
+    "files": "011_docs_zh-cn_funcs_image-api"
+  },
+  {
+    "url": "https://ieasyclick.com/docs/zh-cn/funcs/yolo-api",
+    "title": "YOLO函数",
+    "files": "012_docs_zh-cn_funcs_yolo-api"
+  },
+  {
+    "url": "https://ieasyclick.com/docs/zh-cn/funcs/ocr-api",
+    "title": "OCR识别",
+    "files": "013_docs_zh-cn_funcs_ocr-api"
+  },
+  {
+    "url": "https://ieasyclick.com/docs/zh-cn/funcs/device-api",
+    "title": "设备函数",
+    "files": "014_docs_zh-cn_funcs_device-api"
+  },
+  {
+    "url": "https://ieasyclick.com/docs/zh-cn/funcs/floaty-api",
+    "title": "悬浮窗函数",
+    "files": "015_docs_zh-cn_funcs_floaty-api"
+  },
+  {
+    "url": "https://ieasyclick.com/docs/zh-cn/funcs/file-api",
+    "title": "文件函数",
+    "files": "016_docs_zh-cn_funcs_file-api"
+  },
+  {
+    "url": "https://ieasyclick.com/docs/zh-cn/funcs/storage-api",
+    "title": "Storage存储函数",
+    "files": "017_docs_zh-cn_funcs_storage-api"
+  },
+  {
+    "url": "https://ieasyclick.com/docs/zh-cn/funcs/http-api",
+    "title": "网络函数",
+    "files": "018_docs_zh-cn_funcs_http-api"
+  },
+  {
+    "url": "https://ieasyclick.com/docs/zh-cn/funcs/thread-api",
+    "title": "线程函数",
+    "files": "019_docs_zh-cn_funcs_thread-api"
+  },
+  {
+    "url": "https://ieasyclick.com/docs/zh-cn/funcs/utils-api",
+    "title": "工具函数",
+    "files": "020_docs_zh-cn_funcs_utils-api"
+  },
+  {
+    "url": "https://ieasyclick.com/docs/zh-cn/funcs/shell-api",
+    "title": "Shell命令函数",
+    "files": "021_docs_zh-cn_funcs_shell-api"
+  },
+  {
+    "url": "https://ieasyclick.com/docs/zh-cn/funcs/sqlite-api",
+    "title": "Sqlite命令函数",
+    "files": "022_docs_zh-cn_funcs_sqlite-api"
+  },
+  {
+    "url": "https://ieasyclick.com/docs/zh-cn/funcs/jdbcmysql-api",
+    "title": "JDBC MySQL函数",
+    "files": "023_docs_zh-cn_funcs_jdbcmysql-api"
+  },
+  {
+    "url": "https://ieasyclick.com/docs/zh-cn/funcs/netcard-api",
+    "title": "网络验证函数",
+    "files": "024_docs_zh-cn_funcs_netcard-api"
+  }
+]

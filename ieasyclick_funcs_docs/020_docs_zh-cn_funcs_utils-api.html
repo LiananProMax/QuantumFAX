@@ -1,0 +1,414 @@
+<article><div><button>本页总览</button></div><div><h2>说明<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="说明的直接链接">​</a></h2>
+<ul>
+<li>工具类模块函数主要是跟Android常用的信息相关联</li>
+<li>工具类模块的对象前缀是utils，例如 utils.requestShowLogPermission()这样调用</li>
+</ul>
+<h2>打开App相关<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="打开App相关的直接链接">​</a></h2>
+<h3>utils.openApp 打开APP<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.openApp 打开APP的直接链接">​</a></h3>
+<ul>
+<li>打开APP</li>
+<li>@param packageName 程序的包名</li>
+<li>@return 布尔型 true 代表成功，false 代表失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    utils</span><span>.</span><span>openApp</span><span>(</span><span>"com.xx"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>utils.getStartAppCmd 命令打开app<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.getStartAppCmd 命令打开app的直接链接">​</a></h3>
+<ul>
+<li>拼接打开APP命令</li>
+<li>适合EC6.8.0+</li>
+<li>@param packageName 程序的包名</li>
+<li>@return <code>{string}</code> 命令字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>startEnv</span><span>(</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> pkg </span><span>=</span><span> </span><span>"com.youdao.translator"</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//获取命令</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> d </span><span>=</span><span> utils</span><span>.</span><span>getStartAppCmd</span><span>(</span><span>pkg</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>d</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//激活命令执行</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//let result = shell.execCommand(d);</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//logd("result ="+result);</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//root方式执行</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//var result = shell.sudo(d);</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//logd("result ="+result);</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//开启代理服务，使用代理服务执行命令</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> result </span><span>=</span><span> shell</span><span>.</span><span>execAgentCommand</span><span>(</span><span>d</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"result ="</span><span> </span><span>+</span><span> result</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>utils.openAppByName 打开APP(应用名称)<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.openAppByName 打开APP(应用名称)的直接链接">​</a></h3>
+<ul>
+<li>打开APP，通过应用名称</li>
+<li>@param appName 程序名称，比如今日头条</li>
+<li>@return 布尔型 true 代表成功，false 代表失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    utils</span><span>.</span><span>openAppByName</span><span>(</span><span>"xx"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>utils.openActivity 打开activity<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.openActivity 打开activity的直接链接">​</a></h3>
+<ul>
+<li>打开一个activity，通过map参数<!-- -->
+<ul>
+<li>@param map 例如<code>{"action":""}</code>,key的固定只有</li>
+<li>action: 标准的android action字符串</li>
+<li>uri: uri可以是http网址，也可以是文件file:///地址，也可以是 URLSchema语法</li>
+<li>type: uri对应的type，等同于MIME类型，例如安装apk包的type是 application/vnd.android.package-archive</li>
+<li>pkg: 要打开的activity对应的包名</li>
+<li>className: 要打开的 className 对应的类名</li>
+<li>flag: androi打开activity 标准的flag标志位，特殊情况下可以填写</li>
+<li>其他的都是属于intent参数了</li>
+</ul>
+</li>
+<li>@return 布尔型 true 代表成功，false 代表失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//打开安装包界面</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> m </span><span>=</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>"action"</span><span>:</span><span> </span><span>"android.intent.action.VIEW"</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>"uri"</span><span>:</span><span> </span><span>"file:///sdcard/a.apk"</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>"type"</span><span>:</span><span> </span><span>"application/vnd.android.package-archive"</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> x </span><span>=</span><span> utils</span><span>.</span><span>openActivity</span><span>(</span><span>m</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"x "</span><span> </span><span>+</span><span> x</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> map </span><span>=</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>"uri"</span><span>:</span><span> </span><span>"xx://xx/live/6701887916223941379"</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    utils</span><span>.</span><span>openActivity</span><span>(</span><span>map</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>utils.getStartActivityCmd命令 打开activity<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.getStartActivityCmd命令 打开activity的直接链接">​</a></h3>
+<ul>
+<li>适合EC6.8.0+</li>
+</ul>
+<ul>
+<li>打开一个activity，通过map参数<!-- -->
+<ul>
+<li>@param map 例如<code>{"action":""}</code>,key的固定只有</li>
+<li>action: 标准的android action字符串</li>
+<li>uri: uri可以是http网址，也可以是文件file:///地址，也可以是 URLSchema语法</li>
+<li>type: uri对应的type，等同于MIME类型，例如安装apk包的type是 application/vnd.android.package-archive</li>
+<li>pkg: 要打开的activity对应的包名</li>
+<li>className: 要打开的 className 对应的类名</li>
+<li>flag: androi打开activity 标准的flag标志位，特殊情况下可以填写</li>
+<li>其他的都是属于intent参数了</li>
+</ul>
+</li>
+<li>@return 布尔型 true 代表成功，false 代表失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>startEnv</span><span>(</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//let pkg = "com.youdao.translator";</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> map1 </span><span>=</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>"action"</span><span>:</span><span> </span><span>"android.intent.action.VIEW"</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>"pkg"</span><span>:</span><span> </span><span>"com.youdao.translator"</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//uri演示打电话 这里的uri可以是其他</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> map2 </span><span>=</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>"action"</span><span>:</span><span> </span><span>"android.intent.action.CALL"</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>"uri"</span><span>:</span><span> </span><span>"tel:1000"</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//获取命令</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> d </span><span>=</span><span> utils</span><span>.</span><span>getStartActivityCmd</span><span>(</span><span>map1</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>d</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//激活命令执行</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//let result = shell.execCommand(d);</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//logd("result ="+result);</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//root方式执行</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//var result = shell.sudo(d);</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//logd("result ="+result);</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//开启代理服务，使用代理服务执行命令</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> result </span><span>=</span><span> shell</span><span>.</span><span>execAgentCommand</span><span>(</span><span>d</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"result ="</span><span> </span><span>+</span><span> result</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>utils.openIntentAction 通过Action打开某个界面<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.openIntentAction 通过Action打开某个界面的直接链接">​</a></h3>
+<ul>
+<li>通过Action打开某个界面</li>
+<li>@param action action动作，例如 android.settings.ACCESSIBILITY_SETTINGS = 辅助功能，</li>
+<li>如果改方法不满足要求，可以直接使用intent进行打开：</li>
+<li>常用的action有：</li>
+<li>android.settings.ACCESSIBILITY_SETTINGS //辅助功能</li>
+<li>android.settings.ADD_ACCOUNT_SETTINGS //添加账户</li>
+<li>android.settings.AIRPLANE_MODE_SETTINGS //系统设置首页</li>
+<li>android.settings.APN_SETTINGS //APN设置</li>
+<li>android.settings.APPLICATION_SETTINGS //应用管理</li>
+<li>android.settings.BATTERY_SAVER_SETTINGS //节电助手</li>
+<li>android.settings.BLUETOOTH_SETTINGS //蓝牙</li>
+<li>android.settings.CAPTIONING_SETTINGS //字幕</li>
+<li>android.settings.CAST_SETTINGS //无线显示</li>
+<li>android.settings.DATA_ROAMING_SETTINGS //移动网络</li>
+<li>android.settings.DATE_SETTINGS //日期和时间设置</li>
+<li>android.settings.DEVICE_INFO_SETTINGS //关于手机</li>
+<li>android.settings.DISPLAY_SETTINGS //显示设置</li>
+<li>android.settings.DREAM_SETTINGS //互动屏保设置</li>
+<li>android.settings.HARD_KEYBOARD_SETTINGS //实体键盘</li>
+<li>android.settings.HOME_SETTINGS //应用权限,默认应用设置,特殊权限</li>
+<li>android.settings.IGNORE_BATTERY_OPTIMIZATION_SETTINGS //忽略电池优化设置</li>
+<li>android.settings.INPUT_METHOD_SETTINGS //可用虚拟键盘设置</li>
+<li>android.settings.INPUT_METHOD_SUBTYPE_SETTINGS //安卓键盘语言设置(AOSP)</li>
+<li>android.settings.INTERNAL_STORAGE_SETTINGS //内存和存储</li>
+<li>android.settings.LOCALE_SETTINGS //语言偏好设置</li>
+<li>android.settings.LOCATION_SOURCE_SETTINGS //定位服务设置</li>
+<li>android.settings.MANAGE_ALL_APPLICATIONS_SETTINGS //所有应用</li>
+<li>android.settings.MANAGE_APPLICATIONS_SETTINGS //应用管理</li>
+<li>android.settings.MANAGE_DEFAULT_APPS_SETTINGS //与ACTION_HOME_SETTINGS相同</li>
+<li>android.settings.action.MANAGE_OVERLAY_PERMISSION //在其他应用上层显示,悬浮窗</li>
+<li>android.settings.MANAGE_UNKNOWN_APP_SOURCES //安装未知应用 安卓8.0</li>
+<li>android.settings.action.MANAGE_WRITE_SETTINGS //可修改系统设置 权限</li>
+<li>android.settings.MEMORY_CARD_SETTINGS //内存与存储</li>
+<li>android.settings.NETWORK_OPERATOR_SETTINGS //可用网络选择</li>
+<li>android.settings.NFCSHARING_SETTINGS //NFC设置</li>
+<li>android.settings.NFC_SETTINGS //网络中的 更多设置</li>
+<li>android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS //通知权限设置</li>
+<li>android.settings.NOTIFICATION_POLICY_ACCESS_SETTINGS //勿扰权限设置</li>
+<li>android.settings.ACTION_PRINT_SETTINGS //打印服务设置</li>
+<li>android.settings.PRIVACY_SETTINGS //备份和重置</li>
+<li>android.settings.SECURITY_SETTINGS //安全设置</li>
+<li>android.settings.SHOW_REGULATORY_INFO //监管信息</li>
+<li>android.settings.SOUND_SETTINGS //声音设置</li>
+<li>android.settings.SYNC_SETTINGS //添加账户设置</li>
+<li>android.settings.USAGE_ACCESS_SETTINGS //有权查看使用情况的应用</li>
+<li>android.settings.USER_DICTIONARY_SETTINGS //个人词典</li>
+<li>android.settings.VOICE_INPUT_SETTINGS //辅助应用和语音输入</li>
+<li>android.settings.VPN_SETTINGS //VPN设置</li>
+<li>android.settings.VR_LISTENER_SETTINGS //VR助手</li>
+<li>android.settings.WEBVIEW_SETTINGS //选择webview</li>
+<li>android.settings.WIFI_IP_SETTINGS //高级WLAN设置</li>
+<li>android.settings.WIFI_SETTINGS //选择WIFI,连接WIFI</li>
+<li>com.android.settings.Settings$DevelopmentSettingsActivity</li>
+<li>@return null|boolean|*</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    utils</span><span>.</span><span>openIntentAction</span><span>(</span><span>"android.settings.ACCESSIBILITY_SETTINGS"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<ul>
+<li>直接使用Intent打开方式</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>importClass</span><span>(</span><span>android</span><span>.</span><span>content</span><span>.</span><span>Intent</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>importClass</span><span>(</span><span>android</span><span>.</span><span>net</span><span>.</span><span>Uri</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span><span>var</span><span> intent </span><span>=</span><span> </span><span>new</span><span> </span><span>Intent</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>intent</span><span>.</span><span>setAction</span><span>(</span><span>"android.settings.APPLICATION_DETAILS_SETTINGS"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>intent</span><span>.</span><span>setData</span><span>(</span><span>Uri</span><span>.</span><span>parse</span><span>(</span><span>"package:com.gibb.easyclick"</span><span>)</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>intent</span><span>.</span><span>setFlags</span><span>(</span><span>Intent</span><span>.</span><span>FLAG_ACTIVITY_NEW_TASK</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>try</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    context</span><span>.</span><span>startActivity</span><span>(</span><span>intent</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span> </span><span>catch</span><span> </span><span>(</span><span>e</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>loge</span><span>(</span><span>e</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>图库相关<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="图库相关的直接链接">​</a></h2>
+<h3>utils.insertImageToAlbum 图片插入相册<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.insertImageToAlbum 图片插入相册的直接链接">​</a></h3>
+<ul>
+<li>将图片插入到相册中，此方法会立刻更新相册数据</li>
+<li>最好将文件放到 /sdcard/DCIM，相册目录，有些手机不放相册目录不扫描</li>
+<li>@param path 图片路径</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    utils</span><span>.</span><span>insertImageToAlbum</span><span>(</span><span>"/sdcard/DCIM/a.png"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>utils.insertVideoToAlbum 视频插入相册<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.insertVideoToAlbum 视频插入相册的直接链接">​</a></h3>
+<ul>
+<li>将视频插入到相册中，此方法会立刻更新相册数据</li>
+<li>最好将文件放到 /sdcard/DCIM，相册目录，有些手机不放相册目录不扫描</li>
+<li>@param path 视频路径</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    utils</span><span>.</span><span>insertVideoToAlbum</span><span>(</span><span>"/sdcard/DCIM/a.mp4"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>解压缩<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="解压缩的直接链接">​</a></h2>
+<h3>utils.zip 压缩<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.zip 压缩的直接链接">​</a></h3>
+<ul>
+<li>将多个文件压缩成一个zip文件</li>
+<li>适用版本(EC 5.17.0+)</li>
+<li>@param zipFile 目标zip文件的路径</li>
+<li>@param passwd 目标ip文件密码，空代表无密码</li>
+<li>@param files 要压缩的文件或者文件夹，文件数组例如: <code>["/sdcard/a.txt","/sdcard/bb/"]</code></li>
+<li>@return <code>{bool}</code> true 代表成功 false代表失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    zipFile </span><span>=</span><span> </span><span>"/sdcard/a.zip"</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//压缩文件</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> passwd </span><span>=</span><span> </span><span>"123"</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> files </span><span>=</span><span> </span><span>[</span><span>"/sdcard/test.json"</span><span>,</span><span> </span><span>"/sdcard/gifshow"</span><span>]</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> re </span><span>=</span><span> utils</span><span>.</span><span>zip</span><span>(</span><span>zipFile</span><span>,</span><span> passwd</span><span>,</span><span> files</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"压缩结果: "</span><span> </span><span>+</span><span> re</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> ure </span><span>=</span><span> utils</span><span>.</span><span>unzip</span><span>(</span><span>zipFile</span><span>,</span><span> passwd</span><span>,</span><span> </span><span>"/sdcard/test111/"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"解压结果: "</span><span> </span><span>+</span><span> ure</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> data </span><span>=</span><span> utils</span><span>.</span><span>readFileInZip</span><span>(</span><span>"/sdcard/a.zip"</span><span>,</span><span> passwd</span><span>,</span><span> </span><span>"test.json"</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"读取数据结果: "</span><span> </span><span>+</span><span> data</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>utils.unzip 解压<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.unzip 解压的直接链接">​</a></h3>
+<ul>
+<li>将zip文件解压到一个文件夹中</li>
+<li>适用版本(EC 5.17.0+)</li>
+<li>@param zipFile 目标zip文件的路径</li>
+<li>@param passwd 目标ip文件密码</li>
+<li>@param destDir 要解压到的目标文件夹</li>
+<li>@return <code>{bool}</code> true 代表成功 false代表失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    zipFile </span><span>=</span><span> </span><span>"/sdcard/a.zip"</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//压缩文件</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> passwd </span><span>=</span><span> </span><span>"123"</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> files </span><span>=</span><span> </span><span>[</span><span>"/sdcard/test.json"</span><span>,</span><span> </span><span>"/sdcard/gifshow"</span><span>]</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> re </span><span>=</span><span> utils</span><span>.</span><span>zip</span><span>(</span><span>zipFile</span><span>,</span><span> passwd</span><span>,</span><span> files</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"压缩结果: "</span><span> </span><span>+</span><span> re</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> ure </span><span>=</span><span> utils</span><span>.</span><span>unzip</span><span>(</span><span>zipFile</span><span>,</span><span> passwd</span><span>,</span><span> </span><span>"/sdcard/test111/"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"解压结果: "</span><span> </span><span>+</span><span> ure</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> data </span><span>=</span><span> utils</span><span>.</span><span>readFileInZip</span><span>(</span><span>"/sdcard/a.zip"</span><span>,</span><span> passwd</span><span>,</span><span> </span><span>"test.json"</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"读取数据结果: "</span><span> </span><span>+</span><span> data</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>utils.unzipWithEncode 解压带编码<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.unzipWithEncode 解压带编码的直接链接">​</a></h3>
+<ul>
+<li>解压文件</li>
+<li>将zip文件解压到一个文件夹中</li>
+<li>适合EC 10.0.0+</li>
+<li>@param zipFile 目标zip文件的路径</li>
+<li>@param passwd 目标ip文件密码</li>
+<li>@param destDir 要解压到的目标文件夹</li>
+<li>@param fileNameEncode 文件名的编码，Windows压缩的写GBK，其他平台都是UTF-8</li>
+<li>@return <code>{bool}</code> true 代表成功 false代表失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> zipFile </span><span>=</span><span> </span><span>"/sdcard/a.zip"</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> ure </span><span>=</span><span> utils</span><span>.</span><span>unzipWithEncode</span><span>(</span><span>zipFile</span><span>,</span><span> </span><span>""</span><span>,</span><span> </span><span>"/sdcard/test111/"</span><span>,</span><span> </span><span>"GBK"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"解压结果: "</span><span> </span><span>+</span><span> ure</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>utils.readFileInZip ZIP中读取<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.readFileInZip ZIP中读取的直接链接">​</a></h3>
+<ul>
+<li>从zip文件中读取数据</li>
+<li>适用版本(EC 5.17.0+)</li>
+<li>@param zipFile zip文件的路径</li>
+<li>@param passwd zip文件密码</li>
+<li>@param filePathInZip 文件在zip中的路径，例如 a/b.txt</li>
+<li>@return <code>{string}</code> 解析后的字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    zipFile </span><span>=</span><span> </span><span>"/sdcard/a.zip"</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//压缩文件</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> passwd </span><span>=</span><span> </span><span>"123"</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> files </span><span>=</span><span> </span><span>[</span><span>"/sdcard/test.json"</span><span>,</span><span> </span><span>"/sdcard/gifshow"</span><span>]</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> re </span><span>=</span><span> utils</span><span>.</span><span>zip</span><span>(</span><span>zipFile</span><span>,</span><span> passwd</span><span>,</span><span> files</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"压缩结果: "</span><span> </span><span>+</span><span> re</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> ure </span><span>=</span><span> utils</span><span>.</span><span>unzip</span><span>(</span><span>zipFile</span><span>,</span><span> passwd</span><span>,</span><span> </span><span>"/sdcard/test111/"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"解压结果: "</span><span> </span><span>+</span><span> ure</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> data </span><span>=</span><span> utils</span><span>.</span><span>readFileInZip</span><span>(</span><span>"/sdcard/a.zip"</span><span>,</span><span> passwd</span><span>,</span><span> </span><span>"test.json"</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"读取数据结果: "</span><span> </span><span>+</span><span> data</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>加解密相关<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="加解密相关的直接链接">​</a></h2>
+<h3>encodeDecoder.aesEncrypt AES加密<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="encodeDecoder.aesEncrypt AES加密的直接链接">​</a></h3>
+<ul>
+<li>AES加密,算法AES/ECB/PKCS5Padding</li>
+<li>适用版本(EC 5.19.0+)</li>
+<li>@param data 数据字符串</li>
+<li>@param password 密码，至少8个字符</li>
+<li>@return <code>{string}</code> 加密后的base64字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> dat </span><span>=</span><span> </span><span>"我是数据"</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> pwd </span><span>=</span><span> </span><span>"12356783"</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> d </span><span>=</span><span> encodeDecoder</span><span>.</span><span>aesEncrypt</span><span>(</span><span>dat</span><span>,</span><span> pwd</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"加密后的数据-"</span><span> </span><span>+</span><span> d</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> dd </span><span>=</span><span> encodeDecoder</span><span>.</span><span>aesDecrypt</span><span>(</span><span>d</span><span>,</span><span> pwd</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"解密后的数据-"</span><span> </span><span>+</span><span> dd</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>encodeDecoder.aesDecrypt AES解密<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="encodeDecoder.aesDecrypt AES解密的直接链接">​</a></h3>
+<ul>
+<li>AES解密,算法AES/ECB/PKCS5Padding</li>
+<li>适用版本(EC 5.19.0+)</li>
+<li>@param data 加密后的base64字符串</li>
+<li>@param password 密码，至少8个字符</li>
+<li>@return <code>{string}</code> 解密后的字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> dat </span><span>=</span><span> </span><span>"我是数据"</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> pwd </span><span>=</span><span> </span><span>"12356783"</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> d </span><span>=</span><span> encodeDecoder</span><span>.</span><span>aesEncrypt</span><span>(</span><span>dat</span><span>,</span><span> pwd</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"加密后的数据-"</span><span> </span><span>+</span><span> d</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> dd </span><span>=</span><span> encodeDecoder</span><span>.</span><span>aesDecrypt</span><span>(</span><span>d</span><span>,</span><span> pwd</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"解密后的数据-"</span><span> </span><span>+</span><span> dd</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>encodeDecoder.desEncrypt DES加密<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="encodeDecoder.desEncrypt DES加密的直接链接">​</a></h3>
+<ul>
+<li>DES加密,算法ADES</li>
+<li>适用版本(EC 5.19.0+)</li>
+<li>@param data 数据字符串</li>
+<li>@param password 密码，至少8个字符</li>
+<li>@return <code>{string}</code> 加密后的base64字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> dat </span><span>=</span><span> </span><span>"我是数据"</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> pwd </span><span>=</span><span> </span><span>"12356783"</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> d </span><span>=</span><span> encodeDecoder</span><span>.</span><span>desEncrypt</span><span>(</span><span>dat</span><span>,</span><span> pwd</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"加密后的数据-"</span><span> </span><span>+</span><span> d</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> dd </span><span>=</span><span> encodeDecoder</span><span>.</span><span>desDecrypt</span><span>(</span><span>d</span><span>,</span><span> pwd</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"解密后的数据-"</span><span> </span><span>+</span><span> dd</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>encodeDecoder.desDecrypt DES解密<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="encodeDecoder.desDecrypt DES解密的直接链接">​</a></h3>
+<ul>
+<li>DES解密,算法ADES</li>
+<li>适用版本(EC 5.19.0+)</li>
+<li>@param data 加密后的base64字符串</li>
+<li>@param password 密码，至少8个字符</li>
+<li>@return <code>{string}</code> 解密后的字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> dat </span><span>=</span><span> </span><span>"我是数据"</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> pwd </span><span>=</span><span> </span><span>"12356783"</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> d </span><span>=</span><span> encodeDecoder</span><span>.</span><span>desEncrypt</span><span>(</span><span>dat</span><span>,</span><span> pwd</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"加密后的数据-"</span><span> </span><span>+</span><span> d</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> dd </span><span>=</span><span> encodeDecoder</span><span>.</span><span>desDecrypt</span><span>(</span><span>d</span><span>,</span><span> pwd</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"解密后的数据-"</span><span> </span><span>+</span><span> dd</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>encodeDecoder.des3Encrypt 3DES加密<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="encodeDecoder.des3Encrypt 3DES加密的直接链接">​</a></h3>
+<ul>
+<li>3DES加密,算法是 DESede/CBC/PKCS5Padding</li>
+<li>适用版本(EC 5.19.0+)</li>
+<li>@param data 数据字符串</li>
+<li>@param password 密码</li>
+<li>@return <code>{string}</code> 加密后的base64字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> dat </span><span>=</span><span> </span><span>"我是数据"</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> pwd </span><span>=</span><span> </span><span>"12356783"</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> d </span><span>=</span><span> encodeDecoder</span><span>.</span><span>des3Encrypt</span><span>(</span><span>dat</span><span>,</span><span> pwd</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"加密后的数据-"</span><span> </span><span>+</span><span> d</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> dd </span><span>=</span><span> encodeDecoder</span><span>.</span><span>des3Decrypt</span><span>(</span><span>d</span><span>,</span><span> pwd</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"解密后的数据-"</span><span> </span><span>+</span><span> dd</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>encodeDecoder.des3Decrypt 3DES解密<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="encodeDecoder.des3Decrypt 3DES解密的直接链接">​</a></h3>
+<ul>
+<li>3DES解密，算法是 DESede/CBC/PKCS5Padding</li>
+<li>适用版本(EC 5.19.0+)</li>
+<li>@param data 加密后的base64字符串</li>
+<li>@param password 密码</li>
+<li>@return <code>{string}</code> 解密后的字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> dat </span><span>=</span><span> </span><span>"我是数据"</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> pwd </span><span>=</span><span> </span><span>"12356783"</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> d </span><span>=</span><span> encodeDecoder</span><span>.</span><span>des3Encrypt</span><span>(</span><span>dat</span><span>,</span><span> pwd</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"加密后的数据-"</span><span> </span><span>+</span><span> d</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> dd </span><span>=</span><span> encodeDecoder</span><span>.</span><span>des3Decrypt</span><span>(</span><span>d</span><span>,</span><span> pwd</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"解密后的数据-"</span><span> </span><span>+</span><span> dd</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>encodeDecoder.getErrorMsg 获取加解密错误信息<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="encodeDecoder.getErrorMsg 获取加解密错误信息的直接链接">​</a></h3>
+<ul>
+<li>获取上一次加解密的错误信息</li>
+<li>适用版本(EC 5.19.0+)</li>
+<li>@return <code>{string}</code> null代表无错误</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> dat </span><span>=</span><span> </span><span>"我是数据"</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> pwd </span><span>=</span><span> </span><span>"12356783"</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> d </span><span>=</span><span> encodeDecoder</span><span>.</span><span>des3Encrypt</span><span>(</span><span>dat</span><span>,</span><span> pwd</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"加密后的数据-"</span><span> </span><span>+</span><span> d</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> dd </span><span>=</span><span> encodeDecoder</span><span>.</span><span>des3Decrypt</span><span>(</span><span>d</span><span>,</span><span> pwd</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"解密后的数据-"</span><span> </span><span>+</span><span> dd</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"getErrorMsg -"</span><span> </span><span>+</span><span> encodeDecoder</span><span>.</span><span>getErrorMsg</span><span>(</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>二维码<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="二维码的直接链接">​</a></h2>
+<h3>utils.createQRCode 生成一个二维码<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.createQRCode 生成一个二维码的直接链接">​</a></h3>
+<ul>
+<li>生成一个二维码</li>
+<li>适用版本(EC 5.15.0+)</li>
+<li>@param content 二维码字符串内容</li>
+<li>@param width 图像宽度</li>
+<li>@param height 图像高度</li>
+<li>@param logo 图像中心的logo，非必填项，Bitmap 对象，文件转Bitmap请看image模块</li>
+<li>@return <code>{Bitmap}</code> Android的Bitmap对象，保存到文件请看image模块</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//生成一个二维码bitmap 带logo的</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> bot </span><span>=</span><span> utils</span><span>.</span><span>createQRCode</span><span>(</span><span>"我是大佬的弟弟"</span><span>,</span><span> </span><span>1000</span><span>,</span><span> </span><span>1000</span><span>,</span><span> image</span><span>.</span><span>readBitmap</span><span>(</span><span>"/sdcard/yyb2.png"</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"bot "</span><span> </span><span>+</span><span> bot</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//保存的到文件</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> saved </span><span>=</span><span> image</span><span>.</span><span>saveBitmap</span><span>(</span><span>bot</span><span>,</span><span> </span><span>"png"</span><span>,</span><span> </span><span>100</span><span>,</span><span> </span><span>"/sdcard/tmp.png"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"saved "</span><span> </span><span>+</span><span> saved</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//回收掉防止内存暴涨</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>if</span><span> </span><span>(</span><span>bot</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        bot</span><span>.</span><span>recycle</span><span>(</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//扫描二维码</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> bitmap </span><span>=</span><span> image</span><span>.</span><span>readBitmap</span><span>(</span><span>"/sdcard/tmp.png"</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> data </span><span>=</span><span> utils</span><span>.</span><span>decodeQRCode</span><span>(</span><span>bitmap</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"data "</span><span> </span><span>+</span><span> data</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//回收掉防止内存暴涨</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>if</span><span> </span><span>(</span><span>bitmap</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        bitmap</span><span>.</span><span>recycle</span><span>(</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>utils.decodeQRCode 解析一个二维码<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.decodeQRCode 解析一个二维码的直接链接">​</a></h3>
+<ul>
+<li>解析一个二维码</li>
+<li>适用版本(EC 5.15.0+)</li>
+<li>@param src 图像 Bitmap 对象，文件转Bitmap请看image模块</li>
+<li>@return <code>{string}</code> 解析后的字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//生成一个二维码bitmap 带logo的</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> bot </span><span>=</span><span> utils</span><span>.</span><span>createQRCode</span><span>(</span><span>"我是大佬的弟弟"</span><span>,</span><span> </span><span>1000</span><span>,</span><span> </span><span>1000</span><span>,</span><span> image</span><span>.</span><span>readBitmap</span><span>(</span><span>"/sdcard/yyb2.png"</span><span>)</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"bot "</span><span> </span><span>+</span><span> bot</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//保存的到文件</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> saved </span><span>=</span><span> image</span><span>.</span><span>saveBitmap</span><span>(</span><span>bot</span><span>,</span><span> </span><span>"png"</span><span>,</span><span> </span><span>100</span><span>,</span><span> </span><span>"/sdcard/tmp.png"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"saved "</span><span> </span><span>+</span><span> saved</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//回收掉防止内存暴涨</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>if</span><span> </span><span>(</span><span>bot</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        bot</span><span>.</span><span>recycle</span><span>(</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//扫描二维码</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> bitmap </span><span>=</span><span> image</span><span>.</span><span>readBitmap</span><span>(</span><span>"/sdcard/tmp.png"</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> data </span><span>=</span><span> utils</span><span>.</span><span>decodeQRCode</span><span>(</span><span>bitmap</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"data "</span><span> </span><span>+</span><span> data</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//回收掉防止内存暴涨</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>if</span><span> </span><span>(</span><span>bitmap</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        bitmap</span><span>.</span><span>recycle</span><span>(</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>其他<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="其他的直接链接">​</a></h2>
+<h3>utils.readConfigInt 读取整型配置<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.readConfigInt 读取整型配置的直接链接">​</a></h3>
+<ul>
+<li>读取JSON中的整型数据</li>
+<li>@param jsonObject JSON对象</li>
+<li>@param key 配置项目</li>
+<li>@return 整型，找不到就返回0</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> testData </span><span>=</span><span> utils</span><span>.</span><span>readConfigInt</span><span>(</span><span>jsonObject</span><span>,</span><span> </span><span>"test_key"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>utils.readJSONString 读取JSON中字符串<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.readJSONString 读取JSON中字符串的直接链接">​</a></h3>
+<ul>
+<li>读取JSON中的字符串数据</li>
+<li>@param jsonObject JSON对象</li>
+<li>@param key 配置项目</li>
+<li>@return 字符串 找不到就返回空字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> testData </span><span>=</span><span> utils</span><span>.</span><span>readConfigString</span><span>(</span><span>jsonObject</span><span>,</span><span> </span><span>"test_key"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>utils.isObjectNull 判断一个对象为空<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.isObjectNull 判断一个对象为空的直接链接">​</a></h3>
+<ul>
+<li>判断一个对象为空</li>
+<li>@param o 对象</li>
+<li>@return true或者false</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> isNull </span><span>=</span><span> utils</span><span>.</span><span>isObjectNull</span><span>(</span><span>"test_key"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>utils.isObjectNotNull 判断一个对象不为空<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.isObjectNotNull 判断一个对象不为空的直接链接">​</a></h3>
+<ul>
+<li>判断一个对象不为空</li>
+<li>@param o 对象</li>
+<li>@return true或者false</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> isNull </span><span>=</span><span> utils</span><span>.</span><span>isObjectNotNull</span><span>(</span><span>"test_key"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>utils.getRatio 取得比例<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.getRatio 取得比例的直接链接">​</a></h3>
+<ul>
+<li>取得比例，例如10参数，就是返回10%的比例，如果是true，说明随机比例正确，否则不正确</li>
+<li>@param ratio 浮点型 1-100</li>
+<li>@return true或者false</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> ratio </span><span>=</span><span> utils</span><span>.</span><span>getRatio</span><span>(</span><span>20</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>ratio</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>utils.getRangeInt 取得某个范围的随机值<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.getRangeInt 取得某个范围的随机值的直接链接">​</a></h3>
+<ul>
+<li>取得某个范围的随机值</li>
+<li>@param min 最小值</li>
+<li>@param max 最大值</li>
+<li>@return 在min和max中间的值,包含最大和最小值</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> value </span><span>=</span><span> utils</span><span>.</span><span>getRangeInt</span><span>(</span><span>1</span><span>,</span><span> </span><span>100</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>value</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>utils.isTrue 判断布尔型对象是否为真<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.isTrue 判断布尔型对象是否为真的直接链接">​</a></h3>
+<ul>
+<li>判断布尔型对象是否为真</li>
+<li>@param r 布尔型对象</li>
+<li>@return true 或者 false</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> value </span><span>=</span><span> utils</span><span>.</span><span>isTrue</span><span>(</span><span>true</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>utils.fileMd5 文件的MD5<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.fileMd5 文件的MD5的直接链接">​</a></h3>
+<ul>
+<li>文件的MD5</li>
+<li>@param file 文件路径</li>
+<li>@return 文件MD5字符串或者null</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> md5 </span><span>=</span><span> utils</span><span>.</span><span>fileMd5</span><span>(</span><span>"/sdcard/a.txt"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>utils.dataMd5 数据计算出来的MD5<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.dataMd5 数据计算出来的MD5的直接链接">​</a></h3>
+<ul>
+<li>数据计算出来的MD5</li>
+<li>@param data 数据</li>
+<li>@return 数据MD5字符串或者null</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> md5 </span><span>=</span><span> utils</span><span>.</span><span>dataMd5</span><span>(</span><span>"data"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>utils.randomInt 随机整型数据<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.randomInt 随机整型数据的直接链接">​</a></h3>
+<ul>
+<li>随机整型数据</li>
+<li>@param length 位数，要随机产生多少位的整型数据</li>
+<li>@return 整型</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> r </span><span>=</span><span> utils</span><span>.</span><span>randomInt</span><span>(</span><span>2</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>utils.randomCharNumber 取得随机的数字和字母<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.randomCharNumber 取得随机的数字和字母的直接链接">​</a></h3>
+<ul>
+<li>取得随机的数字和字母</li>
+<li>@param length 长度</li>
+<li>@return 字符串数字混合</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> r </span><span>=</span><span> utils</span><span>.</span><span>randomCharNumber</span><span>(</span><span>2</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>utils.getApkPkgName 取得App文件的包名<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.getApkPkgName 取得App文件的包名的直接链接">​</a></h3>
+<ul>
+<li>取得App文件的包名</li>
+<li>@param filePath 文件路径</li>
+<li>@return 字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> pkgName </span><span>=</span><span> utils</span><span>.</span><span>getApkPkgName</span><span>(</span><span>"/sdcard/app.apk"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>utils.isAppExist App是否已经安装<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.isAppExist App是否已经安装的直接链接">​</a></h3>
+<ul>
+<li>App是否已经安装</li>
+<li>@param packageName 应用程序的包名</li>
+<li>@return true 代表已经安装，false代表未安装</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> result </span><span>=</span><span> utils</span><span>.</span><span>isAppExist</span><span>(</span><span>"com.xx"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>utils.getAppVersionCode 程序的版本标示<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.getAppVersionCode 程序的版本标示的直接链接">​</a></h3>
+<ul>
+<li>取得已安装的程序的版本整型标示</li>
+<li>@param packageName 应用程序的包名</li>
+<li>@return 整型</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> versionCode </span><span>=</span><span> utils</span><span>.</span><span>getAppVersionCode</span><span>(</span><span>"com.xx"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>utils.getAppVersionName 版本字符串标示<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.getAppVersionName 版本字符串标示的直接链接">​</a></h3>
+<ul>
+<li>取得已安装的程序的版本字符串标示</li>
+<li>@param packageName 应用程序的包名</li>
+<li>@return 字符串 例如 1.0.0</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> r </span><span>=</span><span> utils</span><span>.</span><span>getAppVersionName</span><span>(</span><span>"com.xx"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>utils.setClipboardText 设置剪贴板文本<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.setClipboardText 设置剪贴板文本的直接链接">​</a></h3>
+<ul>
+<li>设置剪贴板文本</li>
+<li>@param text 文本</li>
+<li>@return boolean</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> r </span><span>=</span><span> utils</span><span>.</span><span>setClipboardText</span><span>(</span><span>"com.xx"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>"设置结果:"</span><span> </span><span>+</span><span> r</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>utils.getClipboardText 读取剪贴板文本<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.getClipboardText 读取剪贴板文本的直接链接">​</a></h3>
+<ul>
+<li>读取剪贴板文本</li>
+<li>@return string</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>var</span><span> r </span><span>=</span><span> utils</span><span>.</span><span>getClipboardText</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>toast</span><span>(</span><span>"读取结果:"</span><span> </span><span>+</span><span> r</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>utils.playMp3 播放MP3音乐<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.playMp3 播放MP3音乐的直接链接">​</a></h3>
+<ul>
+<li>播放MP3音乐,异步播放</li>
+<li>支持版本 EC 5.12.0 以上</li>
+<li>@param path 文件路径 例如 /sdcard/a.mp3</li>
+<li>@param loop 是否循环播放 true代表是</li>
+<li>@return <code>{bool}</code> true 代表成功 false 代表失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//如果想把MP3内置到脚本中,将MP3文件放到res目录下</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>saveResToFile</span><span>(</span><span>"a.mp3"</span><span>,</span><span> </span><span>"/sdcard/a.mp3"</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> d </span><span>=</span><span> utils</span><span>.</span><span>playMp3</span><span>(</span><span>"/sdcard/a.mp3"</span><span>,</span><span> </span><span>true</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"dd "</span><span> </span><span>+</span><span> d</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//给点延迟,等音乐开始真正播放</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>30</span><span> </span><span>*</span><span> </span><span>1000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    utils</span><span>.</span><span>stopMp3</span><span>(</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"stop play "</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>utils.playMp3WaitEnd 同步播放MP3音乐<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.playMp3WaitEnd 同步播放MP3音乐的直接链接">​</a></h3>
+<ul>
+<li>播放mp3音乐，等待结束</li>
+<li>适配EC 10.3.0+</li>
+<li>@param path 文件路径 例如 /sdcard/a.mp3</li>
+<li>@param loop 是否循环播放 true代表是</li>
+<li>@return <code>{bool}</code> true 代表成功 false 代表失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//如果想把MP3内置到脚本中,将MP3文件放到res目录下</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>saveResToFile</span><span>(</span><span>"a.mp3"</span><span>,</span><span> </span><span>"/sdcard/a.mp3"</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> d </span><span>=</span><span> utils</span><span>.</span><span>playMp3WaitEnd</span><span>(</span><span>"/sdcard/a.mp3"</span><span>,</span><span> </span><span>false</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"dd "</span><span> </span><span>+</span><span> d</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h3>utils.stopMp3 停止播放mp3音乐<a href="https://ieasyclick.com/docs/zh-cn/funcs/utils-api" title="utils.stopMp3 停止播放mp3音乐的直接链接">​</a></h3>
+<ul>
+<li>停止播放mp3音乐</li>
+<li>支持版本 EC 5.12.0 以上</li>
+<li>@return <code>{bool}</code> true 代表成功 false 代表失败</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//如果想把MP3内置到脚本中,将MP3文件放到res目录下</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>saveResToFile</span><span>(</span><span>"a.mp3"</span><span>,</span><span> </span><span>"/sdcard/a.mp3"</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> d </span><span>=</span><span> utils</span><span>.</span><span>playMp3</span><span>(</span><span>"/sdcard/a.mp3"</span><span>,</span><span> </span><span>true</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"dd "</span><span> </span><span>+</span><span> d</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//给点延迟,等音乐开始真正播放</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>30</span><span> </span><span>*</span><span> </span><span>1000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    utils</span><span>.</span><span>stopMp3</span><span>(</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"stop play "</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span><span>;</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div></div></article>

@@ -1,0 +1,234 @@
+<article><div><button>本页总览</button></div><div><h2>说明<a href="https://ieasyclick.com/docs/zh-cn/funcs/blehid-event-api" title="说明的直接链接">​</a></h2>
+<ul>
+<li>蓝牙HID事件模块运行的所有函数，需要借助硬件的方式才能使用</li>
+<li>具体请看蓝牙HID配置 高级功能 - 蓝牙HID硬件 : <a href="https://ieasyclick.com/docs/zh-cn/advance/blehid">蓝牙HID硬件</a></li>
+<li>代理事件模块的对象前缀是 bleEvent，例如 bleEvent.click 这样调用</li>
+</ul>
+<div><div><span></span>提示</div><div><ul>
+<li>ble hid只是一种点击模式，无障碍、代理模式、root都含有点击和获取节点功能，如果你用不了节点，就使用图色</li>
+<li>图色权限请使用 <code>image.requestScreenCapture</code> 函数的 type=1 带权限截图方式</li>
+<li>ble hid除了不能使用节点，其他功能都是一样，无需特殊处理</li>
+</ul></div></div>
+<h2>startConnect 连接蓝牙设备<a href="https://ieasyclick.com/docs/zh-cn/funcs/blehid-event-api" title="startConnect 连接蓝牙设备的直接链接">​</a></h2>
+<ul>
+<li>连接蓝牙设备</li>
+<li>这个可以不在app设置中预设置，这个函数带扫描链接保存的</li>
+<li>如果不想一个个配置，就使用这个函数</li>
+<li>适配版本 EC 安卓 11.37.0+</li>
+<li>@param bleDeviceName 蓝牙设备名称，不写就从app系统设置中读取，开发板mac地址的后8位，全部小写</li>
+<li>@param save 是否保存到app设置的 蓝牙设备名称，如果想存储到系统设置，就写true</li>
+<li>@param timeout 链接超时时间 单位是毫秒</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>function</span><span> </span><span>main</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"开始链接ble..."</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> cr </span><span>=</span><span> </span><span>connect_ble</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>if</span><span> </span><span>(</span><span>cr </span><span>==</span><span> </span><span>null</span><span> </span><span>||</span><span> cr </span><span>==</span><span> </span><span>""</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>logd</span><span>(</span><span>"链接ble成功"</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span> </span><span>else</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>logw</span><span>(</span><span>"链接ble失败 "</span><span> </span><span>+</span><span> cr</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>return</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>1000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// 可以进入开发者选项 开启指针看点击效果</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"开始测试 clickPoint"</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// let crc = bleEvent.clickPoint(399, 4525);</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// if (crc == null || crc == "") {</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//     logd("点击成功 ")</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// } else {</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//     logd("点击失败 " + crc)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// }</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// sleep(3000)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// logd("开始测试 press")</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// let crc2 = bleEvent.press(399, 455, 5000);</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// if (crc2 == null || crc2 == "") {</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//     logd("press 成功 ")</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// } else {</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//     logd("press 失败 " + crc2)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// }</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// sleep(6000)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// sleep(1000)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// logd("开始测试 doubleClick")</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// let doubleClickr = bleEvent.doubleClick(666, 1000, 30);</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// if (doubleClickr == null || doubleClickr == "") {</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//     logd("doubleClick 成功 ")</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// } else {</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//     logd("doubleClick 失败 " + doubleClickr)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// }</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// sleep(6000)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// test_Swipe();</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// touchTest()</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// mtouch();</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>test_Swipe</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>testSystemKey</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span></span><br/></span><span><span></span><span><span>    </span><span>// 输入a这个字符</span><span></span></span><br/></span><span><span></span><span><span>    bleEvent</span><span>.</span><span>keyPressChar</span><span>(</span><span>""</span><span>,</span><span>"a"</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span></span><br/></span><span><span></span><span><span>    </span><span>testPressKey</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>//bleEvent.stopConnect()</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>100000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"0---end "</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>function</span><span> </span><span>testPressKey</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>1000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> press_a </span><span>=</span><span> bleEvent</span><span>.</span><span>keyPress</span><span>(</span><span>""</span><span>,</span><span> </span><span>65</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>console</span><span>.</span><span>log</span><span>(</span><span>"press_a {}"</span><span>,</span><span> press_a</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>function</span><span> </span><span>testSystemKey</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>1000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"home "</span><span> </span><span>+</span><span> bleEvent</span><span>.</span><span>home</span><span>(</span><span>)</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>1000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"back "</span><span> </span><span>+</span><span> bleEvent</span><span>.</span><span>back</span><span>(</span><span>)</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>1000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"recents "</span><span> </span><span>+</span><span> bleEvent</span><span>.</span><span>recents</span><span>(</span><span>)</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>function</span><span> </span><span>test_Swipe</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>1000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> td </span><span>=</span><span> bleEvent</span><span>.</span><span>swipe</span><span>(</span><span>300</span><span>,</span><span> </span><span>400</span><span>,</span><span> </span><span>500</span><span>,</span><span> </span><span>600</span><span>,</span><span> </span><span>5000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"swipe result: "</span><span> </span><span>+</span><span> td</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>6000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>function</span><span> </span><span>mtouch</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>1000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> data </span><span>=</span><span> </span><span>[</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>{</span><span>"action"</span><span>:</span><span> </span><span>0</span><span>,</span><span> </span><span>"x"</span><span>:</span><span> </span><span>250</span><span>,</span><span> </span><span>"y"</span><span>:</span><span> </span><span>1800</span><span>,</span><span> </span><span>"pointer"</span><span>:</span><span> </span><span>1</span><span>,</span><span> </span><span>"delay"</span><span>:</span><span> </span><span>100</span><span>}</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>{</span><span>"action"</span><span>:</span><span> </span><span>2</span><span>,</span><span> </span><span>"x"</span><span>:</span><span> </span><span>250</span><span>,</span><span> </span><span>"y"</span><span>:</span><span> </span><span>1700</span><span>,</span><span> </span><span>"pointer"</span><span>:</span><span> </span><span>1</span><span>,</span><span> </span><span>"delay"</span><span>:</span><span> </span><span>100</span><span>}</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>{</span><span>"action"</span><span>:</span><span> </span><span>2</span><span>,</span><span> </span><span>"x"</span><span>:</span><span> </span><span>330</span><span>,</span><span> </span><span>"y"</span><span>:</span><span> </span><span>1650</span><span>,</span><span> </span><span>"pointer"</span><span>:</span><span> </span><span>1</span><span>,</span><span> </span><span>"delay"</span><span>:</span><span> </span><span>200</span><span>}</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>{</span><span>"action"</span><span>:</span><span> </span><span>2</span><span>,</span><span> </span><span>"x"</span><span>:</span><span> </span><span>330</span><span>,</span><span> </span><span>"y"</span><span>:</span><span> </span><span>1640</span><span>,</span><span> </span><span>"pointer"</span><span>:</span><span> </span><span>1</span><span>,</span><span> </span><span>"delay"</span><span>:</span><span> </span><span>200</span><span>}</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>{</span><span>"action"</span><span>:</span><span> </span><span>2</span><span>,</span><span> </span><span>"x"</span><span>:</span><span> </span><span>330</span><span>,</span><span> </span><span>"y"</span><span>:</span><span> </span><span>1620</span><span>,</span><span> </span><span>"pointer"</span><span>:</span><span> </span><span>1</span><span>,</span><span> </span><span>"delay"</span><span>:</span><span> </span><span>200</span><span>}</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>{</span><span>"action"</span><span>:</span><span> </span><span>2</span><span>,</span><span> </span><span>"x"</span><span>:</span><span> </span><span>322</span><span>,</span><span> </span><span>"y"</span><span>:</span><span> </span><span>1500</span><span>,</span><span> </span><span>"pointer"</span><span>:</span><span> </span><span>1</span><span>,</span><span> </span><span>"delay"</span><span>:</span><span> </span><span>200</span><span>}</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>{</span><span>"action"</span><span>:</span><span> </span><span>2</span><span>,</span><span> </span><span>"x"</span><span>:</span><span> </span><span>322</span><span>,</span><span> </span><span>"y"</span><span>:</span><span> </span><span>1400</span><span>,</span><span> </span><span>"pointer"</span><span>:</span><span> </span><span>1</span><span>,</span><span> </span><span>"delay"</span><span>:</span><span> </span><span>200</span><span>}</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>{</span><span>"action"</span><span>:</span><span> </span><span>2</span><span>,</span><span> </span><span>"x"</span><span>:</span><span> </span><span>334</span><span>,</span><span> </span><span>"y"</span><span>:</span><span> </span><span>1000</span><span>,</span><span> </span><span>"pointer"</span><span>:</span><span> </span><span>1</span><span>,</span><span> </span><span>"delay"</span><span>:</span><span> </span><span>200</span><span>}</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>{</span><span>"action"</span><span>:</span><span> </span><span>2</span><span>,</span><span> </span><span>"x"</span><span>:</span><span> </span><span>339</span><span>,</span><span> </span><span>"y"</span><span>:</span><span> </span><span>1000</span><span>,</span><span> </span><span>"pointer"</span><span>:</span><span> </span><span>1</span><span>,</span><span> </span><span>"delay"</span><span>:</span><span> </span><span>200</span><span>}</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>{</span><span>"action"</span><span>:</span><span> </span><span>2</span><span>,</span><span> </span><span>"x"</span><span>:</span><span> </span><span>330</span><span>,</span><span> </span><span>"y"</span><span>:</span><span> </span><span>1000</span><span>,</span><span> </span><span>"pointer"</span><span>:</span><span> </span><span>1</span><span>,</span><span> </span><span>"delay"</span><span>:</span><span> </span><span>200</span><span>}</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>{</span><span>"action"</span><span>:</span><span> </span><span>2</span><span>,</span><span> </span><span>"x"</span><span>:</span><span> </span><span>453</span><span>,</span><span> </span><span>"y"</span><span>:</span><span> </span><span>1000</span><span>,</span><span> </span><span>"pointer"</span><span>:</span><span> </span><span>1</span><span>,</span><span> </span><span>"delay"</span><span>:</span><span> </span><span>200</span><span>}</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>{</span><span>"action"</span><span>:</span><span> </span><span>2</span><span>,</span><span> </span><span>"x"</span><span>:</span><span> </span><span>555</span><span>,</span><span> </span><span>"y"</span><span>:</span><span> </span><span>1000</span><span>,</span><span> </span><span>"pointer"</span><span>:</span><span> </span><span>1</span><span>,</span><span> </span><span>"delay"</span><span>:</span><span> </span><span>200</span><span>}</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>{</span><span>"action"</span><span>:</span><span> </span><span>2</span><span>,</span><span> </span><span>"x"</span><span>:</span><span> </span><span>557</span><span>,</span><span> </span><span>"y"</span><span>:</span><span> </span><span>600</span><span>,</span><span> </span><span>"pointer"</span><span>:</span><span> </span><span>1</span><span>,</span><span> </span><span>"delay"</span><span>:</span><span> </span><span>200</span><span>}</span><span>,</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>{</span><span>"action"</span><span>:</span><span> </span><span>1</span><span>,</span><span> </span><span>"x"</span><span>:</span><span> </span><span>600</span><span>,</span><span> </span><span>"y"</span><span>:</span><span> </span><span>400</span><span>,</span><span> </span><span>"pointer"</span><span>:</span><span> </span><span>1</span><span>,</span><span> </span><span>"delay"</span><span>:</span><span> </span><span>100</span><span>}</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>]</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> tou </span><span>=</span><span> bleEvent</span><span>.</span><span>multiTouch</span><span>(</span><span>data</span><span>,</span><span> </span><span>1000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>5000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>if</span><span> </span><span>(</span><span>tou </span><span>==</span><span> </span><span>null</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>logd</span><span>(</span><span>"多点触摸 成功"</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span> </span><span>else</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>loge</span><span>(</span><span>"多点触摸 失败:"</span><span> </span><span>+</span><span> tou</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>return</span><span> </span><span>false</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>function</span><span> </span><span>touchTest</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>6000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> td </span><span>=</span><span> bleEvent</span><span>.</span><span>touchDown</span><span>(</span><span>300</span><span>,</span><span> </span><span>400</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>console</span><span>.</span><span>log</span><span>(</span><span>" touchDown result "</span><span> </span><span>+</span><span> td</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>1000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    bleEvent</span><span>.</span><span>touchMove</span><span>(</span><span>350</span><span>,</span><span> </span><span>460</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>1000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    bleEvent</span><span>.</span><span>touchMove</span><span>(</span><span>400</span><span>,</span><span> </span><span>500</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>1000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"touchUp "</span><span> </span><span>+</span><span> bleEvent</span><span>.</span><span>touchUp</span><span>(</span><span>400</span><span>,</span><span> </span><span>500</span><span>)</span><span>)</span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>/**</span></span><br/></span><span><span></span><span><span> * 链接ble</span></span><br/></span><span><span></span><span><span> * </span><span>@returns</span><span> </span><span>{</span><span>null</span><span>}</span><span></span></span><br/></span><span><span></span><span><span> */</span><span></span></span><br/></span><span><span></span><span><span></span><span>function</span><span> </span><span>connect_ble</span><span>(</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>if</span><span> </span><span>(</span><span>bleEvent</span><span>.</span><span>isConnected</span><span>(</span><span>)</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>return</span><span> </span><span>null</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span></span></span><br/></span><span><span></span><span><span>    bleEvent</span><span>.</span><span>stopConnect</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>return</span><span> bleEvent</span><span>.</span><span>startConnect</span><span>(</span><span>""</span><span>,</span><span> </span><span>false</span><span>,</span><span> </span><span>15000</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>}</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>// 正常设备无需调用</span><span></span></span><br/></span><span><span></span><span><span></span><span>// bleEvent.setWidthEqualsHeight(true)</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span></span><span>main</span><span>(</span><span>)</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>stopConnect 断开连接<a href="https://ieasyclick.com/docs/zh-cn/funcs/blehid-event-api" title="stopConnect 断开连接的直接链接">​</a></h2>
+<ul>
+<li>断开连接</li>
+<li>适配版本 EC 安卓 11.37.0+</li>
+<li>@return <code>{string}</code> null 代表成功，其他代表错误消息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 startConnect 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>setHeartbeatTimeout 断开连接<a href="https://ieasyclick.com/docs/zh-cn/funcs/blehid-event-api" title="setHeartbeatTimeout 断开连接的直接链接">​</a></h2>
+<ul>
+<li>设置心跳超时时间</li>
+<li>与设备心跳时间超过了设定的，代表链接断开了，默认是30s</li>
+<li>@param tt 超时时间，单位是毫秒</li>
+<li>适配版本 EC 安卓 11.37.0+</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 startConnect 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>isConnected 链接状态<a href="https://ieasyclick.com/docs/zh-cn/funcs/blehid-event-api" title="isConnected 链接状态的直接链接">​</a></h2>
+<ul>
+<li>链接状态</li>
+<li>适配版本 EC 安卓 11.37.0+</li>
+<li>@returns <code>{boolean}</code> true 代表已经链接 false代表未链接</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 startConnect 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>setWidthEqualsHeight 坐标系的宽度等于高度<a href="https://ieasyclick.com/docs/zh-cn/funcs/blehid-event-api" title="setWidthEqualsHeight 坐标系的宽度等于高度的直接链接">​</a></h2>
+<ul>
+<li>设置坐标系的宽度等于高度</li>
+<li>一般不用设置，如果发现坐标点点击不对可以设置，例如iqoo系列需要设置</li>
+<li>适配版本 EC 安卓 11.37.0+</li>
+<li>@param r true代表是</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 startConnect 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>clickPoint 点击<a href="https://ieasyclick.com/docs/zh-cn/funcs/blehid-event-api" title="clickPoint 点击的直接链接">​</a></h2>
+<ul>
+<li>点击</li>
+<li>适配版本 EC 安卓 11.37.0+</li>
+<li>@param x x坐标</li>
+<li>@param y y坐标</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 startConnect 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>press 长按<a href="https://ieasyclick.com/docs/zh-cn/funcs/blehid-event-api" title="press 长按的直接链接">​</a></h2>
+<ul>
+<li>长按</li>
+<li>注意，这个由于和脚本是异步的，调用后请sleep(delay)这么长时间 防止事件冲突</li>
+<li>适配版本 EC 安卓 11.37.0+</li>
+<li>@param x x坐标</li>
+<li>@param y y坐标</li>
+<li>@param delay 延迟时间 单位毫秒</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 startConnect 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>doubleClick 双击<a href="https://ieasyclick.com/docs/zh-cn/funcs/blehid-event-api" title="doubleClick 双击的直接链接">​</a></h2>
+<ul>
+<li>双击</li>
+<li>适配版本 EC 安卓 11.37.0+</li>
+<li>@param x x坐标</li>
+<li>@param y y坐标</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 startConnect 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>touchDown 按下<a href="https://ieasyclick.com/docs/zh-cn/funcs/blehid-event-api" title="touchDown 按下的直接链接">​</a></h2>
+<ul>
+<li>按下</li>
+<li>适配版本 EC 安卓 11.37.0+</li>
+<li>@param x x坐标</li>
+<li>@param y y坐标</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 startConnect 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>touchMove 移动<a href="https://ieasyclick.com/docs/zh-cn/funcs/blehid-event-api" title="touchMove 移动的直接链接">​</a></h2>
+<ul>
+<li>移动</li>
+<li>适配版本 EC 安卓 11.37.0+</li>
+<li>@param x x坐标</li>
+<li>@param y y坐标</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 startConnect 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>touchUp 抬起<a href="https://ieasyclick.com/docs/zh-cn/funcs/blehid-event-api" title="touchUp 抬起的直接链接">​</a></h2>
+<ul>
+<li>抬起</li>
+<li>适配版本 EC 安卓 11.37.0+</li>
+<li>@param x x坐标</li>
+<li>@param y y坐标</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 startConnect 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>swipe 滑动<a href="https://ieasyclick.com/docs/zh-cn/funcs/blehid-event-api" title="swipe 滑动的直接链接">​</a></h2>
+<ul>
+<li>滑动</li>
+<li>注意，这个由于和脚本是异步的，调用后请sleep(delay)这么长时间 防止事件冲突</li>
+<li>适配版本 EC 安卓 11.37.0+</li>
+<li>@param x x坐标</li>
+<li>@param y y坐标</li>
+<li>@param ex 终点x坐标</li>
+<li>@param ey 终点y坐标</li>
+<li>@param delay 总计滑动时间单位是毫秒</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 startConnect 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>multiTouch 多点触摸<a href="https://ieasyclick.com/docs/zh-cn/funcs/blehid-event-api" title="multiTouch 多点触摸的直接链接">​</a></h2>
+<ul>
+<li>多点触摸</li>
+<li>注意，这个由于和脚本是异步的，调用后请sleep滑动总时间 防止事件冲突</li>
+<li>适配版本 EC 安卓 11.37.0+</li>
+<li>触摸参数: action :一般情况下 按下为0，弹起为1，移动为2</li>
+<li>x: X坐标</li>
+<li>y: Y坐标</li>
+<li>pointer：设置第几个手指触摸点，分别是 1，2，3 等，代表第n个手指</li>
+<li>delay: 该动作延迟多少毫秒执行, 大于40ms，否则可能出现坐标漂移的现象</li>
+<li>@param touch1 第1个手指的触摸点数组,例如：<code>[{"action":0,"x":1,"y":1,"pointer":1,"delay":30},{"action":2,"x":1,"y":1,"pointer":1,"delay":30}]</code></li>
+<li>@param timeout 多点触摸执行的超时时间，单位是毫秒</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 startConnect 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>systemKey 系统按键<a href="https://ieasyclick.com/docs/zh-cn/funcs/blehid-event-api" title="systemKey 系统按键的直接链接">​</a></h2>
+<ul>
+<li>系统按键</li>
+<li>适配版本 EC 安卓 11.37.0+</li>
+<li>@param key 值有=home back recents</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 startConnect 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>recents 任务列表<a href="https://ieasyclick.com/docs/zh-cn/funcs/blehid-event-api" title="recents 任务列表的直接链接">​</a></h2>
+<ul>
+<li>任务列表</li>
+<li>可能在有的手机不生效，因为不是标准按键</li>
+<li>适配版本 EC 安卓 11.37.0+</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 startConnect 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>back 返回<a href="https://ieasyclick.com/docs/zh-cn/funcs/blehid-event-api" title="back 返回的直接链接">​</a></h2>
+<ul>
+<li>返回</li>
+<li>适配版本 EC 安卓 11.37.0+</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 startConnect 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>home 主页<a href="https://ieasyclick.com/docs/zh-cn/funcs/blehid-event-api" title="home 主页的直接链接">​</a></h2>
+<ul>
+<li>主页</li>
+<li>适配版本 EC 安卓 11.37.0+</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 startConnect 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>keyPress 键盘按键<a href="https://ieasyclick.com/docs/zh-cn/funcs/blehid-event-api" title="keyPress 键盘按键的直接链接">​</a></h2>
+<ul>
+<li>键盘按键</li>
+<li>适配版本 EC 安卓 11.37.0+</li>
+<li>@param prefix 值分别有，不写或者null默认就是普通的按键， alt=按住alt键,ctrl=按住ctrl键,gui=按住win键,r_ctrl=按住右侧的ctrl键,r_shift=按住右侧的shift键,shift=按住shift键</li>
+<li>@param code   ascii码，直接百度即可</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 参开 startConnect 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>keyPressChar 键盘按键字符<a href="https://ieasyclick.com/docs/zh-cn/funcs/blehid-event-api" title="keyPressChar 键盘按键字符的直接链接">​</a></h2>
+<ul>
+<li>键盘按键字符</li>
+<li>适配版本 EC 安卓 11.37.0+</li>
+<li>@param prefix 值分别有，不写或者null默认就是普通的按键， alt=按住alt键,ctrl=按住ctrl键,gui=按住win键,r_ctrl=按住右侧的ctrl键,r_shift=按住右侧的shift键,shift=按住shift键</li>
+<li>@param c 单个字符，例如 a，系统内部自动转换为 ascii码，参开地址 <a href="https://tool.oschina.net/commons?type=4">https://tool.oschina.net/commons?type=4</a></li>
+<li>@returns <code>{string|null}</code> null或者空代表正常 其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span></span><br/></span><span><span></span><span><span>    </span><span>// 参开 startConnect 函数例子 </span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>hideBleName 隐藏蓝牙的名称<a href="https://ieasyclick.com/docs/zh-cn/funcs/blehid-event-api" title="hideBleName 隐藏蓝牙的名称的直接链接">​</a></h2>
+<ul>
+<li>隐藏蓝牙的名称</li>
+<li>防止被搜索到</li>
+<li>适配版本 EC 安卓 11.38.0+</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常  其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 结合 startConnect 例子</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// 链接成功后 调用</span><span></span></span><br/></span><span><span></span><span><span>    bleEvent</span><span>.</span><span>hideBleName</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>1000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// 多调用一次</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> cr </span><span>=</span><span> bleEvent</span><span>.</span><span>hideBleName</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>if</span><span> </span><span>(</span><span>cr </span><span>==</span><span> </span><span>null</span><span> </span><span>||</span><span> cr </span><span>==</span><span> </span><span>""</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>logd</span><span>(</span><span>"隐藏成功"</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span> </span><span>else</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>logw</span><span>(</span><span>"隐藏失败 "</span><span> </span><span>+</span><span> cr</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>return</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>showBleName 显示蓝牙的名称<a href="https://ieasyclick.com/docs/zh-cn/funcs/blehid-event-api" title="showBleName 显示蓝牙的名称的直接链接">​</a></h2>
+<ul>
+<li>显示蓝牙的名称</li>
+<li>如果蓝牙通信不成功，可能导致不能显示，那就手动重启一下开发板</li>
+<li>适配版本 EC 安卓 11.38.0+</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常  其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 结合 startConnect 例子</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// 链接成功后 调用</span><span></span></span><br/></span><span><span></span><span><span>    bleEvent</span><span>.</span><span>showBleName</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>1000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// 多调用一次</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> cr </span><span>=</span><span> bleEvent</span><span>.</span><span>showBleName</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>if</span><span> </span><span>(</span><span>cr </span><span>==</span><span> </span><span>null</span><span> </span><span>||</span><span> cr </span><span>==</span><span> </span><span>""</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>logd</span><span>(</span><span>"成功"</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span> </span><span>else</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>logw</span><span>(</span><span>"失败 "</span><span> </span><span>+</span><span> cr</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>return</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>showBleName 显示蓝牙的名称<a href="https://ieasyclick.com/docs/zh-cn/funcs/blehid-event-api" title="showBleName 显示蓝牙的名称的直接链接">​</a></h2>
+<ul>
+<li>显示蓝牙的名称</li>
+<li>如果蓝牙通信不成功，可能导致不能显示，那就手动重启一下开发板</li>
+<li>适配版本 EC 安卓 11.38.0+</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常  其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 结合 startConnect 例子</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// 链接成功后 调用</span><span></span></span><br/></span><span><span></span><span><span>    bleEvent</span><span>.</span><span>showBleName</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>sleep</span><span>(</span><span>1000</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>// 多调用一次</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> cr </span><span>=</span><span> bleEvent</span><span>.</span><span>showBleName</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>if</span><span> </span><span>(</span><span>cr </span><span>==</span><span> </span><span>null</span><span> </span><span>||</span><span> cr </span><span>==</span><span> </span><span>""</span><span>)</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>logd</span><span>(</span><span>"成功"</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span><span> </span><span>else</span><span> </span><span>{</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>logw</span><span>(</span><span>"失败 "</span><span> </span><span>+</span><span> cr</span><span>)</span><span></span></span><br/></span><span><span></span><span><span>        </span><span>return</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>}</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>getConfigBleName 获取app配置的蓝牙名称<a href="https://ieasyclick.com/docs/zh-cn/funcs/blehid-event-api" title="getConfigBleName 获取app配置的蓝牙名称的直接链接">​</a></h2>
+<ul>
+<li>获取app配置的蓝牙名称</li>
+<li>适配版本 EC 安卓 11.38.0+</li>
+<li>@returns <code>{string|null}</code> 名称字符串</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>let</span><span> cr </span><span>=</span><span> bleEvent</span><span>.</span><span>getConfigBleName</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"cr "</span><span>+</span><span>cr</span><span>)</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>setWifi 设置WIFI<a href="https://ieasyclick.com/docs/zh-cn/funcs/blehid-event-api" title="setWifi 设置WIFI的直接链接">​</a></h2>
+<ul>
+<li>设置WIFI</li>
+<li>适配版本 EC 安卓 11.39.0+</li>
+<li>设置完成后需要重启开发板才能联网</li>
+<li>@param name WiFi 名称</li>
+<li>@param pwd Wifi 密码</li>
+<li>@returns <code>{string|null} </code>null或者空代表正常  其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 蓝牙连接成功后 调用这个函数</span><span></span></span><br/></span><span><span></span><span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> cr </span><span>=</span><span> bleEvent</span><span>.</span><span>setWifi</span><span>(</span><span>"112"</span><span>,</span><span>"333"</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"cr "</span><span>+</span><span>cr</span><span>)</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div>
+<h2>reset 重启开发板<a href="https://ieasyclick.com/docs/zh-cn/funcs/blehid-event-api" title="reset 重启开发板的直接链接">​</a></h2>
+<ul>
+<li>重启开发板</li>
+<li>适配版本 EC 安卓 11.39.0+</li>
+<li>@returns <code>{string|null}</code> null或者空代表正常  其他代表错误信息</li>
+</ul>
+<div><div><pre><code><span><span></span><span><span>    </span><span>// 蓝牙连接成功后 调用这个函数</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>let</span><span> cr </span><span>=</span><span> bleEvent</span><span>.</span><span>reset</span><span>(</span><span>)</span><span>;</span><span></span></span><br/></span><span><span></span><span><span>    </span><span>logd</span><span>(</span><span>"cr "</span><span>+</span><span>cr</span><span>)</span></span><br/></span></code></pre><div><button title="复制"><span></span></button></div></div></div></div></article>
