@@ -4,10 +4,13 @@ var EVE_QUANTUM_FAX_STORAGE = "EVEQuantumFAX";
 
 EVEQuantumFAX.storage = storages.create(EVE_QUANTUM_FAX_STORAGE);
 
+EVEQuantumFAX.appInfo = {
+    title: "QuantumFAX 控制台",
+    subtitle: "热更新与主循环控制",
+    tickMessage: "主循环执行"
+};
+
 EVEQuantumFAX.config = {
-    projectTitle: "EVEQuantumFAX",
-    projectSubtitle: "Float control panel with hot update",
-    demoMessage: "Replace demoTask.js with EVEQuantumFAX logic",
     tickIntervalSec: 3
 };
 
@@ -16,21 +19,18 @@ EVEQuantumFAX.configManager = {
         var config = EVEQuantumFAX.config;
         var storage = EVEQuantumFAX.storage;
 
-        config.projectTitle = storage.getString("projectTitle", config.projectTitle);
-        config.projectSubtitle = storage.getString("projectSubtitle", config.projectSubtitle);
-        config.demoMessage = storage.getString("demoMessage", config.demoMessage);
         config.tickIntervalSec = storage.getInt("tickIntervalSec", config.tickIntervalSec);
+        storage.remove("projectTitle");
+        storage.remove("projectSubtitle");
+        storage.remove("demoMessage");
 
-        logd("[Config] title=" + config.projectTitle + ", interval=" + config.tickIntervalSec);
+        logd("[Config] interval=" + config.tickIntervalSec);
     },
 
     save: function () {
         var config = EVEQuantumFAX.config;
         var storage = EVEQuantumFAX.storage;
 
-        storage.putString("projectTitle", config.projectTitle);
-        storage.putString("projectSubtitle", config.projectSubtitle);
-        storage.putString("demoMessage", config.demoMessage);
         storage.putInt("tickIntervalSec", config.tickIntervalSec);
     },
 

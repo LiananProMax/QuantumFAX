@@ -19,7 +19,7 @@ EVEQuantumFAX.demoTask = {
                     runToken: runToken
                 }));
             } catch (error) {
-                EVEQuantumFAX.logger.error("onTick failed: " + error);
+                EVEQuantumFAX.logger.error("主循环钩子执行失败：" + error);
             }
 
             sleep(EVEQuantumFAX.configManager.getTickIntervalMs());

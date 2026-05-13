@@ -14,7 +14,7 @@ EVEQuantumFAX.controller = {
     },
 
     _doStart: function () {
-        var config = EVEQuantumFAX.config;
+        var appInfo = EVEQuantumFAX.appInfo;
         var state = EVEQuantumFAX.state;
         var runToken;
 
@@ -26,10 +26,10 @@ EVEQuantumFAX.controller = {
         state.runToken += 1;
         runToken = state.runToken;
 
-        EVEQuantumFAX.logger.info("Start requested");
+        EVEQuantumFAX.logger.info("已请求启动");
         this._invokeHook("onStart", { runToken: runToken });
 
-        EVEQuantumFAX.ui.updateMiniStatus("RUN");
+        EVEQuantumFAX.ui.updateMiniStatus("运行");
         EVEQuantumFAX.ui.updatePanelStatus();
         EVEQuantumFAX.ui.closePanel();
 
@@ -40,45 +40,45 @@ EVEQuantumFAX.controller = {
         if (!state.workerThread) {
             state.isRunning = false;
             state.isPaused = false;
-            EVEQuantumFAX.logger.error("Background worker failed to start");
-            EVEQuantumFAX.ui.updateMiniStatus("STOP");
+            EVEQuantumFAX.logger.error("后台任务启动失败");
+            EVEQuantumFAX.ui.updateMiniStatus("停止");
             EVEQuantumFAX.ui.updatePanelStatus();
-            toast("Worker start failed");
+            toast("后台任务启动失败");
             return;
         }
 
-        toast(config.projectTitle + " started");
+        toast(appInfo.title + "已启动");
     },
 
     _doPause: function () {
         var state = EVEQuantumFAX.state;
 
         state.isPaused = true;
-        EVEQuantumFAX.logger.warn("Pause requested");
+        EVEQuantumFAX.logger.warn("已请求暂停");
         this._invokeHook("onPause");
-        EVEQuantumFAX.ui.updateMiniStatus("PAUSE");
+        EVEQuantumFAX.ui.updateMiniStatus("暂停");
         EVEQuantumFAX.ui.updatePanelStatus();
         EVEQuantumFAX.ui.refreshPanel();
-        toast("Paused");
+        toast("已暂停");
     },
 
     _doResume: function () {
         var state = EVEQuantumFAX.state;
 
         state.isPaused = false;
-        EVEQuantumFAX.logger.info("Resume requested");
+        EVEQuantumFAX.logger.info("已请求继续");
         this._invokeHook("onResume");
-        EVEQuantumFAX.ui.updateMiniStatus("RUN");
+        EVEQuantumFAX.ui.updateMiniStatus("运行");
         EVEQuantumFAX.ui.updatePanelStatus();
         EVEQuantumFAX.ui.refreshPanel();
-        toast("Resumed");
+        toast("已继续");
     },
 
     onStopClick: function () {
         var state = EVEQuantumFAX.state;
 
         if (!state.isRunning && !state.isPaused) {
-            EVEQuantumFAX.ui.updateMiniStatus("STOP");
+            EVEQuantumFAX.ui.updateMiniStatus("停止");
             EVEQuantumFAX.ui.updatePanelStatus();
             return;
         }
@@ -87,21 +87,21 @@ EVEQuantumFAX.controller = {
         state.isRunning = false;
         state.isPaused = false;
 
-        EVEQuantumFAX.logger.info("Stop requested");
+        EVEQuantumFAX.logger.info("已请求停止");
         this._invokeHook("onStop");
 
-        EVEQuantumFAX.ui.updateMiniStatus("STOP");
+        EVEQuantumFAX.ui.updateMiniStatus("停止");
         EVEQuantumFAX.ui.updatePanelStatus();
         EVEQuantumFAX.ui.refreshPanel();
-        toast("Stopped");
+        toast("已停止");
     },
 
     exitApp: function () {
-        EVEQuantumFAX.logger.info("Exit requested");
+        EVEQuantumFAX.logger.info("已请求退出");
         this._invokeHook("onExit");
         this.onStopClick();
         EVEQuantumFAX.ui.closeAll();
-        toast("Exiting");
+        toast("正在退出");
         sleep(300);
         exit();
     },
@@ -115,7 +115,7 @@ EVEQuantumFAX.controller = {
                 hook(EVEQuantumFAX.createContext(extra));
             }
         } catch (error) {
-            EVEQuantumFAX.logger.error(hookName + " failed: " + error);
+            EVEQuantumFAX.logger.error("钩子执行失败：" + hookName + "，" + error);
         }
     }
 };

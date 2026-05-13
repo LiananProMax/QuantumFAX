@@ -16,18 +16,61 @@ EVEQuantumFAX.xmlLayouts = {
         ACCENT_BLUE: "#3B82F6"
     },
 
-    createMiniXml: function () {
+    getMiniMetrics: function (isLandscape) {
+        if (isLandscape) {
+            return {
+                widthDp: "48dp",
+                heightDp: "48dp",
+                innerWidthDp: "44dp",
+                innerHeightDp: "44dp",
+                width: 48,
+                height: 48
+            };
+        }
+
+        return {
+            widthDp: "48dp",
+            heightDp: "48dp",
+            innerWidthDp: "44dp",
+            innerHeightDp: "44dp",
+            width: 48,
+            height: 48
+        };
+    },
+
+    getPanelMetrics: function (isLandscape, tabName) {
+        if (isLandscape) {
+            return {
+                widthDp: "680px",
+                heightDp: "1000px",
+                width: 680,
+                height: 1000,
+                logHeightDp: "720px"
+            };
+        }
+
+        return {
+            widthDp: "680px",
+            heightDp: "1000px",
+            width: 680,
+            height: 1000,
+            logHeightDp: "720px"
+        };
+    },
+
+    createMiniXml: function (isLandscape) {
         var theme = this.THEME;
+        var metrics = this.getMiniMetrics(isLandscape);
         var parts = [];
 
         parts.push('<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" ');
-        parts.push('android:tag="miniBg" android:layout_width="48dp" android:layout_height="48dp" android:gravity="center">');
-        parts.push('<LinearLayout android:tag="miniContent" android:layout_width="44dp" android:layout_height="44dp" ');
+        parts.push('android:tag="miniBg" android:layout_width="' + metrics.widthDp + '" android:layout_height="' + metrics.heightDp + '" android:gravity="center">');
+        parts.push('<LinearLayout android:tag="miniContent" android:layout_width="' + metrics.innerWidthDp + '" android:layout_height="' + metrics.innerHeightDp + '" ');
         parts.push('android:orientation="vertical" android:gravity="center" android:layout_gravity="center">');
         parts.push('<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" ');
-        parts.push('android:text="EVE" android:textColor="' + theme.ACCENT_GREEN + '" android:textSize="14sp" android:textStyle="bold"/>');
+        parts.push('android:text="QF" android:textColor="' + theme.ACCENT_GREEN + '" android:textSize="13sp" android:textStyle="bold"/>');
         parts.push('<TextView android:tag="statusMini" android:layout_width="wrap_content" android:layout_height="wrap_content" ');
-        parts.push('android:text="READY" android:textColor="' + theme.TEXT_MUTED + '" android:textSize="8sp"/>');
+        parts.push('android:text="就绪" android:textColor="' + theme.TEXT_MUTED + '" android:textSize="8sp"/>');
         parts.push('</LinearLayout></FrameLayout>');
 
         return parts.join("");
@@ -42,16 +85,16 @@ EVEQuantumFAX.xmlLayouts = {
     },
 
     _createPanelXml: function (isLandscape) {
-        var config = EVEQuantumFAX.config;
         var state = EVEQuantumFAX.state;
         var escapeXml = EVEQuantumFAX.utils.escapeXml;
         var theme = this.THEME;
         var isConfigTab = state.currentTab === "config";
-        var panelWidth = isLandscape ? "420dp" : "280dp";
+        var appInfo = EVEQuantumFAX.appInfo;
+        var metrics = this.getPanelMetrics(isLandscape, state.currentTab);
         var parts = [];
 
         parts.push('<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" ');
-        parts.push('android:layout_width="' + panelWidth + '" android:layout_height="wrap_content" ');
+        parts.push('android:layout_width="' + metrics.widthDp + '" android:layout_height="' + metrics.heightDp + '" ');
         parts.push('android:orientation="vertical" android:background="#F0' + theme.BG_PRIMARY.substring(1) + '" android:padding="10dp">');
 
         parts.push('<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" ');
@@ -61,10 +104,10 @@ EVEQuantumFAX.xmlLayouts = {
         parts.push('<LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" ');
         parts.push('android:orientation="vertical" android:layout_marginLeft="4dp">');
         parts.push('<TextView android:layout_width="match_parent" android:layout_height="wrap_content" ');
-        parts.push('android:text="' + escapeXml(config.projectTitle) + '" android:textColor="' + theme.TEXT_PRIMARY + '" ');
+        parts.push('android:text="' + escapeXml(appInfo.title) + '" android:textColor="' + theme.TEXT_PRIMARY + '" ');
         parts.push('android:textSize="12sp" android:fontFamily="monospace" android:singleLine="true"/>');
         parts.push('<TextView android:layout_width="match_parent" android:layout_height="wrap_content" ');
-        parts.push('android:text="' + escapeXml(config.projectSubtitle) + '" android:textColor="' + theme.TEXT_MUTED + '" ');
+        parts.push('android:text="' + escapeXml(appInfo.subtitle) + '" android:textColor="' + theme.TEXT_MUTED + '" ');
         parts.push('android:textSize="8sp" android:singleLine="true"/>');
         parts.push('</LinearLayout>');
         parts.push('<TextView android:tag="tvStatus" android:layout_width="wrap_content" android:layout_height="wrap_content" ');
@@ -75,8 +118,8 @@ EVEQuantumFAX.xmlLayouts = {
 
         parts.push('<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" ');
         parts.push('android:orientation="horizontal" android:background="' + theme.BG_PRIMARY + '" android:layout_marginBottom="6dp">');
-        parts.push(this._createTabButton("tabConfig", "Config", isConfigTab));
-        parts.push(this._createTabButton("tabLog", "Logs", !isConfigTab));
+        parts.push(this._createTabButton("tabConfig", "配置", isConfigTab));
+        parts.push(this._createTabButton("tabLog", "日志", !isConfigTab));
         parts.push('</LinearLayout>');
 
         if (isConfigTab) {
@@ -85,7 +128,7 @@ EVEQuantumFAX.xmlLayouts = {
             parts.push(this._createLogTabXml(isLandscape));
         }
 
-        parts.push('<Button android:tag="btnExit" android:text="Exit" android:layout_width="match_parent" ');
+        parts.push('<Button android:tag="btnExit" android:text="退出" android:layout_width="match_parent" ');
         parts.push('android:layout_height="28dp" android:background="' + theme.BG_CARD + '" ');
         parts.push('android:textColor="' + theme.ACCENT_RED + '" android:textSize="9sp" ');
         parts.push('android:layout_marginTop="4dp" android:paddingTop="2dp" android:paddingBottom="2dp"/>');
@@ -127,16 +170,7 @@ EVEQuantumFAX.xmlLayouts = {
         parts.push('<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" ');
         parts.push('android:orientation="vertical" android:padding="2dp">');
 
-        parts.push(this._createFieldLabel("Project title"));
-        parts.push(this._createEditText("etProjectTitle", config.projectTitle, "Title shown in the panel"));
-
-        parts.push(this._createFieldLabel("Project subtitle"));
-        parts.push(this._createEditText("etProjectSubtitle", config.projectSubtitle, "Small helper text under the title"));
-
-        parts.push(this._createFieldLabel("Demo message"));
-        parts.push(this._createEditText("etDemoMessage", config.demoMessage, "Logged on each demo tick"));
-
-        parts.push(this._createFieldLabel("Tick interval (sec)"));
+        parts.push(this._createFieldLabel("主循环间隔（秒）"));
         parts.push('<EditText android:tag="etTickInterval" android:layout_width="match_parent" android:layout_height="wrap_content" ');
         parts.push('android:hint="3" android:text="' + escapeXml(config.tickIntervalSec) + '" ');
         parts.push('android:textColor="' + theme.TEXT_PRIMARY + '" android:textColorHint="' + theme.TEXT_MUTED + '" ');
@@ -144,7 +178,7 @@ EVEQuantumFAX.xmlLayouts = {
         parts.push('android:singleLine="true" android:inputType="number" android:layout_marginTop="2dp" android:layout_marginBottom="6dp"/>');
 
         parts.push('<TextView android:layout_width="match_parent" android:layout_height="wrap_content" ');
-        parts.push('android:text="Edit the hooks or demoTask module to plug in your own business logic." ');
+        parts.push('android:text="只保留主循环间隔配置，业务逻辑请在 hooks 或 demoTask 中调整。" ');
         parts.push('android:textColor="' + theme.TEXT_MUTED + '" android:textSize="8sp" android:layout_marginBottom="6dp"/>');
 
         parts.push('<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">');
@@ -152,7 +186,7 @@ EVEQuantumFAX.xmlLayouts = {
         parts.push('android:layout_width="0dp" android:layout_height="' + buttonHeight + '" android:layout_weight="1" ');
         parts.push('android:background="' + theme.BG_CARD + '" android:textColor="' + this._getStartPauseColor() + '" ');
         parts.push('android:textSize="10sp" android:paddingTop="2dp" android:paddingBottom="2dp"/>');
-        parts.push('<Button android:tag="btnStop" android:text="Stop" android:layout_width="0dp" ');
+        parts.push('<Button android:tag="btnStop" android:text="停止" android:layout_width="0dp" ');
         parts.push('android:layout_height="' + buttonHeight + '" android:layout_weight="1" android:background="' + theme.BG_CARD + '" ');
         parts.push('android:textColor="' + theme.ACCENT_RED + '" android:textSize="10sp" android:layout_marginLeft="3dp" ');
         parts.push('android:paddingTop="2dp" android:paddingBottom="2dp"/>');
@@ -168,30 +202,20 @@ EVEQuantumFAX.xmlLayouts = {
             'android:text="' + text + '" android:textColor="' + theme.TEXT_MUTED + '" android:textSize="9sp"/>';
     },
 
-    _createEditText: function (tag, value, hint) {
-        var theme = this.THEME;
-        var escapeXml = EVEQuantumFAX.utils.escapeXml;
-        return '<EditText android:tag="' + tag + '" android:layout_width="match_parent" android:layout_height="wrap_content" ' +
-            'android:hint="' + escapeXml(hint) + '" android:text="' + escapeXml(value) + '" ' +
-            'android:textColor="' + theme.TEXT_PRIMARY + '" android:textColorHint="' + theme.TEXT_MUTED + '" ' +
-            'android:background="' + theme.BG_INPUT + '" android:padding="8dp" android:textSize="12sp" ' +
-            'android:singleLine="true" android:layout_marginTop="2dp" android:layout_marginBottom="6dp"/>';
-    },
-
     _createLogTabXml: function (isLandscape) {
         var theme = this.THEME;
         var logListXml = EVEQuantumFAX.logger.createLogListXml();
         var logCount = EVEQuantumFAX.state.logs.length;
-        var scrollHeight = isLandscape ? "120dp" : "180dp";
+        var scrollHeight = this.getPanelMetrics(isLandscape, "log").logHeightDp;
         var parts = [];
 
         parts.push('<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" ');
         parts.push('android:orientation="horizontal" android:gravity="center_vertical" android:background="' + theme.BG_PRIMARY + '" ');
         parts.push('android:paddingLeft="4dp" android:paddingRight="4dp" android:paddingTop="3dp" android:paddingBottom="3dp">');
         parts.push('<TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" ');
-        parts.push('android:text="Entries: ' + logCount + '" android:textColor="' + theme.TEXT_MUTED + '" android:textSize="8sp"/>');
+        parts.push('android:text="日志条数：' + logCount + '" android:textColor="' + theme.TEXT_MUTED + '" android:textSize="8sp"/>');
         parts.push('<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" ');
-        parts.push('android:text="Swipe" android:textColor="' + theme.TEXT_MUTED + '" android:textSize="8sp"/>');
+        parts.push('android:text="滑动查看" android:textColor="' + theme.TEXT_MUTED + '" android:textSize="8sp"/>');
         parts.push('</LinearLayout>');
 
         parts.push('<ScrollView android:tag="logScrollView" android:layout_width="match_parent" android:layout_height="' + scrollHeight + '" ');
@@ -202,10 +226,10 @@ EVEQuantumFAX.xmlLayouts = {
 
         parts.push('<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" ');
         parts.push('android:orientation="horizontal" android:layout_marginTop="3dp" android:background="' + theme.BG_PRIMARY + '">');
-        parts.push('<Button android:tag="btnClearLog" android:text="Clear" android:layout_width="0dp" android:layout_height="26dp" ');
+        parts.push('<Button android:tag="btnClearLog" android:text="清空" android:layout_width="0dp" android:layout_height="26dp" ');
         parts.push('android:layout_weight="1" android:background="' + theme.BG_CARD + '" android:textColor="' + theme.ACCENT_RED + '" ');
         parts.push('android:textSize="9sp" android:layout_marginRight="2dp" android:paddingTop="1dp" android:paddingBottom="1dp"/>');
-        parts.push('<Button android:tag="btnRefreshLog" android:text="Refresh" android:layout_width="0dp" android:layout_height="26dp" ');
+        parts.push('<Button android:tag="btnRefreshLog" android:text="刷新" android:layout_width="0dp" android:layout_height="26dp" ');
         parts.push('android:layout_weight="1" android:background="' + theme.BG_CARD + '" android:textColor="' + theme.ACCENT_GREEN + '" ');
         parts.push('android:textSize="9sp" android:layout_marginLeft="2dp" android:paddingTop="1dp" android:paddingBottom="1dp"/>');
         parts.push('</LinearLayout>');
@@ -216,12 +240,12 @@ EVEQuantumFAX.xmlLayouts = {
     _getStatusText: function () {
         var state = EVEQuantumFAX.state;
         if (!state.isRunning) {
-            return "Stopped";
+            return "未运行";
         }
         if (state.isPaused) {
-            return "Paused";
+            return "已暂停";
         }
-        return "Running";
+        return "运行中";
     },
 
     _getStatusColor: function () {
@@ -239,12 +263,12 @@ EVEQuantumFAX.xmlLayouts = {
     _getStartPauseLabel: function () {
         var state = EVEQuantumFAX.state;
         if (!state.isRunning) {
-            return "Start";
+            return "启动";
         }
         if (state.isPaused) {
-            return "Resume";
+            return "继续";
         }
-        return "Pause";
+        return "暂停";
     },
 
     _getStartPauseColor: function () {

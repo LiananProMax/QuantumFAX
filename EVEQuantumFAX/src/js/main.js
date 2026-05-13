@@ -43,7 +43,7 @@ function runHotUpdateCheck() {
 
         updateResult = EVEQuantumFAX.hotupdate.updater.checkUpdate(true);
         if (!updateResult.hasUpdate) {
-            EVEQuantumFAX.logger.info("No hot update available");
+            EVEQuantumFAX.logger.info("暂无可用热更新");
             return false;
         }
 
@@ -51,21 +51,21 @@ function runHotUpdateCheck() {
         currentVersion = debugInfo.currentVersion;
         logd("[Update] server version: " + newVersion + ", current version: " + currentVersion);
         if (newVersion <= currentVersion) {
-            EVEQuantumFAX.logger.info("Hot update skipped: server version is not newer");
+            EVEQuantumFAX.logger.info("服务端版本未更新，跳过热更新");
             return false;
         }
 
-        EVEQuantumFAX.logger.info("Hot update found: v" + newVersion);
-        toast("Found update v" + newVersion);
+        EVEQuantumFAX.logger.info("发现热更新：v" + newVersion);
+        toast("发现更新 v" + newVersion);
         if (EVEQuantumFAX.hotupdate.updater.performUpdate(newVersion)) {
             return true;
         }
 
-        EVEQuantumFAX.logger.warn("Hot update failed, continue current version");
+        EVEQuantumFAX.logger.warn("热更新失败，继续使用当前版本");
         return false;
     } catch (error) {
         logw("[Update] check failed: " + error);
-        EVEQuantumFAX.logger.warn("Hot update check failed: " + error);
+        EVEQuantumFAX.logger.warn("热更新检查失败：" + error);
         return false;
     }
 }
@@ -79,8 +79,8 @@ function main() {
     EVEQuantumFAX.configManager.load();
     EVEQuantumFAX.ui.closeAll();
 
-    EVEQuantumFAX.logger.info("EVEQuantumFAX boot complete");
-    EVEQuantumFAX.logger.info("Screen: " + EVEQuantumFAX.screen.width + "x" + EVEQuantumFAX.screen.height);
+    EVEQuantumFAX.logger.info("QuantumFAX 启动完成");
+    EVEQuantumFAX.logger.info("屏幕尺寸：" + EVEQuantumFAX.screen.width + "x" + EVEQuantumFAX.screen.height);
 
     if (runHotUpdateCheck()) {
         return;
@@ -90,17 +90,18 @@ function main() {
     logd("[Permission] floaty=" + hasPermission);
 
     if (!hasPermission) {
-        EVEQuantumFAX.logger.error("Float window permission was not granted");
-        toast("Allow float window permission and retry");
+        EVEQuantumFAX.logger.error("未授予悬浮窗权限");
+        toast("请授予悬浮窗权限后重试");
         sleep(1500);
         return;
     }
 
     EVEQuantumFAX.ui.showMiniFloat();
-    EVEQuantumFAX.logger.success("Mini float is ready");
-    toast(EVEQuantumFAX.config.projectTitle + " ready");
+    EVEQuantumFAX.logger.success("迷你悬浮窗已就绪");
+    toast(EVEQuantumFAX.appInfo.title + "已就绪");
 
     while (!isScriptExit()) {
+        EVEQuantumFAX.ui.syncOrientation();
         sleep(1000);
     }
 }
@@ -121,7 +122,7 @@ function safeMain() {
             logw("Cleanup failed: " + cleanupError);
         }
 
-        toast("EVEQuantumFAX crashed: " + error);
+        toast("QuantumFAX 发生异常：" + error);
     }
 }
 

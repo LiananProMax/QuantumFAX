@@ -2,12 +2,17 @@ var EVEQuantumFAX = EVEQuantumFAX || {};
 
 EVEQuantumFAX.ui = {
     showMiniFloat: function () {
+        EVEQuantumFAX.utils.initScreen();
+
         var screen = EVEQuantumFAX.screen;
         var constants = EVEQuantumFAX.constants;
         var state = EVEQuantumFAX.state;
-        var miniXml = EVEQuantumFAX.xmlLayouts.createMiniXml();
+        var metrics = EVEQuantumFAX.xmlLayouts.getMiniMetrics(screen.isLandscape);
+        var miniXml = EVEQuantumFAX.xmlLayouts.createMiniXml(screen.isLandscape);
         var initialX = 0;
-        var initialY = screen.isLandscape ? Math.floor(screen.height / 2 - 30) : 200;
+        var initialY = screen.isLandscape ? Math.floor(screen.height / 2 - metrics.height / 2) : 200;
+
+        state.floatLandscape = screen.isLandscape;
 
         state.miniView = floaty.showFloatXml(constants.FLOAT_TAG_MINI, miniXml, initialX, initialY);
 
@@ -109,7 +114,7 @@ EVEQuantumFAX.ui = {
                         return;
                     }
 
-                    safeText = String(text || "READY");
+                    safeText = String(text || "就绪");
                     if (safeText.length > 6) {
                         safeText = safeText.substring(0, 6);
                     }
@@ -130,14 +135,15 @@ EVEQuantumFAX.ui = {
     },
 
     openPanel: function () {
+        EVEQuantumFAX.utils.initScreen();
+
         var constants = EVEQuantumFAX.constants;
         var screen = EVEQuantumFAX.screen;
         var state = EVEQuantumFAX.state;
-        var miniX;
-        var miniY;
         var panelXml;
         var panelWidth;
         var panelHeight;
+        var panelMetrics;
         var panelX;
         var panelY;
 
@@ -145,26 +151,18 @@ EVEQuantumFAX.ui = {
             return;
         }
 
-        miniX = floaty.getX(constants.FLOAT_TAG_MINI);
-        miniY = floaty.getY(constants.FLOAT_TAG_MINI);
+        panelMetrics = EVEQuantumFAX.xmlLayouts.getPanelMetrics(screen.isLandscape, state.currentTab);
+        panelWidth = panelMetrics.width;
+        panelHeight = panelMetrics.height;
 
         if (screen.isLandscape) {
-            panelWidth = 420;
-            panelHeight = state.currentTab === "log" ? 220 : 270;
             panelXml = EVEQuantumFAX.xmlLayouts.createLandscapePanelXml();
         } else {
-            panelWidth = 280;
-            panelHeight = state.currentTab === "log" ? 280 : 360;
             panelXml = EVEQuantumFAX.xmlLayouts.createPortraitPanelXml();
         }
 
-        panelX = miniX + 55;
-        if (panelX + panelWidth > screen.width) {
-            panelX = miniX - panelWidth - 5;
-        }
-        panelX = EVEQuantumFAX.utils.clamp(panelX, 5, Math.max(5, screen.width - panelWidth - 5));
-
-        panelY = EVEQuantumFAX.utils.clamp(miniY, 10, Math.max(10, screen.height - panelHeight - 10));
+        panelX = this._getCenteredOffset(screen.width, panelWidth, 5);
+        panelY = this._getCenteredOffset(screen.height, panelHeight, 10);
 
         this._showOverlay();
 
@@ -176,8 +174,59 @@ EVEQuantumFAX.ui = {
 
         state.isExpanded = true;
         floaty.focusable(constants.FLOAT_TAG_PANEL, true);
+        this._centerPanelAfterLayout(panelMetrics);
         this.updatePanelStatus();
         this.bindPanelEvents();
+    },
+
+    _getCenteredOffset: function (screenSize, windowSize, margin) {
+        var offset = Math.floor((screenSize - windowSize) / 2);
+
+        if (windowSize + margin * 2 >= screenSize) {
+            return offset;
+        }
+
+        return EVEQuantumFAX.utils.clamp(offset, margin, Math.max(margin, screenSize - windowSize - margin));
+    },
+
+    _centerPanelAfterLayout: function (panelMetrics) {
+        var constants = EVEQuantumFAX.constants;
+        var state = EVEQuantumFAX.state;
+        var self = this;
+
+        if (!state.panelView) {
+            return;
+        }
+
+        state.panelView.post(new java.lang.Runnable({
+            run: function () {
+                var screen;
+                var measuredWidth;
+                var measuredHeight;
+                var panelX;
+                var panelY;
+
+                try {
+                    if (!state.panelView) {
+                        return;
+                    }
+
+                    EVEQuantumFAX.utils.initScreen();
+                    screen = EVEQuantumFAX.screen;
+
+                    measuredWidth = state.panelView.getWidth ? state.panelView.getWidth() : 0;
+                    measuredHeight = state.panelView.getHeight ? state.panelView.getHeight() : 0;
+
+                    panelX = self._getCenteredOffset(screen.width, measuredWidth || panelMetrics.width, 5);
+                    panelY = self._getCenteredOffset(screen.height, measuredHeight || panelMetrics.height, 10);
+
+                    floaty.updateX(constants.FLOAT_TAG_PANEL, panelX);
+                    floaty.updateY(constants.FLOAT_TAG_PANEL, panelY);
+                } catch (error) {
+                    logw("Panel center update failed: " + error);
+                }
+            }
+        }));
     },
 
     _showOverlay: function () {
@@ -272,11 +321,11 @@ EVEQuantumFAX.ui = {
                     bind("btnClearLog", function () {
                         EVEQuantumFAX.logger.clear();
                         EVEQuantumFAX.ui.refreshLogPanel();
-                        toast("Logs cleared");
+                        toast("日志已清空");
                     });
                     bind("btnRefreshLog", function () {
                         EVEQuantumFAX.ui.refreshLogPanel();
-                        toast("Logs refreshed");
+                        toast("日志已刷新");
                     });
                     bind("btnExit", function () {
                         EVEQuantumFAX.controller.exitApp();
@@ -339,9 +388,6 @@ EVEQuantumFAX.ui = {
         var configManager = EVEQuantumFAX.configManager;
         var state = EVEQuantumFAX.state;
         var utils = EVEQuantumFAX.utils;
-        var projectTitle;
-        var projectSubtitle;
-        var demoMessage;
         var tickInterval;
 
         if (!state.panelView || state.currentTab !== "config") {
@@ -349,14 +395,7 @@ EVEQuantumFAX.ui = {
         }
 
         try {
-            projectTitle = this._readEditText("etProjectTitle");
-            projectSubtitle = this._readEditText("etProjectSubtitle");
-            demoMessage = this._readEditText("etDemoMessage");
             tickInterval = utils.parsePositiveInt(this._readEditText("etTickInterval"), config.tickIntervalSec);
-
-            config.projectTitle = projectTitle || "EVEQuantumFAX";
-            config.projectSubtitle = projectSubtitle || "Float control panel with hot update";
-            config.demoMessage = demoMessage || "Replace demoTask.js with EVEQuantumFAX logic";
 
             config.tickIntervalSec = tickInterval;
             configManager.save();
@@ -391,6 +430,28 @@ EVEQuantumFAX.ui = {
         this.updateMiniBorderColor();
     },
 
+    syncOrientation: function () {
+        var state = EVEQuantumFAX.state;
+        var wasExpanded;
+
+        EVEQuantumFAX.utils.initScreen();
+
+        if (!state.miniView || state.floatLandscape === EVEQuantumFAX.screen.isLandscape) {
+            return;
+        }
+
+        wasExpanded = state.isExpanded;
+        this.savePanelConfig();
+        this.closeAll();
+        this.showMiniFloat();
+
+        if (wasExpanded) {
+            this.openPanel();
+        }
+
+        EVEQuantumFAX.logger.info("屏幕方向已切换为" + (EVEQuantumFAX.screen.isLandscape ? "横屏" : "竖屏"));
+    },
+
     closeAll: function () {
         var constants = EVEQuantumFAX.constants;
         var state = EVEQuantumFAX.state;
@@ -403,5 +464,6 @@ EVEQuantumFAX.ui = {
         state.panelView = null;
         state.miniView = null;
         state.isExpanded = false;
+        state.floatLandscape = null;
     }
 };

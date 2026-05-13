@@ -112,9 +112,9 @@ EVEQuantumFAX.logger = {
             parts.push('android:gravity="center" android:orientation="vertical" android:background="' + theme.BG.PRIMARY + '" ');
             parts.push('android:padding="12dp">');
             parts.push('<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" ');
-            parts.push('android:text="No logs yet" android:textColor="#6B7280" android:textSize="10sp"/>');
+            parts.push('android:text="暂无日志" android:textColor="#6B7280" android:textSize="10sp"/>');
             parts.push('<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" ');
-            parts.push('android:text="Start the demo loop to populate logs" android:textColor="#4B5563" android:textSize="8sp" ');
+            parts.push('android:text="启动主循环后会在这里显示日志" android:textColor="#4B5563" android:textSize="8sp" ');
             parts.push('android:layout_marginTop="4dp"/>');
             parts.push('</LinearLayout>');
             return parts.join("");

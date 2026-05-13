@@ -21,6 +21,7 @@ EVEQuantumFAX.state = {
     miniView: null,
     panelView: null,
     overlayView: null,
+    floatLandscape: null,
     isExpanded: false,
     currentTab: "config",
     logs: []
