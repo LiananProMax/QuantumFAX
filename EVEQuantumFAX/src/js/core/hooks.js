@@ -39,7 +39,7 @@ EVEQuantumFAX.hooks = {
     },
 
     _checkDamageControl: function (context, iteration) {
-        var canActivate;
+        var emergencyResult;
         var message;
 
         if (!EVEQuantumFAX.healthMonitor) {
@@ -47,9 +47,25 @@ EVEQuantumFAX.hooks = {
             return;
         }
 
-        canActivate = EVEQuantumFAX.healthMonitor.canActivateDamageControl();
-        message = canActivate ? "损控可以开启" : "损控已激活或冷却中";
-        context.logger.info("损控检测 #" + iteration + "：" + message);
+        emergencyResult = EVEQuantumFAX.healthMonitor.handleShipEmergency();
+        if (!emergencyResult.ok) {
+            message = "舰船应急检测 #" + iteration + "失败：" + emergencyResult.error;
+            context.logger.warn(message);
+            EVEQuantumFAX.toast(message);
+            return;
+        }
+
+        if (emergencyResult.activated) {
+            message = "舰船应急 #" + iteration + "：已开启损控（" + emergencyResult.reason + "）";
+            context.logger.warn(message);
+            EVEQuantumFAX.toast(message);
+            return;
+        }
+
+        message = "舰船应急 #" + iteration + "：" + emergencyResult.reason +
+            "，护盾 " + emergencyResult.shield +
+            "，装甲 " + emergencyResult.armor;
+        context.logger.info(message);
         EVEQuantumFAX.toast(message);
     },
 

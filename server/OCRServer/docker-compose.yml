@@ -1,0 +1,89 @@
+# =============================================================================
+# PaddleOCR-VL Server Docker Compose 配置
+#
+# 使用方式:
+#   启动服务:  docker-compose up -d
+#   查看日志:  docker-compose logs -f
+#   停止服务:  docker-compose down
+# =============================================================================
+
+version: "3.8"
+
+services:
+  ocr-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: paddleocr-vl-server
+    restart: unless-stopped
+
+    # GPU 支持
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+    ports:
+      - "${SERVER__PORT:-8000}:8000"
+
+    environment:
+      # 服务配置
+      - APP_NAME=PaddleOCR-VL Server
+      - SERVER__HOST=0.0.0.0
+      - SERVER__PORT=8000
+      - SERVER__DEBUG=false
+
+      # 模型配置
+      - MODEL__DEVICE=gpu:0
+      - MODEL__PIPELINE_VERSION=v1.5
+      - MODEL__PRECISION=fp16
+      - MODEL__USE_LAYOUT_DETECTION=true
+      - MODEL__MODEL_WARMUP=true
+
+      # 认证配置
+      - AUTH__ENABLED=true
+      - AUTH__API_KEYS=${API_KEYS:-}
+
+      # 限流配置
+      - RATE_LIMIT__ENABLED=true
+      - RATE_LIMIT__REQUESTS_PER_MINUTE=60
+      - RATE_LIMIT__REQUESTS_PER_DAY=10000
+
+      # 日志配置
+      - LOG__LEVEL=INFO
+      - LOG__FILE=/app/logs/ocr_server.log
+
+    volumes:
+      # 持久化日志和输出
+      - ./logs:/app/logs
+      - ./output:/app/output
+      # 模型缓存 (避免每次重启重新下载)
+      - paddleocr-models:/root/.paddleocr
+      - paddle-cache:/root/.cache/paddle
+
+    # 网络
+    networks:
+      - ocr-network
+
+    # 共享内存 (GPU 推理需要)
+    shm_size: "2gb"
+
+    # 日志配置
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+volumes:
+  paddleocr-models:
+    driver: local
+  paddle-cache:
+    driver: local
+
+networks:
+  ocr-network:
+    driver: bridge

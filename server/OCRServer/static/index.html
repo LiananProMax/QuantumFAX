@@ -1,0 +1,1571 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PaddleOCR-VL Server</title>
+<style>
+/* ========== CSS Variables ========== */
+:root {
+  --bg-primary: #f5f7fa;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f0f2f5;
+  --bg-hover: #e8eaed;
+  --text-primary: #1a1a2e;
+  --text-secondary: #555770;
+  --text-muted: #8e8ea0;
+  --border-color: #e0e0e6;
+  --border-focus: #4361ee;
+  --accent: #4361ee;
+  --accent-hover: #3651d4;
+  --accent-light: #eef0ff;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --transition: 0.2s ease;
+  --font: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Microsoft YaHei', sans-serif;
+  --font-mono: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+}
+
+[data-theme="dark"] {
+  --bg-primary: #0f0f1a;
+  --bg-secondary: #1a1a2e;
+  --bg-tertiary: #242440;
+  --bg-hover: #2d2d4a;
+  --text-primary: #e8e8f0;
+  --text-secondary: #a0a0b8;
+  --text-muted: #6e6e88;
+  --border-color: #2d2d4a;
+  --border-focus: #5a7bff;
+  --accent: #5a7bff;
+  --accent-hover: #6d8cff;
+  --accent-light: #1a1a3e;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.3);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.4);
+}
+
+/* ========== Reset & Base ========== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ========== Header ========== */
+.header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0 24px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-sm);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, var(--accent), #7c3aed);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.header-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.header-title span {
+  color: var(--text-muted);
+  font-weight: 400;
+  font-size: 13px;
+  margin-left: 8px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 18px;
+  transition: var(--transition);
+}
+
+.btn-icon:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* ========== Layout ========== */
+.main-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  min-height: calc(100vh - 60px);
+}
+
+@media (max-width: 1024px) {
+  .main-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ========== Card ========== */
+.card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-header h2 {
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-header h2 .icon {
+  font-size: 18px;
+}
+
+.card-body {
+  padding: 20px;
+}
+
+/* ========== Settings Bar ========== */
+.settings-bar {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.settings-bar label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.settings-bar input[type="text"],
+.settings-bar input[type="password"] {
+  flex: 1;
+  min-width: 200px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: var(--font-mono);
+  transition: var(--transition);
+}
+
+.settings-bar input:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(67,97,238,0.15);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-dot.online { background: var(--success); }
+.status-dot.offline { background: var(--danger); }
+
+/* ========== OCR Mode Selector ========== */
+.mode-selector {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 600px) {
+  .mode-selector { grid-template-columns: repeat(2, 1fr); }
+}
+
+.mode-btn {
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-tertiary);
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-family: var(--font);
+}
+
+.mode-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+
+.mode-btn.active {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.mode-btn .mode-icon {
+  font-size: 18px;
+}
+
+/* ========== Upload Zone ========== */
+.upload-zone {
+  border: 2px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  background: var(--bg-tertiary);
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.upload-zone:hover,
+.upload-zone.drag-over {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+
+.upload-zone .upload-icon {
+  font-size: 48px;
+  color: var(--text-muted);
+}
+
+.upload-zone.drag-over .upload-icon { color: var(--accent); }
+
+.upload-zone p {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.upload-zone .hint {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.upload-zone input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* ========== URL Input ========== */
+.url-input-group {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.url-input-group input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 13px;
+  transition: var(--transition);
+}
+
+.url-input-group input:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(67,97,238,0.15);
+}
+
+/* ========== Preview ========== */
+.preview-container {
+  margin-top: 16px;
+  position: relative;
+  display: none;
+}
+
+.preview-container.show { display: block; }
+
+.preview-container img {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+
+.preview-info {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.preview-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.preview-remove:hover { background: var(--danger); }
+
+/* ========== Options ========== */
+.options-panel {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  display: none;
+}
+
+.options-panel.show { display: block; }
+
+.options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.option-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+}
+
+.option-item label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+/* Toggle Switch */
+.toggle {
+  position: relative;
+  width: 40px;
+  height: 22px;
+}
+
+.toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: var(--border-color);
+  border-radius: 11px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  left: 3px;
+  bottom: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: var(--transition);
+}
+
+.toggle input:checked + .toggle-slider {
+  background: var(--accent);
+}
+
+.toggle input:checked + .toggle-slider::before {
+  transform: translateX(18px);
+}
+
+/* ========== Buttons ========== */
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  width: 100%;
+  justify-content: center;
+  padding: 12px;
+  font-size: 15px;
+  margin-top: 16px;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.btn-outline:hover { background: var(--accent-light); }
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+/* ========== Spinner ========== */
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ========== Result Panel ========== */
+.result-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.result-tab {
+  padding: 10px 18px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  transition: var(--transition);
+  font-family: var(--font);
+}
+
+.result-tab:hover { color: var(--text-primary); }
+
+.result-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.result-content {
+  padding: 20px;
+  min-height: 400px;
+  max-height: calc(100vh - 300px);
+  overflow-y: auto;
+}
+
+.result-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  color: var(--text-muted);
+  gap: 12px;
+}
+
+.result-placeholder .placeholder-icon {
+  font-size: 48px;
+  opacity: 0.5;
+}
+
+/* Text result */
+.text-result {
+  display: none;
+}
+
+.text-result.show { display: block; }
+
+.text-line {
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 4px;
+  font-size: 14px;
+  line-height: 1.8;
+  transition: var(--transition);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.text-line:hover {
+  background: var(--bg-tertiary);
+}
+
+.text-line .line-num {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-family: var(--font-mono);
+  min-width: 24px;
+  text-align: right;
+  padding-top: 2px;
+  user-select: none;
+}
+
+.text-line .line-text {
+  flex: 1;
+  word-break: break-all;
+}
+
+/* Markdown result */
+.markdown-result {
+  display: none;
+  line-height: 1.8;
+  font-size: 14px;
+}
+
+.markdown-result.show { display: block; }
+
+.markdown-result h1, .markdown-result h2, .markdown-result h3 {
+  margin: 16px 0 8px;
+  color: var(--text-primary);
+}
+
+.markdown-result table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+}
+
+.markdown-result th, .markdown-result td {
+  border: 1px solid var(--border-color);
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 13px;
+}
+
+.markdown-result th {
+  background: var(--bg-tertiary);
+  font-weight: 600;
+}
+
+/* JSON result */
+.json-result {
+  display: none;
+}
+
+.json-result.show { display: block; }
+
+.json-result pre {
+  background: var(--bg-tertiary);
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* ========== Stats Bar ========== */
+.stats-bar {
+  padding: 12px 20px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: 24px;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--bg-tertiary);
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stat-item .stat-value {
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+/* ========== Toast ========== */
+.toast-container {
+  position: fixed;
+  top: 72px;
+  right: 24px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toast {
+  padding: 12px 20px;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: slideIn 0.3s ease;
+  max-width: 400px;
+}
+
+.toast.success { background: #065f46; color: #d1fae5; }
+.toast.error { background: #991b1b; color: #fee2e2; }
+.toast.info { background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color); }
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* ========== Copy Button ========== */
+.copy-btn {
+  padding: 4px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: var(--font);
+}
+
+.copy-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ========== Options Toggle Btn ========== */
+.options-toggle {
+  font-size: 13px;
+  color: var(--accent);
+  cursor: pointer;
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 0;
+  font-family: var(--font);
+}
+
+.options-toggle:hover { text-decoration: underline; }
+
+/* ========== Scrollbar ========== */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ========== History Panel ========== */
+.history-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.history-item {
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+  transition: var(--transition);
+}
+
+.history-item:hover {
+  background: var(--bg-tertiary);
+}
+
+.history-item .time {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+/* ========== Loading Overlay ========== */
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.05);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-lg);
+  z-index: 10;
+}
+
+.loading-overlay.show {
+  display: flex;
+}
+
+.loading-content {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.loading-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* ========== Paste indicator ========== */
+.paste-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+</style>
+</head>
+<body>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-left">
+    <div class="logo">OCR</div>
+    <div class="header-title">
+      PaddleOCR-VL Server
+      <span>v1.5</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <span id="serverStatus" style="font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px;">
+      <span class="status-dot offline" id="statusDot"></span>
+      <span id="statusText">检查中...</span>
+    </span>
+    <button class="btn-icon" onclick="toggleTheme()" title="切换主题">🌓</button>
+    <a href="/docs" target="_blank" class="btn-icon" title="API 文档">📄</a>
+  </div>
+</header>
+
+<!-- Main -->
+<div class="main-container">
+
+  <!-- Settings Bar -->
+  <div class="settings-bar">
+    <label>🔑 API Key:</label>
+    <input type="password" id="apiKeyInput" placeholder="输入你的 API Key..." value="">
+    <button class="btn btn-outline btn-sm" onclick="toggleApiKeyVisibility()">显示</button>
+    <button class="btn btn-outline btn-sm" onclick="testConnection()">测试连接</button>
+    <label style="margin-left: auto;">🌐 服务地址:</label>
+    <input type="text" id="serverUrl" value="" placeholder="http://localhost:8000" style="max-width:260px;">
+  </div>
+
+  <!-- Left Column: Input -->
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h2><span class="icon">📷</span> 图像输入</h2>
+      </div>
+      <div class="card-body">
+
+        <!-- Mode Selector -->
+        <div class="mode-selector">
+          <button class="mode-btn active" data-mode="general_basic" onclick="selectMode(this)">
+            <span class="mode-icon">📝</span> 通用识别
+          </button>
+          <button class="mode-btn" data-mode="accurate_basic" onclick="selectMode(this)">
+            <span class="mode-icon">🎯</span> 高精度
+          </button>
+          <button class="mode-btn" data-mode="doc_parser" onclick="selectMode(this)">
+            <span class="mode-icon">📄</span> 文档解析
+          </button>
+          <button class="mode-btn" data-mode="table" onclick="selectMode(this)">
+            <span class="mode-icon">📊</span> 表格识别
+          </button>
+          <button class="mode-btn" data-mode="formula" onclick="selectMode(this)">
+            <span class="mode-icon">📐</span> 公式识别
+          </button>
+          <button class="mode-btn" data-mode="seal" onclick="selectMode(this)">
+            <span class="mode-icon">🔴</span> 印章识别
+          </button>
+        </div>
+
+        <!-- Upload Zone -->
+        <div class="upload-zone" id="uploadZone">
+          <span class="upload-icon">📁</span>
+          <p>拖拽图片到此处，或点击选择文件</p>
+          <span class="hint">支持 JPG / PNG / BMP / TIFF / PDF / WebP，最大 20MB</span>
+          <span class="hint paste-hint">💡 也可以直接 Ctrl+V 粘贴剪贴板中的图片</span>
+          <input type="file" id="fileInput" accept="image/*,.pdf">
+        </div>
+
+        <!-- URL Input -->
+        <div class="url-input-group">
+          <input type="text" id="urlInput" placeholder="或输入图像 URL 地址...">
+          <button class="btn btn-outline btn-sm" onclick="loadFromUrl()">加载</button>
+        </div>
+
+        <!-- Preview -->
+        <div class="preview-container" id="previewContainer">
+          <img id="previewImage" alt="预览">
+          <button class="preview-remove" onclick="clearPreview()">✕</button>
+          <div class="preview-info" id="previewInfo"></div>
+        </div>
+
+        <!-- Options -->
+        <button class="options-toggle" onclick="toggleOptions()">
+          ⚙️ <span id="optionsToggleText">展开高级选项</span>
+        </button>
+        <div class="options-panel" id="optionsPanel">
+          <div class="options-grid">
+            <div class="option-item">
+              <label for="optDetectDirection">检测图像方向</label>
+              <div class="toggle">
+                <input type="checkbox" id="optDetectDirection">
+                <span class="toggle-slider"></span>
+              </div>
+            </div>
+            <div class="option-item">
+              <label for="optLayoutDetection">版面检测</label>
+              <div class="toggle">
+                <input type="checkbox" id="optLayoutDetection" checked>
+                <span class="toggle-slider"></span>
+              </div>
+            </div>
+            <div class="option-item">
+              <label for="optDocUnwarping">文档矫正</label>
+              <div class="toggle">
+                <input type="checkbox" id="optDocUnwarping">
+                <span class="toggle-slider"></span>
+              </div>
+            </div>
+            <div class="option-item">
+              <label for="optSealRecognition">印章识别</label>
+              <div class="toggle">
+                <input type="checkbox" id="optSealRecognition">
+                <span class="toggle-slider"></span>
+              </div>
+            </div>
+            <div class="option-item">
+              <label for="optChartRecognition">图表识别</label>
+              <div class="toggle">
+                <input type="checkbox" id="optChartRecognition">
+                <span class="toggle-slider"></span>
+              </div>
+            </div>
+            <div class="option-item">
+              <label for="optFormatMarkdown">格式化 Markdown</label>
+              <div class="toggle">
+                <input type="checkbox" id="optFormatMarkdown">
+                <span class="toggle-slider"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <button class="btn btn-primary" id="submitBtn" onclick="submitOCR()">
+          🚀 开始识别
+        </button>
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="card" style="margin-top: 16px;">
+      <div class="card-header">
+        <h2><span class="icon">🕐</span> 识别历史</h2>
+        <button class="copy-btn" onclick="clearHistory()">清空</button>
+      </div>
+      <div class="card-body" style="padding: 8px 12px;">
+        <div class="history-list" id="historyList">
+          <div class="result-placeholder" style="min-height:80px;">
+            <span style="font-size:13px;">暂无识别记录</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: Result -->
+  <div>
+    <div class="card" style="position: relative;">
+      <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+          <div class="loading-spinner"></div>
+          <div class="loading-text" id="loadingText">正在识别中...</div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="result-tabs">
+        <button class="result-tab active" data-tab="text" onclick="switchTab(this)">📝 文字</button>
+        <button class="result-tab" data-tab="markdown" onclick="switchTab(this)">📋 Markdown</button>
+        <button class="result-tab" data-tab="json" onclick="switchTab(this)">{ } JSON</button>
+        <div style="flex:1;"></div>
+        <button class="copy-btn" style="margin:8px;" onclick="copyResult()">📋 复制结果</button>
+      </div>
+
+      <!-- Result Content -->
+      <div class="result-content" id="resultContent">
+        <div class="result-placeholder" id="resultPlaceholder">
+          <span class="placeholder-icon">🔍</span>
+          <p>上传图片并点击"开始识别"查看结果</p>
+        </div>
+
+        <div class="text-result" id="textResult"></div>
+        <div class="markdown-result" id="markdownResult"></div>
+        <div class="json-result" id="jsonResult"><pre></pre></div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-bar" id="statsBar" style="display:none;">
+        <div class="stat-item">
+          ⏱️ 耗时: <span class="stat-value" id="statTime">-</span>
+        </div>
+        <div class="stat-item">
+          📝 识别: <span class="stat-value" id="statCount">-</span> 条
+        </div>
+        <div class="stat-item">
+          🏷️ 模式: <span class="stat-value" id="statMode">-</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== State ==========
+const state = {
+  mode: 'general_basic',
+  imageBase64: null,
+  imageUrl: null,
+  fileName: null,
+  lastResult: null,
+  history: JSON.parse(localStorage.getItem('ocr_history') || '[]'),
+};
+
+const modeLabels = {
+  general_basic: '通用识别',
+  accurate_basic: '高精度',
+  doc_parser: '文档解析',
+  table: '表格识别',
+  formula: '公式识别',
+  seal: '印章识别',
+};
+
+// ========== Init ==========
+document.addEventListener('DOMContentLoaded', () => {
+  // Restore settings
+  const savedKey = localStorage.getItem('ocr_api_key');
+  if (savedKey) document.getElementById('apiKeyInput').value = savedKey;
+
+  const savedUrl = localStorage.getItem('ocr_server_url');
+  document.getElementById('serverUrl').value = savedUrl || window.location.origin;
+
+  const savedTheme = localStorage.getItem('ocr_theme');
+  if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
+
+  // Auto-save settings
+  document.getElementById('apiKeyInput').addEventListener('input', (e) => {
+    localStorage.setItem('ocr_api_key', e.target.value);
+  });
+  document.getElementById('serverUrl').addEventListener('input', (e) => {
+    localStorage.setItem('ocr_server_url', e.target.value);
+  });
+
+  // Check server status
+  checkServerStatus();
+
+  // Render history
+  renderHistory();
+
+  // Setup paste listener
+  document.addEventListener('paste', handlePaste);
+
+  // Setup drag & drop
+  const uploadZone = document.getElementById('uploadZone');
+  uploadZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadZone.classList.add('drag-over');
+  });
+  uploadZone.addEventListener('dragleave', () => {
+    uploadZone.classList.remove('drag-over');
+  });
+  uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove('drag-over');
+    const files = e.dataTransfer.files;
+    if (files.length > 0) handleFile(files[0]);
+  });
+
+  // File input
+  document.getElementById('fileInput').addEventListener('change', (e) => {
+    if (e.target.files.length > 0) handleFile(e.target.files[0]);
+  });
+});
+
+// ========== Theme ==========
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('ocr_theme', next);
+}
+
+// ========== API Key ==========
+function toggleApiKeyVisibility() {
+  const input = document.getElementById('apiKeyInput');
+  const btn = event.target;
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = '隐藏';
+  } else {
+    input.type = 'password';
+    btn.textContent = '显示';
+  }
+}
+
+// ========== Server ==========
+function getBaseUrl() {
+  return document.getElementById('serverUrl').value.replace(/\/+$/, '') || window.location.origin;
+}
+
+function getApiKey() {
+  return document.getElementById('apiKeyInput').value.trim();
+}
+
+function getHeaders() {
+  const headers = { 'Content-Type': 'application/json' };
+  const key = getApiKey();
+  if (key) headers['X-API-Key'] = key;
+  return headers;
+}
+
+async function checkServerStatus() {
+  const dot = document.getElementById('statusDot');
+  const text = document.getElementById('statusText');
+  try {
+    const resp = await fetch(`${getBaseUrl()}/health`, { signal: AbortSignal.timeout(5000) });
+    const data = await resp.json();
+    if (data.status === 'healthy') {
+      dot.className = 'status-dot online';
+      text.textContent = '服务正常';
+    } else {
+      dot.className = 'status-dot offline';
+      text.textContent = '服务降级';
+      text.style.color = 'var(--warning)';
+    }
+  } catch {
+    dot.className = 'status-dot offline';
+    text.textContent = '无法连接';
+  }
+}
+
+async function testConnection() {
+  await checkServerStatus();
+  const dot = document.getElementById('statusDot');
+  if (dot.classList.contains('online')) {
+    showToast('连接成功！服务运行正常', 'success');
+  } else {
+    showToast('连接失败，请检查服务地址', 'error');
+  }
+}
+
+// ========== Mode ==========
+function selectMode(btn) {
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  state.mode = btn.dataset.mode;
+}
+
+// ========== File Handling ==========
+function handleFile(file) {
+  const maxSize = 20 * 1024 * 1024;
+  if (file.size > maxSize) {
+    showToast('文件大小超过 20MB 限制', 'error');
+    return;
+  }
+
+  state.fileName = file.name;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const dataUrl = e.target.result;
+    // Extract base64 (remove data:xxx;base64, prefix)
+    state.imageBase64 = dataUrl.split(',')[1];
+    state.imageUrl = null;
+
+    showPreview(dataUrl, file);
+  };
+  reader.readAsDataURL(file);
+}
+
+function handlePaste(e) {
+  const items = e.clipboardData?.items;
+  if (!items) return;
+
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      e.preventDefault();
+      const file = item.getAsFile();
+      if (file) {
+        handleFile(file);
+        showToast('已粘贴剪贴板图片', 'info');
+      }
+      break;
+    }
+  }
+}
+
+function showPreview(dataUrl, file) {
+  const container = document.getElementById('previewContainer');
+  const img = document.getElementById('previewImage');
+  const info = document.getElementById('previewInfo');
+
+  img.src = dataUrl;
+  container.classList.add('show');
+
+  const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+  info.textContent = `${file.name} | ${sizeMB} MB | ${file.type || '未知格式'}`;
+}
+
+function clearPreview() {
+  state.imageBase64 = null;
+  state.fileName = null;
+  document.getElementById('previewContainer').classList.remove('show');
+  document.getElementById('fileInput').value = '';
+}
+
+async function loadFromUrl() {
+  const url = document.getElementById('urlInput').value.trim();
+  if (!url) {
+    showToast('请输入图像 URL', 'error');
+    return;
+  }
+
+  state.imageUrl = url;
+  state.imageBase64 = null;
+  state.fileName = url.split('/').pop() || 'url_image';
+
+  // Try to preview
+  const container = document.getElementById('previewContainer');
+  const img = document.getElementById('previewImage');
+  const info = document.getElementById('previewInfo');
+
+  img.src = url;
+  img.onerror = () => {
+    info.textContent = `URL 已设置 (预览可能因跨域限制不可用)`;
+  };
+  container.classList.add('show');
+  info.textContent = `URL: ${url}`;
+
+  showToast('URL 已加载', 'info');
+}
+
+// ========== Options ==========
+function toggleOptions() {
+  const panel = document.getElementById('optionsPanel');
+  const text = document.getElementById('optionsToggleText');
+  panel.classList.toggle('show');
+  text.textContent = panel.classList.contains('show') ? '收起高级选项' : '展开高级选项';
+}
+
+// ========== Submit ==========
+async function submitOCR() {
+  if (!state.imageBase64 && !state.imageUrl) {
+    showToast('请先上传图片或输入 URL', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('submitBtn');
+  const overlay = document.getElementById('loadingOverlay');
+  const loadingText = document.getElementById('loadingText');
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> 识别中...';
+  overlay.classList.add('show');
+  loadingText.textContent = `正在使用「${modeLabels[state.mode]}」模式识别...`;
+
+  const startTime = performance.now();
+
+  try {
+    const baseUrl = getBaseUrl();
+    let endpoint, body;
+
+    // Build request body
+    const imageData = {};
+    if (state.imageBase64) imageData.image = state.imageBase64;
+    else if (state.imageUrl) imageData.url = state.imageUrl;
+
+    switch (state.mode) {
+      case 'general_basic':
+        endpoint = '/api/v1/ocr/general_basic';
+        body = {
+          ...imageData,
+          detect_direction: document.getElementById('optDetectDirection').checked,
+        };
+        break;
+      case 'accurate_basic':
+        endpoint = '/api/v1/ocr/accurate_basic';
+        body = {
+          ...imageData,
+          detect_direction: document.getElementById('optDetectDirection').checked,
+        };
+        break;
+      case 'doc_parser':
+        endpoint = '/api/v1/ocr/doc_parser';
+        body = {
+          ...imageData,
+          use_layout_detection: document.getElementById('optLayoutDetection').checked,
+          use_doc_orientation_classify: document.getElementById('optDetectDirection').checked,
+          use_doc_unwarping: document.getElementById('optDocUnwarping').checked,
+          use_seal_recognition: document.getElementById('optSealRecognition').checked,
+          use_chart_recognition: document.getElementById('optChartRecognition').checked,
+          format_block_content: document.getElementById('optFormatMarkdown').checked,
+        };
+        break;
+      case 'table':
+        endpoint = '/api/v1/ocr/table';
+        body = imageData;
+        break;
+      case 'formula':
+        endpoint = '/api/v1/ocr/formula';
+        body = imageData;
+        break;
+      case 'seal':
+        endpoint = '/api/v1/ocr/seal';
+        body = imageData;
+        break;
+    }
+
+    const resp = await fetch(`${baseUrl}${endpoint}`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(body),
+    });
+
+    const data = await resp.json();
+    const elapsed = performance.now() - startTime;
+
+    if (!resp.ok) {
+      throw new Error(data.error_msg || `请求失败 (${resp.status})`);
+    }
+
+    state.lastResult = data;
+    displayResult(data, elapsed);
+    addHistory(state.mode, state.fileName, data);
+    showToast('识别完成！', 'success');
+
+  } catch (err) {
+    showToast(`识别失败: ${err.message}`, 'error');
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🚀 开始识别';
+    overlay.classList.remove('show');
+  }
+}
+
+// ========== Display Result ==========
+function displayResult(data, elapsed) {
+  const placeholder = document.getElementById('resultPlaceholder');
+  const textResult = document.getElementById('textResult');
+  const markdownResult = document.getElementById('markdownResult');
+  const jsonResult = document.getElementById('jsonResult');
+  const statsBar = document.getElementById('statsBar');
+
+  placeholder.style.display = 'none';
+  statsBar.style.display = 'flex';
+
+  // Stats
+  const serverTime = data.processing_time_ms ? `${data.processing_time_ms.toFixed(0)}ms` : '-';
+  document.getElementById('statTime').textContent = `${(elapsed / 1000).toFixed(2)}s (服务端 ${serverTime})`;
+  document.getElementById('statMode').textContent = modeLabels[state.mode];
+
+  // Text result
+  let textLines = [];
+  if (data.words_result) {
+    textLines = data.words_result.map(w => w.words);
+    document.getElementById('statCount').textContent = data.words_result_num || textLines.length;
+  } else if (data.markdown) {
+    textLines = data.markdown.split('\n').filter(l => l.trim());
+    document.getElementById('statCount').textContent = textLines.length;
+  } else if (data.tables_result) {
+    textLines = data.tables_result.map(t => t.markdown || t.html || JSON.stringify(t));
+    document.getElementById('statCount').textContent = data.tables_num || textLines.length;
+  } else if (data.formulas_result) {
+    textLines = data.formulas_result.map(f => f.latex || JSON.stringify(f));
+    document.getElementById('statCount').textContent = data.formulas_num || textLines.length;
+  }
+
+  // Render text
+  textResult.innerHTML = textLines.map((line, i) => `
+    <div class="text-line">
+      <span class="line-num">${i + 1}</span>
+      <span class="line-text">${escapeHtml(line)}</span>
+    </div>
+  `).join('');
+
+  // Render markdown
+  if (data.markdown) {
+    markdownResult.innerHTML = simpleMarkdownRender(data.markdown);
+  } else {
+    markdownResult.innerHTML = `<pre>${escapeHtml(textLines.join('\n'))}</pre>`;
+  }
+
+  // Render JSON
+  jsonResult.querySelector('pre').textContent = JSON.stringify(data, null, 2);
+
+  // Show text tab by default
+  switchTab(document.querySelector('.result-tab[data-tab="text"]'));
+}
+
+function simpleMarkdownRender(md) {
+  let html = escapeHtml(md);
+  // Headers
+  html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+  html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+  // Bold
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // Italic
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  // Code
+  html = html.replace(/`([^`]+)`/g, '<code style="background:var(--bg-tertiary);padding:2px 6px;border-radius:4px;font-size:12px;">$1</code>');
+  // Line breaks
+  html = html.replace(/\n/g, '<br>');
+  return html;
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ========== Tabs ==========
+function switchTab(tabBtn) {
+  document.querySelectorAll('.result-tab').forEach(t => t.classList.remove('active'));
+  tabBtn.classList.add('active');
+
+  const tabName = tabBtn.dataset.tab;
+  document.querySelectorAll('.text-result, .markdown-result, .json-result').forEach(el => el.classList.remove('show'));
+
+  const target = document.getElementById(`${tabName}Result`);
+  if (target) target.classList.add('show');
+}
+
+// ========== Copy ==========
+function copyResult() {
+  if (!state.lastResult) {
+    showToast('暂无可复制的结果', 'info');
+    return;
+  }
+
+  const activeTab = document.querySelector('.result-tab.active')?.dataset?.tab;
+  let text = '';
+
+  if (activeTab === 'text') {
+    if (state.lastResult.words_result) {
+      text = state.lastResult.words_result.map(w => w.words).join('\n');
+    } else if (state.lastResult.markdown) {
+      text = state.lastResult.markdown;
+    }
+  } else if (activeTab === 'markdown') {
+    text = state.lastResult.markdown || state.lastResult.words_result?.map(w => w.words).join('\n') || '';
+  } else if (activeTab === 'json') {
+    text = JSON.stringify(state.lastResult, null, 2);
+  }
+
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('已复制到剪贴板', 'success');
+  }).catch(() => {
+    showToast('复制失败', 'error');
+  });
+}
+
+// ========== History ==========
+function addHistory(mode, fileName, result) {
+  const item = {
+    mode,
+    label: modeLabels[mode],
+    fileName: fileName || 'unknown',
+    time: new Date().toLocaleTimeString(),
+    count: result.words_result_num || result.tables_num || result.formulas_num || 0,
+    result,
+  };
+
+  state.history.unshift(item);
+  if (state.history.length > 20) state.history.pop();
+
+  localStorage.setItem('ocr_history', JSON.stringify(state.history));
+  renderHistory();
+}
+
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  if (state.history.length === 0) {
+    list.innerHTML = '<div class="result-placeholder" style="min-height:80px;"><span style="font-size:13px;">暂无识别记录</span></div>';
+    return;
+  }
+
+  list.innerHTML = state.history.map((item, i) => `
+    <div class="history-item" onclick="loadHistory(${i})">
+      <span>${item.label} - ${escapeHtml(item.fileName)} (${item.count}条)</span>
+      <span class="time">${item.time}</span>
+    </div>
+  `).join('');
+}
+
+function loadHistory(index) {
+  const item = state.history[index];
+  if (!item) return;
+  state.lastResult = item.result;
+  displayResult(item.result, 0);
+  showToast('已加载历史记录', 'info');
+}
+
+function clearHistory() {
+  state.history = [];
+  localStorage.removeItem('ocr_history');
+  renderHistory();
+  showToast('历史记录已清空', 'info');
+}
+
+// ========== Toast ==========
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+
+  const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+  toast.innerHTML = `<span>${icons[type] || ''}</span><span>${message}</span>`;
+
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(100%)';
+    toast.style.transition = '0.3s ease';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+</script>
+</body>
+</html>

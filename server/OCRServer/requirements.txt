@@ -1,0 +1,40 @@
+# =============================================================================
+# PaddleOCR-VL Server 依赖
+#
+# PaddlePaddle 和 PaddleOCR 需要根据 GPU/CUDA 版本单独安装：
+#   CUDA 12.6: pip install paddlepaddle-gpu==3.2.1 -i https://www.paddlepaddle.org.cn/packages/stable/cu126/
+#   CUDA 11.8: pip install paddlepaddle-gpu==3.2.1 -i https://www.paddlepaddle.org.cn/packages/stable/cu118/
+#   CPU: pip install paddlepaddle==3.2.1
+#
+# 然后安装 PaddleOCR:
+#   pip install -U "paddleocr[doc-parser]"
+#
+# Windows 还需要特殊版本的 safetensors:
+#   pip install https://xly-devops.cdn.bcebos.com/safetensors-nightly/safetensors-0.6.2.dev0-cp38-abi3-win_amd64.whl
+# =============================================================================
+
+# Web 框架
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+python-multipart>=0.0.12
+
+# 数据验证和配置
+pydantic>=2.10.0
+pydantic-settings>=2.6.0
+
+# HTTP 客户端 (下载 URL 图像)
+httpx>=0.28.0
+
+# 图像处理
+Pillow>=10.0.0
+numpy>=1.24.0
+
+# 日志
+loguru>=0.7.0
+
+# 安全
+python-jose>=3.3.0
+
+# 测试
+pytest>=8.0.0
+pytest-asyncio>=0.24.0

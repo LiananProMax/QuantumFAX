@@ -21,6 +21,10 @@ EVEQuantumFAX.controller = {
         EVEQuantumFAX.ui.savePanelConfig();
         EVEQuantumFAX.demoTask.stop();
 
+        if (!this._ensureAccessibilityPermission()) {
+            return;
+        }
+
         state.isRunning = true;
         state.isPaused = false;
         state.runToken += 1;
@@ -48,6 +52,30 @@ EVEQuantumFAX.controller = {
         }
 
         EVEQuantumFAX.toast(appInfo.title + "已启动");
+    },
+
+    _ensureAccessibilityPermission: function () {
+        var hasPermission = isServiceOk();
+
+        logd("[Permission] accessibility=" + hasPermission);
+        if (hasPermission) {
+            return true;
+        }
+
+        EVEQuantumFAX.logger.warn("未开启无障碍服务，正在请求权限");
+        EVEQuantumFAX.toast("请开启无障碍服务权限");
+        startEnv();
+
+        hasPermission = isServiceOk();
+        logd("[Permission] accessibilityAfterRequest=" + hasPermission);
+        if (!hasPermission) {
+            EVEQuantumFAX.logger.error("未授予无障碍权限，主循环未启动");
+            EVEQuantumFAX.toast("请授予无障碍权限后重试");
+            return false;
+        }
+
+        EVEQuantumFAX.logger.success("无障碍权限已就绪");
+        return true;
     },
 
     _doPause: function () {

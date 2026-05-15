@@ -1,0 +1,1399 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "PaddleOCR-VL Server",
+    "description": "基于 PaddleOCR-VL-1.5 的高性能 OCR 服务。\n\n提供类似百度云 OCR 的 RESTful API，支持：\n- 通用文字识别（标准/高精度）\n- 文档解析（版面分析 + 内容识别）\n- 表格识别\n- 公式识别\n- 印章识别\n\n支持 GPU 加速推理，109 种语言识别。",
+    "version": "1.0.0",
+    "contact": {
+      "name": "PaddleOCR-VL Server"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000",
+      "description": "本地开发服务器"
+    }
+  ],
+  "tags": [
+    {
+      "name": "认证",
+      "description": "API Key 认证相关接口"
+    },
+    {
+      "name": "文字识别",
+      "description": "通用文字识别（标准版/高精度版）"
+    },
+    {
+      "name": "文档解析",
+      "description": "全功能文档解析，支持版面分析"
+    },
+    {
+      "name": "表格识别",
+      "description": "表格结构与内容识别"
+    },
+    {
+      "name": "公式识别",
+      "description": "数学公式识别，输出 LaTeX"
+    },
+    {
+      "name": "印章识别",
+      "description": "印章文字识别（VL-1.5 新增）"
+    },
+    {
+      "name": "模型管理",
+      "description": "模型状态查看与重载"
+    },
+    {
+      "name": "健康检查",
+      "description": "服务健康状态检测"
+    }
+  ],
+  "security": [
+    {
+      "ApiKeyHeader": []
+    }
+  ],
+  "paths": {
+    "/api/v1/token": {
+      "get": {
+        "tags": ["认证"],
+        "summary": "获取访问令牌",
+        "description": "兼容百度云 OAuth 认证方式，获取 access_token。也可以直接在 .env 中配置 API Key 使用。",
+        "operationId": "getToken",
+        "security": [],
+        "parameters": [
+          {
+            "name": "grant_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "client_credentials"
+            },
+            "description": "授权类型"
+          },
+          {
+            "name": "client_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "客户端 ID"
+          },
+          {
+            "name": "client_secret",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "客户端密钥"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取令牌",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                },
+                "example": {
+                  "access_token": "aBcDeFgHiJkLmNoPqRsTuVwXyZ012345678",
+                  "expires_in": 2592000,
+                  "scope": "all"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "tags": ["健康检查"],
+        "summary": "健康检查",
+        "description": "检查服务状态、模型加载状态和 GPU 可用性",
+        "operationId": "healthCheck",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "服务状态信息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthCheckResponse"
+                },
+                "example": {
+                  "status": "healthy",
+                  "model_loaded": true,
+                  "gpu_available": true,
+                  "gpu_count": 1,
+                  "model_info": {
+                    "model_name": "PaddleOCR-VL",
+                    "pipeline_version": "v1.5",
+                    "device": "gpu:0",
+                    "precision": "fp16",
+                    "load_time_seconds": 14.5
+                  },
+                  "version": "1.0.0"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ocr/general_basic": {
+      "post": {
+        "tags": ["文字识别"],
+        "summary": "通用文字识别",
+        "description": "对标百度云通用文字识别（标准版），识别图片中的文字信息。支持 Base64 图像或 URL 两种输入方式。",
+        "operationId": "generalBasicOcr",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeneralOCRRequest"
+              },
+              "examples": {
+                "base64": {
+                  "summary": "Base64 图像",
+                  "value": {
+                    "image": "/9j/4AAQSkZJRg...(Base64编码的图像数据)",
+                    "detect_direction": false,
+                    "language_type": "CHN_ENG"
+                  }
+                },
+                "url": {
+                  "summary": "URL 图像",
+                  "value": {
+                    "url": "https://example.com/image.png",
+                    "detect_direction": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "识别成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OCRResponse"
+                },
+                "example": {
+                  "log_id": "a1b2c3d4e5f6g7h8",
+                  "words_result_num": 3,
+                  "words_result": [
+                    {
+                      "words": "PaddleOCR-VL 高性能文字识别",
+                      "location": {
+                        "left": 10,
+                        "top": 20,
+                        "width": 300,
+                        "height": 30
+                      }
+                    },
+                    {
+                      "words": "支持 109 种语言",
+                      "location": {
+                        "left": 10,
+                        "top": 60,
+                        "width": 200,
+                        "height": 30
+                      }
+                    },
+                    {
+                      "words": "GPU 加速推理",
+                      "location": {
+                        "left": 10,
+                        "top": 100,
+                        "width": 180,
+                        "height": 30
+                      }
+                    }
+                  ],
+                  "processing_time_ms": 245.67
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error_code": 216101,
+                  "error_msg": "必须提供 image (Base64) 或 url 参数之一",
+                  "log_id": "abcdef1234567890"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "认证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error_code": 110,
+                  "error_msg": "Access token invalid or no longer valid"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "请求限流",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error_code": 18,
+                  "error_msg": "Open api qps request limit reached"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error_code": 282000,
+                  "error_msg": "Internal error",
+                  "log_id": "abcdef1234567890"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ocr/accurate_basic": {
+      "post": {
+        "tags": ["文字识别"],
+        "summary": "高精度文字识别",
+        "description": "对标百度云通用文字识别（高精度版），提供更高精度的文字识别。启用版面检测和多边形定位，适合复杂文档。",
+        "operationId": "accurateBasicOcr",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccurateOCRRequest"
+              },
+              "example": {
+                "image": "/9j/4AAQSkZJRg...(Base64编码的图像数据)",
+                "detect_direction": false,
+                "language_type": "CHN_ENG"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "识别成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OCRResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/api/v1/ocr/general_basic/upload": {
+      "post": {
+        "tags": ["文字识别"],
+        "summary": "通用文字识别（文件上传）",
+        "description": "通过上传文件的方式进行通用文字识别。支持 JPG/PNG/BMP/TIFF/PDF/WebP 格式，最大 20MB。",
+        "operationId": "generalBasicOcrUpload",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["file"],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "待识别的图像文件"
+                  },
+                  "detect_direction": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "是否检测图像方向"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "识别成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OCRResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/api/v1/ocr/doc_parser": {
+      "post": {
+        "tags": ["文档解析"],
+        "summary": "文档解析",
+        "description": "全功能文档解析，综合使用版面检测、文字识别、表格识别等功能。返回 Markdown 格式结果和结构化文档块。",
+        "operationId": "documentParse",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentParseRequest"
+              },
+              "example": {
+                "image": "/9j/4AAQSkZJRg...(Base64编码的图像数据)",
+                "use_layout_detection": true,
+                "use_doc_orientation_classify": false,
+                "use_doc_unwarping": false,
+                "use_seal_recognition": false,
+                "use_chart_recognition": false,
+                "format_block_content": false,
+                "layout_shape_mode": "auto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "解析成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentParseResponse"
+                },
+                "example": {
+                  "log_id": "a1b2c3d4e5f6g7h8",
+                  "markdown": "# 文档标题\n\n这是一段识别出的文字内容。\n\n| 列1 | 列2 |\n|-----|-----|\n| A   | B   |",
+                  "blocks": [
+                    {
+                      "block_type": "doc_title",
+                      "block_content": "文档标题",
+                      "bbox": [100, 50, 500, 100],
+                      "score": 0.96
+                    },
+                    {
+                      "block_type": "text",
+                      "block_content": "这是一段识别出的文字内容。",
+                      "bbox": [50, 120, 600, 200],
+                      "score": 0.98
+                    }
+                  ],
+                  "layout_elements": [
+                    {
+                      "label": "doc_title",
+                      "score": 0.96,
+                      "bbox": [100, 50, 500, 100]
+                    },
+                    {
+                      "label": "text",
+                      "score": 0.98,
+                      "bbox": [50, 120, 600, 200]
+                    }
+                  ],
+                  "processing_time_ms": 1520.35
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/api/v1/ocr/doc_parser/upload": {
+      "post": {
+        "tags": ["文档解析"],
+        "summary": "文档解析（文件上传）",
+        "description": "通过上传文件的方式进行文档解析。支持图像和 PDF 文件。",
+        "operationId": "documentParseUpload",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["file"],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "待解析的文档文件"
+                  },
+                  "use_layout_detection": {
+                    "type": "boolean",
+                    "description": "是否使用版面检测"
+                  },
+                  "use_doc_orientation_classify": {
+                    "type": "boolean",
+                    "description": "是否使用文档方向分类"
+                  },
+                  "use_doc_unwarping": {
+                    "type": "boolean",
+                    "description": "是否使用文档矫正"
+                  },
+                  "format_block_content": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "是否格式化为 Markdown"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "解析成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentParseResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/api/v1/ocr/table": {
+      "post": {
+        "tags": ["表格识别"],
+        "summary": "表格识别",
+        "description": "识别图片中的表格内容，返回 HTML 或 Markdown 格式的表格数据。",
+        "operationId": "tableRecognition",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TableRecognitionRequest"
+              },
+              "example": {
+                "image": "/9j/4AAQSkZJRg...(Base64编码的图像数据)"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "识别成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TableRecognitionResponse"
+                },
+                "example": {
+                  "log_id": "a1b2c3d4e5f6g7h8",
+                  "tables_num": 1,
+                  "tables_result": [
+                    {
+                      "html": "<table><tr><th>姓名</th><th>年龄</th></tr><tr><td>张三</td><td>25</td></tr></table>",
+                      "markdown": "| 姓名 | 年龄 |\n|------|------|\n| 张三 | 25   |"
+                    }
+                  ],
+                  "processing_time_ms": 890.12
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/api/v1/ocr/formula": {
+      "post": {
+        "tags": ["公式识别"],
+        "summary": "公式识别",
+        "description": "识别图片中的数学公式，返回 LaTeX 格式的公式内容。",
+        "operationId": "formulaRecognition",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FormulaRecognitionRequest"
+              },
+              "example": {
+                "image": "/9j/4AAQSkZJRg...(Base64编码的图像数据)"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "识别成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormulaRecognitionResponse"
+                },
+                "example": {
+                  "log_id": "a1b2c3d4e5f6g7h8",
+                  "formulas_num": 1,
+                  "formulas_result": [
+                    {
+                      "latex": "E = mc^{2}"
+                    }
+                  ],
+                  "processing_time_ms": 650.88
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/api/v1/ocr/seal": {
+      "post": {
+        "tags": ["印章识别"],
+        "summary": "印章识别",
+        "description": "识别图片中的印章内容（PaddleOCR-VL-1.5 新增功能）。返回印章中的文字信息。",
+        "operationId": "sealRecognition",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SealRecognitionRequest"
+              },
+              "example": {
+                "image": "/9j/4AAQSkZJRg...(Base64编码的图像数据)"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "识别成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OCRResponse"
+                },
+                "example": {
+                  "log_id": "a1b2c3d4e5f6g7h8",
+                  "words_result_num": 2,
+                  "words_result": [
+                    {
+                      "words": "XX有限公司"
+                    },
+                    {
+                      "words": "合同专用章"
+                    }
+                  ],
+                  "processing_time_ms": 520.33
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/api/v1/model/info": {
+      "get": {
+        "tags": ["模型管理"],
+        "summary": "模型信息",
+        "description": "获取当前加载的模型详细信息，包括模型名称、版本、设备、加载耗时等。",
+        "operationId": "modelInfo",
+        "responses": {
+          "200": {
+            "description": "模型信息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "model_loaded": {
+                      "type": "boolean",
+                      "description": "模型是否已加载"
+                    },
+                    "model_info": {
+                      "type": "object",
+                      "description": "模型详细信息",
+                      "properties": {
+                        "model_name": {
+                          "type": "string"
+                        },
+                        "pipeline_version": {
+                          "type": "string"
+                        },
+                        "device": {
+                          "type": "string"
+                        },
+                        "precision": {
+                          "type": "string"
+                        },
+                        "load_time_seconds": {
+                          "type": "number"
+                        }
+                      }
+                    },
+                    "gpu_available": {
+                      "type": "boolean"
+                    },
+                    "gpu_count": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "example": {
+                  "model_loaded": true,
+                  "model_info": {
+                    "model_name": "PaddleOCR-VL",
+                    "pipeline_version": "v1.5",
+                    "device": "gpu:0",
+                    "precision": "fp16",
+                    "load_time_seconds": 14.5,
+                    "features": {
+                      "doc_orientation_classify": false,
+                      "doc_unwarping": false,
+                      "layout_detection": true,
+                      "seal_recognition": false,
+                      "chart_recognition": false
+                    }
+                  },
+                  "gpu_available": true,
+                  "gpu_count": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/model/reload": {
+      "post": {
+        "tags": ["模型管理"],
+        "summary": "重载模型",
+        "description": "重新加载 OCR 模型。用于更新模型配置后刷新模型实例。",
+        "operationId": "reloadModel",
+        "responses": {
+          "200": {
+            "description": "重载成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "success",
+                  "message": "模型重载成功"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyHeader": {
+        "type": "apiKey",
+        "name": "X-API-Key",
+        "in": "header",
+        "description": "通过请求头 X-API-Key 传递 API Key"
+      },
+      "AccessToken": {
+        "type": "apiKey",
+        "name": "access_token",
+        "in": "query",
+        "description": "通过 Query 参数 access_token 传递 API Key（兼容百度云）"
+      }
+    },
+    "schemas": {
+      "GeneralOCRRequest": {
+        "type": "object",
+        "description": "通用文字识别请求",
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "Base64 编码的图像数据（与 url 二选一）"
+          },
+          "url": {
+            "type": "string",
+            "description": "图像 URL 地址（与 image 二选一）"
+          },
+          "detect_direction": {
+            "type": "boolean",
+            "default": false,
+            "description": "是否检测图像方向"
+          },
+          "language_type": {
+            "type": "string",
+            "default": "CHN_ENG",
+            "description": "语言类型",
+            "enum": ["CHN_ENG", "ENG", "JAP", "KOR", "FRE", "GER", "RUS"]
+          },
+          "paragraph": {
+            "type": "boolean",
+            "default": false,
+            "description": "是否输出段落信息"
+          },
+          "probability": {
+            "type": "boolean",
+            "default": false,
+            "description": "是否返回识别置信度"
+          }
+        }
+      },
+      "AccurateOCRRequest": {
+        "type": "object",
+        "description": "高精度文字识别请求",
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "Base64 编码的图像数据（与 url 二选一）"
+          },
+          "url": {
+            "type": "string",
+            "description": "图像 URL 地址（与 image 二选一）"
+          },
+          "detect_direction": {
+            "type": "boolean",
+            "default": false,
+            "description": "是否检测图像方向"
+          },
+          "language_type": {
+            "type": "string",
+            "default": "CHN_ENG",
+            "description": "语言类型"
+          },
+          "paragraph": {
+            "type": "boolean",
+            "default": false,
+            "description": "是否输出段落信息"
+          },
+          "probability": {
+            "type": "boolean",
+            "default": false,
+            "description": "是否返回识别置信度"
+          }
+        }
+      },
+      "DocumentParseRequest": {
+        "type": "object",
+        "description": "文档解析请求",
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "Base64 编码的图像数据（与 url 二选一）"
+          },
+          "url": {
+            "type": "string",
+            "description": "图像 URL 地址（与 image 二选一）"
+          },
+          "use_layout_detection": {
+            "type": "boolean",
+            "description": "是否使用版面检测（默认使用服务端配置）"
+          },
+          "use_doc_orientation_classify": {
+            "type": "boolean",
+            "description": "是否使用文档方向分类"
+          },
+          "use_doc_unwarping": {
+            "type": "boolean",
+            "description": "是否使用文档矫正（适用于弯曲、倾斜文档）"
+          },
+          "use_seal_recognition": {
+            "type": "boolean",
+            "description": "是否使用印章识别"
+          },
+          "use_chart_recognition": {
+            "type": "boolean",
+            "description": "是否使用图表识别"
+          },
+          "format_block_content": {
+            "type": "boolean",
+            "default": false,
+            "description": "是否将 block_content 格式化为 Markdown"
+          },
+          "layout_shape_mode": {
+            "type": "string",
+            "default": "auto",
+            "description": "版面检测形状模式",
+            "enum": ["rect", "quad", "poly", "auto"]
+          }
+        }
+      },
+      "TableRecognitionRequest": {
+        "type": "object",
+        "description": "表格识别请求",
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "Base64 编码的图像数据（与 url 二选一）"
+          },
+          "url": {
+            "type": "string",
+            "description": "图像 URL 地址（与 image 二选一）"
+          }
+        }
+      },
+      "FormulaRecognitionRequest": {
+        "type": "object",
+        "description": "公式识别请求",
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "Base64 编码的图像数据（与 url 二选一）"
+          },
+          "url": {
+            "type": "string",
+            "description": "图像 URL 地址（与 image 二选一）"
+          }
+        }
+      },
+      "SealRecognitionRequest": {
+        "type": "object",
+        "description": "印章识别请求",
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "Base64 编码的图像数据（与 url 二选一）"
+          },
+          "url": {
+            "type": "string",
+            "description": "图像 URL 地址（与 image 二选一）"
+          }
+        }
+      },
+      "OCRResponse": {
+        "type": "object",
+        "description": "通用 OCR 文字识别响应（兼容百度云格式）",
+        "required": ["log_id", "words_result_num", "words_result"],
+        "properties": {
+          "log_id": {
+            "type": "string",
+            "description": "唯一请求标识"
+          },
+          "words_result_num": {
+            "type": "integer",
+            "description": "识别结果数量"
+          },
+          "words_result": {
+            "type": "array",
+            "description": "识别结果列表",
+            "items": {
+              "$ref": "#/components/schemas/WordResult"
+            }
+          },
+          "direction": {
+            "type": "integer",
+            "description": "图像方向（-1 未定义，0/1/2/3 分别代表 0/90/180/270 度）"
+          },
+          "image_info": {
+            "type": "object",
+            "description": "图像信息"
+          },
+          "processing_time_ms": {
+            "type": "number",
+            "description": "处理耗时（毫秒）"
+          }
+        }
+      },
+      "WordResult": {
+        "type": "object",
+        "description": "单个文字行识别结果",
+        "required": ["words"],
+        "properties": {
+          "words": {
+            "type": "string",
+            "description": "识别的文字内容"
+          },
+          "location": {
+            "$ref": "#/components/schemas/BoundingBox"
+          },
+          "polygon": {
+            "type": "object",
+            "description": "文字位置多边形",
+            "properties": {
+              "points": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "x": { "type": "integer" },
+                    "y": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "probability": {
+            "type": "object",
+            "description": "置信度信息",
+            "properties": {
+              "average": {
+                "type": "number",
+                "description": "平均置信度"
+              }
+            }
+          }
+        }
+      },
+      "BoundingBox": {
+        "type": "object",
+        "description": "边界框（矩形）",
+        "properties": {
+          "left": {
+            "type": "integer",
+            "description": "左上角 X 坐标"
+          },
+          "top": {
+            "type": "integer",
+            "description": "左上角 Y 坐标"
+          },
+          "width": {
+            "type": "integer",
+            "description": "宽度"
+          },
+          "height": {
+            "type": "integer",
+            "description": "高度"
+          }
+        }
+      },
+      "DocumentParseResponse": {
+        "type": "object",
+        "description": "文档解析响应",
+        "required": ["log_id", "markdown", "blocks"],
+        "properties": {
+          "log_id": {
+            "type": "string",
+            "description": "唯一请求标识"
+          },
+          "page_index": {
+            "type": "integer",
+            "description": "页码索引（PDF 文件时有效）"
+          },
+          "markdown": {
+            "type": "string",
+            "description": "Markdown 格式的解析结果"
+          },
+          "blocks": {
+            "type": "array",
+            "description": "文档块列表",
+            "items": {
+              "$ref": "#/components/schemas/DocumentBlock"
+            }
+          },
+          "layout_elements": {
+            "type": "array",
+            "description": "版面元素列表",
+            "items": {
+              "$ref": "#/components/schemas/LayoutElement"
+            }
+          },
+          "processing_time_ms": {
+            "type": "number",
+            "description": "处理耗时（毫秒）"
+          }
+        }
+      },
+      "DocumentBlock": {
+        "type": "object",
+        "description": "文档块",
+        "required": ["block_type", "block_content"],
+        "properties": {
+          "block_type": {
+            "type": "string",
+            "description": "块类型（text / table / image / formula / doc_title / paragraph_title 等）"
+          },
+          "block_content": {
+            "type": "string",
+            "description": "块内容"
+          },
+          "bbox": {
+            "type": "array",
+            "items": { "type": "number" },
+            "description": "边界框坐标 [x1, y1, x2, y2]"
+          },
+          "score": {
+            "type": "number",
+            "description": "检测置信度"
+          }
+        }
+      },
+      "LayoutElement": {
+        "type": "object",
+        "description": "版面元素",
+        "required": ["label", "score", "bbox"],
+        "properties": {
+          "label": {
+            "type": "string",
+            "description": "元素类型标签"
+          },
+          "score": {
+            "type": "number",
+            "description": "检测置信度"
+          },
+          "bbox": {
+            "type": "array",
+            "items": { "type": "number" },
+            "description": "边界框坐标 [x1, y1, x2, y2]"
+          },
+          "content": {
+            "type": "string",
+            "description": "元素内容"
+          }
+        }
+      },
+      "TableRecognitionResponse": {
+        "type": "object",
+        "description": "表格识别响应",
+        "required": ["log_id", "tables_num", "tables_result"],
+        "properties": {
+          "log_id": {
+            "type": "string",
+            "description": "唯一请求标识"
+          },
+          "tables_num": {
+            "type": "integer",
+            "description": "识别到的表格数量"
+          },
+          "tables_result": {
+            "type": "array",
+            "description": "表格识别结果列表",
+            "items": {
+              "type": "object",
+              "properties": {
+                "html": {
+                  "type": "string",
+                  "description": "HTML 格式的表格"
+                },
+                "markdown": {
+                  "type": "string",
+                  "description": "Markdown 格式的表格"
+                }
+              }
+            }
+          },
+          "processing_time_ms": {
+            "type": "number",
+            "description": "处理耗时（毫秒）"
+          }
+        }
+      },
+      "FormulaRecognitionResponse": {
+        "type": "object",
+        "description": "公式识别响应",
+        "required": ["log_id", "formulas_num", "formulas_result"],
+        "properties": {
+          "log_id": {
+            "type": "string",
+            "description": "唯一请求标识"
+          },
+          "formulas_num": {
+            "type": "integer",
+            "description": "识别到的公式数量"
+          },
+          "formulas_result": {
+            "type": "array",
+            "description": "公式识别结果列表",
+            "items": {
+              "type": "object",
+              "properties": {
+                "latex": {
+                  "type": "string",
+                  "description": "LaTeX 格式的公式"
+                }
+              }
+            }
+          },
+          "processing_time_ms": {
+            "type": "number",
+            "description": "处理耗时（毫秒）"
+          }
+        }
+      },
+      "TokenResponse": {
+        "type": "object",
+        "description": "访问令牌响应",
+        "required": ["access_token", "expires_in"],
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "description": "访问令牌"
+          },
+          "expires_in": {
+            "type": "integer",
+            "description": "过期时间（秒）"
+          },
+          "scope": {
+            "type": "string",
+            "default": "all",
+            "description": "权限范围"
+          }
+        }
+      },
+      "HealthCheckResponse": {
+        "type": "object",
+        "description": "健康检查响应",
+        "required": ["status", "model_loaded", "gpu_available", "version"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "服务状态（healthy / degraded）",
+            "enum": ["healthy", "degraded"]
+          },
+          "model_loaded": {
+            "type": "boolean",
+            "description": "模型是否已加载"
+          },
+          "gpu_available": {
+            "type": "boolean",
+            "description": "GPU 是否可用"
+          },
+          "gpu_count": {
+            "type": "integer",
+            "default": 0,
+            "description": "GPU 数量"
+          },
+          "model_info": {
+            "type": "object",
+            "description": "模型详细信息"
+          },
+          "version": {
+            "type": "string",
+            "description": "服务版本号"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "description": "统一错误响应（兼容百度云 OCR 错误码）",
+        "required": ["error_code", "error_msg"],
+        "properties": {
+          "error_code": {
+            "type": "integer",
+            "description": "错误码"
+          },
+          "error_msg": {
+            "type": "string",
+            "description": "错误信息"
+          },
+          "log_id": {
+            "type": "string",
+            "description": "请求标识"
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "请求参数错误",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "examples": {
+              "missing_param": {
+                "summary": "缺少参数",
+                "value": {
+                  "error_code": 216101,
+                  "error_msg": "必须提供 image (Base64) 或 url 参数之一",
+                  "log_id": "abcdef1234567890"
+                }
+              },
+              "invalid_image": {
+                "summary": "图像格式错误",
+                "value": {
+                  "error_code": 216201,
+                  "error_msg": "Image format error",
+                  "log_id": "abcdef1234567890"
+                }
+              },
+              "empty_image": {
+                "summary": "空图像",
+                "value": {
+                  "error_code": 216200,
+                  "error_msg": "Empty image",
+                  "log_id": "abcdef1234567890"
+                }
+              }
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "认证失败",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "error_code": 110,
+              "error_msg": "Access token invalid or no longer valid"
+            }
+          }
+        }
+      },
+      "RateLimited": {
+        "description": "请求超过速率限制",
+        "headers": {
+          "X-RateLimit-Limit": {
+            "description": "每分钟请求上限",
+            "schema": { "type": "string" }
+          },
+          "X-RateLimit-Remaining": {
+            "description": "剩余请求数",
+            "schema": { "type": "string" }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "error_code": 18,
+              "error_msg": "Open api qps request limit reached"
+            }
+          }
+        }
+      },
+      "InternalError": {
+        "description": "服务内部错误",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "error_code": 282000,
+              "error_msg": "Internal error",
+              "log_id": "abcdef1234567890"
+            }
+          }
+        }
+      }
+    }
+  }
+}
