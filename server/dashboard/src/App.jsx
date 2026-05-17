@@ -15,11 +15,24 @@ function formatAge(ageMs) {
   return `${Math.round(ageMs / 60000)} 分钟前`;
 }
 
+function formatLogTime(log) {
+  return log.time || formatTime(log.timestamp || log.receivedAt);
+}
+
 function healthColor(value) {
   if (value === null || value === undefined) return "bg-slate-600";
   if (value <= 30) return "bg-red-500";
   if (value <= 60) return "bg-amber-400";
   return "bg-emerald-400";
+}
+
+function logLevelClass(level) {
+  return {
+    ERROR: "border-red-500/40 bg-red-500/10 text-red-200",
+    WARN: "border-amber-500/40 bg-amber-500/10 text-amber-200",
+    SUCCESS: "border-emerald-500/40 bg-emerald-500/10 text-emerald-200",
+    INFO: "border-slate-600/70 bg-slate-800/60 text-slate-200"
+  }[level] || "border-slate-600/70 bg-slate-800/60 text-slate-200";
 }
 
 function PercentBar({ label, value }) {
@@ -183,11 +196,63 @@ function HealthChart({ ship, history }) {
   return <div ref={chartRef} className="h-[320px] w-full" />;
 }
 
+function ClientLogPanel({ ship, logs, error }) {
+  return (
+    <div className="mt-5 border-t border-slate-800 pt-5">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h3 className="text-base font-semibold text-white">运行日志</h3>
+          <p className="text-xs text-slate-500">
+            {ship ? `最近 ${logs.length} 条 · ${ship.clientId}` : "等待选择客户端"}
+          </p>
+        </div>
+        <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-300">
+          每 {REFRESH_MS / 1000} 秒刷新
+        </span>
+      </div>
+
+      {error ? (
+        <div className="mt-3 rounded-xl border border-red-500/30 bg-red-950/30 px-3 py-2 text-sm text-red-200">
+          {error}
+        </div>
+      ) : null}
+
+      {!ship ? (
+        <div className="mt-3 rounded-xl border border-dashed border-slate-700 px-4 py-6 text-center text-sm text-slate-500">
+          暂无客户端，请先启动并上报舰船状态。
+        </div>
+      ) : logs.length === 0 && !error ? (
+        <div className="mt-3 rounded-xl border border-dashed border-slate-700 px-4 py-6 text-center text-sm text-slate-500">
+          暂无日志。客户端启动主循环后会批量上报本地面板日志。
+        </div>
+      ) : (
+        <div className="mt-3 max-h-[360px] space-y-2 overflow-y-auto pr-1">
+          {logs.map((log, index) => (
+            <div key={log.id || `${log.receivedAt}-${index}`} className="rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-2">
+              <div className="flex flex-wrap items-center gap-2 text-xs">
+                <span className={`rounded-full border px-2 py-0.5 font-medium ${logLevelClass(log.level)}`}>
+                  {log.level || "INFO"}
+                </span>
+                <span className="font-mono text-slate-500">{formatLogTime(log)}</span>
+              </div>
+              <div className="mt-2 whitespace-pre-wrap break-words font-mono text-xs leading-5 text-slate-200">
+                {log.message}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function App() {
   const [ships, setShips] = useState([]);
   const [summary, setSummary] = useState(null);
   const [selectedClientId, setSelectedClientId] = useState("");
   const [history, setHistory] = useState([]);
+  const [clientLogs, setClientLogs] = useState([]);
+  const [logsError, setLogsError] = useState("");
   const [lastRefreshAt, setLastRefreshAt] = useState(null);
   const [error, setError] = useState("");
 
@@ -287,6 +352,42 @@ function App() {
     };
   }, [selectedShip]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadLogs() {
+      if (!selectedShip) {
+        setClientLogs([]);
+        setLogsError("");
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/fleet/ships/${encodeURIComponent(selectedShip.clientId)}/logs?limit=100`);
+        const json = await response.json();
+        if (!json.success) {
+          throw new Error(json.error || "日志加载失败");
+        }
+        if (!cancelled) {
+          setClientLogs(json.logs || []);
+          setLogsError("");
+        }
+      } catch (logsLoadError) {
+        if (!cancelled) {
+          setClientLogs([]);
+          setLogsError(logsLoadError.message || "日志加载失败");
+        }
+      }
+    }
+
+    loadLogs();
+    const timer = window.setInterval(loadLogs, REFRESH_MS);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [selectedShip]);
+
   return (
     <main className="min-h-screen px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
@@ -339,6 +440,8 @@ function App() {
                 暂无舰船数据，请先启动客户端并上报血量。
               </div>
             )}
+
+            <ClientLogPanel ship={selectedShip} logs={clientLogs} error={logsError} />
           </div>
 
           <aside className="space-y-4">

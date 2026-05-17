@@ -24,7 +24,9 @@ app.get("/", (req, res) => {
             "GET /api/update/version": "当前版本信息",
             "POST /api/update/upload": "上传 .iec 并递增版本（需 Token，见 ENABLE_AUTH）",
             "POST /api/fleet/report": "上报舰船血量",
+            "POST /api/fleet/logs": "上报客户端运行日志",
             "GET /api/fleet/ships": "查询舰队舰船状态",
+            "GET /api/fleet/ships/:clientId/logs": "查询客户端运行日志",
             "GET /api/fleet/summary": "查询舰队汇总"
         }
     });

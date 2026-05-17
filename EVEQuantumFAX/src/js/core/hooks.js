@@ -15,27 +15,33 @@ EVEQuantumFAX.createContext = function (extra) {
 EVEQuantumFAX.hooks = {
     onStart: function (context) {
         context.logger.success("启动钩子已执行");
+        EVEQuantumFAX.hooks._flushClientLogs(true);
     },
 
     onPause: function (context) {
         context.logger.warn("暂停钩子已执行");
+        EVEQuantumFAX.hooks._flushClientLogs(true);
     },
 
     onResume: function (context) {
         context.logger.info("继续钩子已执行");
+        EVEQuantumFAX.hooks._flushClientLogs(true);
     },
 
     onStop: function (context) {
         context.logger.info("停止钩子已执行");
+        EVEQuantumFAX.hooks._flushClientLogs(true);
     },
 
     onExit: function (context) {
         context.logger.info("退出钩子已执行");
+        EVEQuantumFAX.hooks._flushClientLogs(true);
     },
 
     onTick: function (context) {
         var iteration = context.extra.iteration || 0;
         EVEQuantumFAX.hooks._checkDamageControl(context, iteration);
+        EVEQuantumFAX.hooks._flushClientLogs(false);
     },
 
     _checkDamageControl: function (context, iteration) {
@@ -91,6 +97,20 @@ EVEQuantumFAX.hooks = {
         if (!reportResult.ok && !reportResult.skipped &&
             EVEQuantumFAX.fleetReporter.shouldLogError(reportResult.error)) {
             context.logger.warn("舰队上报失败：" + reportResult.error);
+        }
+    },
+
+    _flushClientLogs: function (force) {
+        var result;
+
+        if (!EVEQuantumFAX.clientLogReporter) {
+            return;
+        }
+
+        result = EVEQuantumFAX.clientLogReporter.flush(force === true);
+        if (!result.ok && !result.skipped &&
+            EVEQuantumFAX.clientLogReporter.shouldLogError(result.error)) {
+            logw("客户端日志上报失败：" + result.error);
         }
     }
 };

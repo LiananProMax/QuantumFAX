@@ -26,7 +26,7 @@ EVEQuantumFAX.fleetReporter = {
         var screen = EVEQuantumFAX.screen || {};
 
         return {
-            clientId: config.clientId,
+            clientId: EVEQuantumFAX.configManager.ensureClientId(),
             shipType: EVEQuantumFAX.configManager.normalizeShipType(config.shipType),
             observedAt: new Date().getTime(),
             tickIteration: extra.iteration || 0,

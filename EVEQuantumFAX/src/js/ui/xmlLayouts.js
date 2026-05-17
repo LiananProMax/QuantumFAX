@@ -39,23 +39,35 @@ EVEQuantumFAX.xmlLayouts = {
     },
 
     getPanelMetrics: function (isLandscape, tabName) {
-        if (isLandscape) {
-            return {
-                widthDp: "680px",
-                heightDp: "1000px",
-                width: 680,
-                height: 1000,
-                logHeightDp: "720px"
-            };
-        }
+        var screen = EVEQuantumFAX.screen || {};
+        var screenWidth = screen.width || (isLandscape ? 1280 : 720);
+        var screenHeight = screen.height || (isLandscape ? 720 : 1280);
+        var width = this._getAdaptivePanelSize(
+            Math.round(screenWidth * (isLandscape ? 0.58 : 0.78)),
+            isLandscape ? 620 : 480,
+            screenWidth - (isLandscape ? 160 : 120)
+        );
+        var height = this._getAdaptivePanelSize(
+            Math.round(screenHeight * (isLandscape ? 0.72 : 0.60)),
+            isLandscape ? 420 : 560,
+            screenHeight - (isLandscape ? 120 : 260)
+        );
+        var logHeight = Math.max(220, height - (isLandscape ? 205 : 235));
 
         return {
-            widthDp: "680px",
-            heightDp: "1000px",
-            width: 680,
-            height: 1000,
-            logHeightDp: "720px"
+            widthDp: width + "px",
+            heightDp: height + "px",
+            width: width,
+            height: height,
+            logHeightDp: logHeight + "px"
         };
+    },
+
+    _getAdaptivePanelSize: function (value, minValue, maxValue) {
+        if (maxValue < minValue) {
+            return Math.max(1, maxValue);
+        }
+        return EVEQuantumFAX.utils.clamp(value, minValue, maxValue);
     },
 
     createMiniXml: function (isLandscape) {
@@ -218,6 +230,8 @@ EVEQuantumFAX.xmlLayouts = {
         var theme = this.THEME;
         var parts = [];
         var buttonHeight = isLandscape ? "28dp" : "32dp";
+
+        configManager.ensureClientId();
 
         parts.push('<ScrollView android:layout_width="match_parent" android:layout_height="wrap_content" ');
         parts.push('android:background="' + theme.BG_PRIMARY + '">');

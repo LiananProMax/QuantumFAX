@@ -173,6 +173,7 @@ EVEQuantumFAX.ui = {
         }
 
         state.isExpanded = true;
+        floaty.updateSize(constants.FLOAT_TAG_PANEL, panelMetrics.width, panelMetrics.height);
         floaty.focusable(constants.FLOAT_TAG_PANEL, true);
         this._centerPanelAfterLayout(panelMetrics);
         this.updatePanelStatus();
@@ -421,7 +422,7 @@ EVEQuantumFAX.ui = {
 
             config.tickIntervalSec = tickInterval;
             config.fleetServerUrl = fleetServerUrl || config.fleetServerUrl;
-            config.clientId = config.clientId || configManager.createClientId();
+            config.clientId = configManager.ensureClientId();
             config.shipType = configManager.normalizeShipType(config.shipType);
             configManager.save();
         } catch (error) {

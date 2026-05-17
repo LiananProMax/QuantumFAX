@@ -1,5 +1,6 @@
 const express = require("express");
 
+const clientLogStore = require("../store/clientLogStore");
 const fleetStore = require("../store/fleetStore");
 
 const router = express.Router();
@@ -23,6 +24,20 @@ router.post("/report", (req, res) => {
     });
 });
 
+router.post("/logs", (req, res) => {
+    const result = clientLogStore.append(req.body || {});
+    if (result.error) {
+        return res.status(400).json({ success: false, error: result.error });
+    }
+
+    res.json({
+        success: true,
+        clientId: result.clientId,
+        accepted: result.accepted,
+        total: result.total
+    });
+});
+
 router.get("/ships", (req, res) => {
     res.json({
         success: true,
@@ -37,6 +52,17 @@ router.get("/summary", (req, res) => {
         success: true,
         now: Date.now(),
         summary: fleetStore.getSummary()
+    });
+});
+
+router.get("/ships/:clientId/logs", (req, res) => {
+    res.json({
+        success: true,
+        clientId: req.params.clientId,
+        logLimit: clientLogStore.logLimit,
+        logs: clientLogStore.getLogs(req.params.clientId, {
+            limit: req.query.limit
+        })
     });
 });
 

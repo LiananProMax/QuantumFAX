@@ -2,6 +2,32 @@
 
 ## 运行项目
 
+### 快速部署（PowerShell）
+
+在项目根目录执行：
+
+```powershell
+.\deploy.ps1 deploy
+```
+
+该命令会自动准备 `server/.env`（不存在时从 `.env.example` 复制）、安装后端和看板依赖、构建生产版看板，并启动后端服务。常用命令：
+
+```powershell
+.\deploy.ps1 install       # 安装依赖
+.\deploy.ps1 build         # 构建网页看板
+.\deploy.ps1 start         # 同时启动后端和看板 dev 服务
+.\deploy.ps1 server        # 只启动后端服务
+.\deploy.ps1 dev           # 后端 watch 模式
+.\deploy.ps1 dashboard-dev # 启动看板开发服务器
+.\deploy.ps1 upload-iec    # 上传 EasyClick IEC 包
+```
+
+如果 PowerShell 执行策略阻止脚本运行，可使用：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\deploy.ps1 deploy
+```
+
 ### 1. 安装后端依赖
 
 Node 后端位于 `server`，同时负责热更新 API、舰队血量 API，以及托管构建后的前端看板。

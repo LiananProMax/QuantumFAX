@@ -36,8 +36,10 @@ EVEQuantumFAX.logger = {
     add: function (message, level) {
         var constants = EVEQuantumFAX.constants;
         var state = EVEQuantumFAX.state;
+        var now = new Date();
         var entry = {
-            time: EVEQuantumFAX.utils.formatTime(new Date()),
+            time: EVEQuantumFAX.utils.formatTime(now),
+            timestamp: now.getTime(),
             level: level || this.LEVEL.INFO,
             message: String(message)
         };
@@ -49,6 +51,14 @@ EVEQuantumFAX.logger = {
         }
 
         logd("[" + entry.level + "] " + entry.message);
+
+        if (EVEQuantumFAX.clientLogReporter && EVEQuantumFAX.clientLogReporter.enqueue) {
+            try {
+                EVEQuantumFAX.clientLogReporter.enqueue(entry);
+            } catch (error) {
+                logw("clientLogReporter.enqueue failed: " + error);
+            }
+        }
     },
 
     info: function (message) {

@@ -32,10 +32,7 @@ EVEQuantumFAX.configManager = {
         config.fleetServerUrl = storage.getString("fleetServerUrl", config.fleetServerUrl);
         config.clientId = storage.getString("clientId", config.clientId);
         config.shipType = this.normalizeShipType(storage.getString("shipType", config.shipType));
-        if (!config.clientId) {
-            config.clientId = this.createClientId();
-            storage.putString("clientId", config.clientId);
-        }
+        this.ensureClientId();
         storage.remove("projectTitle");
         storage.remove("projectSubtitle");
         storage.remove("demoMessage");
@@ -46,9 +43,7 @@ EVEQuantumFAX.configManager = {
     save: function () {
         var config = EVEQuantumFAX.config;
         var storage = EVEQuantumFAX.storage;
-        var clientId = config.clientId || this.createClientId();
-
-        config.clientId = clientId;
+        var clientId = this.ensureClientId();
 
         storage.putInt("tickIntervalSec", config.tickIntervalSec);
         storage.putString("fleetServerUrl", config.fleetServerUrl || "");
@@ -93,5 +88,19 @@ EVEQuantumFAX.configManager = {
             randomPart = "0" + randomPart;
         }
         return "qf-" + timePart + "-" + randomPart;
+    },
+
+    ensureClientId: function () {
+        var config = EVEQuantumFAX.config;
+        var storage = EVEQuantumFAX.storage;
+        var clientId = String(config.clientId || "").trim();
+
+        if (!clientId) {
+            clientId = this.createClientId();
+        }
+
+        config.clientId = clientId;
+        storage.putString("clientId", clientId);
+        return clientId;
     }
 };

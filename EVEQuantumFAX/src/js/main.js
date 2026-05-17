@@ -8,6 +8,7 @@ require("js/services/updater.js");
 require("js/constants/healthMonitorColors.js");
 require("js/services/healthMonitor.js");
 require("js/services/fleetReporter.js");
+require("js/services/clientLogReporter.js");
 require("js/services/permissionManager.js");
 require("js/core/hooks.js");
 require("js/services/demoTask.js");
@@ -23,6 +24,14 @@ setStopCallback(function () {
         EVEQuantumFAX.demoTask.stop();
     } catch (error) {
         logw("demoTask.stop failed: " + error);
+    }
+
+    try {
+        if (EVEQuantumFAX.clientLogReporter) {
+            EVEQuantumFAX.clientLogReporter.flush(true);
+        }
+    } catch (flushError) {
+        logw("clientLogReporter.flush failed: " + flushError);
     }
 
     try {
@@ -72,6 +81,28 @@ function safeMain() {
         loge("Error: " + error);
         if (error && error.stack) {
             loge(error.stack);
+        }
+
+        try {
+            if (EVEQuantumFAX.clientLogReporter) {
+                EVEQuantumFAX.clientLogReporter.enqueue({
+                    time: EVEQuantumFAX.utils.formatTime(new Date()),
+                    timestamp: new Date().getTime(),
+                    level: "ERROR",
+                    message: "QuantumFAX 发生异常：" + error
+                });
+                if (error && error.stack) {
+                    EVEQuantumFAX.clientLogReporter.enqueue({
+                        time: EVEQuantumFAX.utils.formatTime(new Date()),
+                        timestamp: new Date().getTime(),
+                        level: "ERROR",
+                        message: error.stack
+                    });
+                }
+                EVEQuantumFAX.clientLogReporter.flush(true);
+            }
+        } catch (logFlushError) {
+            logw("crash log flush failed: " + logFlushError);
         }
 
         try {
