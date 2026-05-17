@@ -7,14 +7,30 @@ out/
 server/node_modules/
 server/dashboard/node_modules/
 server/dashboard/dist/
+.cache/
+**/.vite/
+**/.cache/
 
 # Server local environment
 server/.env
 server/data/fleetState.json
 
+# Generated update packages
+server/data/updates/*.iec
+!server/data/updates/.gitkeep
+
 # Logs and temporary files
 *.log
 *.tmp
+*.temp
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python cache files
+__pycache__/
+*.py[cod]
+.pytest_cache/
 
 # Cursor/JetBrains local workspace noise
 .idea/vcs.xml
@@ -24,3 +40,7 @@ server/data/fleetState.json
 .idea/dataSources/
 .idea/dataSources.local.xml
 ec_work_config/android/colorimage/
+
+# EasyClick generated local tool/runtime noise
+EVEQuantumFAX/libs/
+ec_work_config/android/bin/SKILL.md
