@@ -59,7 +59,8 @@ EVEQuantumFAX.ui = {
                 var miniContent;
 
                 try {
-                    borderColor = state.isRunning ? (state.isPaused ? "#F59E0B" : "#10B981") : "#374151";
+                    borderColor = state.isStarting ? "#F59E0B" :
+                        (state.isRunning ? (state.isPaused ? "#F59E0B" : "#10B981") : "#374151");
 
                     outerDrawable = new android.graphics.drawable.GradientDrawable();
                     outerDrawable.setShape(android.graphics.drawable.GradientDrawable.OVAL);

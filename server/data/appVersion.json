@@ -1,12 +1,12 @@
 {
-  "version": 10,
-  "versionName": "10",
+  "version": 13,
+  "versionName": "13",
   "downloadUrl": "",
-  "fileName": "release_1779009752290.iec",
-  "md5": "1bc1d58c1ed6f73e4e91c3327113b2ba",
-  "msg": "版本 10 更新",
+  "fileName": "release_1779012907402.iec",
+  "md5": "4f65996cd85c3f1c2d49c49fb15e17de",
+  "msg": "版本 13 更新",
   "dialog": true,
   "force": false,
   "downloadTimeout": 60,
-  "updatedAt": "2026-05-17T09:22:32.292Z"
+  "updatedAt": "2026-05-17T10:15:07.404Z"
 }

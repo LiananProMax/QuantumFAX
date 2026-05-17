@@ -14,7 +14,18 @@ EVEQuantumFAX.config = {
     tickIntervalSec: 3,
     fleetServerUrl: "http://10.0.0.77:3000",
     clientId: "",
-    shipType: "apostle"
+    shipType: "apostle",
+    perfLogEnabled: true,
+    slowTickThresholdMs: 1500,
+    slowOperationThresholdMs: 800,
+    perfSummaryIntervalSec: 60,
+    normalStatusLogIntervalSec: 30,
+    clientInfoLogSampleIntervalSec: 30,
+    fleetReportIntervalSec: 3,
+    fleetReportTimeoutMs: 5000,
+    clientLogReportIntervalSec: 5,
+    clientLogReportTimeoutMs: 5000,
+    perfReportTimeoutMs: 5000
 };
 
 EVEQuantumFAX.configManager = {
@@ -32,6 +43,17 @@ EVEQuantumFAX.configManager = {
         config.fleetServerUrl = storage.getString("fleetServerUrl", config.fleetServerUrl);
         config.clientId = storage.getString("clientId", config.clientId);
         config.shipType = this.normalizeShipType(storage.getString("shipType", config.shipType));
+        config.perfLogEnabled = storage.getString("perfLogEnabled", config.perfLogEnabled ? "true" : "false") !== "false";
+        config.slowTickThresholdMs = storage.getInt("slowTickThresholdMs", config.slowTickThresholdMs);
+        config.slowOperationThresholdMs = storage.getInt("slowOperationThresholdMs", config.slowOperationThresholdMs);
+        config.perfSummaryIntervalSec = storage.getInt("perfSummaryIntervalSec", config.perfSummaryIntervalSec);
+        config.normalStatusLogIntervalSec = storage.getInt("normalStatusLogIntervalSec", config.normalStatusLogIntervalSec);
+        config.clientInfoLogSampleIntervalSec = storage.getInt("clientInfoLogSampleIntervalSec", config.clientInfoLogSampleIntervalSec);
+        config.fleetReportIntervalSec = storage.getInt("fleetReportIntervalSec", config.fleetReportIntervalSec);
+        config.fleetReportTimeoutMs = storage.getInt("fleetReportTimeoutMs", config.fleetReportTimeoutMs);
+        config.clientLogReportIntervalSec = storage.getInt("clientLogReportIntervalSec", config.clientLogReportIntervalSec);
+        config.clientLogReportTimeoutMs = storage.getInt("clientLogReportTimeoutMs", config.clientLogReportTimeoutMs);
+        config.perfReportTimeoutMs = storage.getInt("perfReportTimeoutMs", config.perfReportTimeoutMs);
         this.ensureClientId();
         storage.remove("projectTitle");
         storage.remove("projectSubtitle");
@@ -49,11 +71,57 @@ EVEQuantumFAX.configManager = {
         storage.putString("fleetServerUrl", config.fleetServerUrl || "");
         storage.putString("clientId", clientId);
         storage.putString("shipType", this.normalizeShipType(config.shipType));
+        storage.putString("perfLogEnabled", config.perfLogEnabled === false ? "false" : "true");
+        storage.putInt("slowTickThresholdMs", config.slowTickThresholdMs);
+        storage.putInt("slowOperationThresholdMs", config.slowOperationThresholdMs);
+        storage.putInt("perfSummaryIntervalSec", config.perfSummaryIntervalSec);
+        storage.putInt("normalStatusLogIntervalSec", config.normalStatusLogIntervalSec);
+        storage.putInt("clientInfoLogSampleIntervalSec", config.clientInfoLogSampleIntervalSec);
+        storage.putInt("fleetReportIntervalSec", config.fleetReportIntervalSec);
+        storage.putInt("fleetReportTimeoutMs", config.fleetReportTimeoutMs);
+        storage.putInt("clientLogReportIntervalSec", config.clientLogReportIntervalSec);
+        storage.putInt("clientLogReportTimeoutMs", config.clientLogReportTimeoutMs);
+        storage.putInt("perfReportTimeoutMs", config.perfReportTimeoutMs);
     },
 
     getTickIntervalMs: function () {
         var config = EVEQuantumFAX.config;
         return EVEQuantumFAX.utils.parsePositiveInt(config.tickIntervalSec, 3) * 1000;
+    },
+
+    getNormalStatusLogIntervalMs: function () {
+        var config = EVEQuantumFAX.config;
+        return EVEQuantumFAX.utils.parsePositiveInt(config.normalStatusLogIntervalSec, 30) * 1000;
+    },
+
+    getClientInfoLogSampleIntervalMs: function () {
+        var config = EVEQuantumFAX.config;
+        return EVEQuantumFAX.utils.parsePositiveInt(config.clientInfoLogSampleIntervalSec, 30) * 1000;
+    },
+
+    getFleetReportIntervalMs: function () {
+        var config = EVEQuantumFAX.config;
+        return EVEQuantumFAX.utils.parsePositiveInt(config.fleetReportIntervalSec, 3) * 1000;
+    },
+
+    getFleetReportTimeoutMs: function () {
+        var config = EVEQuantumFAX.config;
+        return EVEQuantumFAX.utils.parsePositiveInt(config.fleetReportTimeoutMs, 5000);
+    },
+
+    getClientLogReportIntervalMs: function () {
+        var config = EVEQuantumFAX.config;
+        return EVEQuantumFAX.utils.parsePositiveInt(config.clientLogReportIntervalSec, 5) * 1000;
+    },
+
+    getClientLogReportTimeoutMs: function () {
+        var config = EVEQuantumFAX.config;
+        return EVEQuantumFAX.utils.parsePositiveInt(config.clientLogReportTimeoutMs, 5000);
+    },
+
+    getPerfReportTimeoutMs: function () {
+        var config = EVEQuantumFAX.config;
+        return EVEQuantumFAX.utils.parsePositiveInt(config.perfReportTimeoutMs, 5000);
     },
 
     normalizeShipType: function (shipType) {

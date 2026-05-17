@@ -17,6 +17,7 @@ EVEQuantumFAX.screen = {
 EVEQuantumFAX.state = {
     isRunning: false,
     isPaused: false,
+    isStarting: false,
     workerThread: null,
     runToken: 0,
     miniView: null,

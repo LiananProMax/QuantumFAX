@@ -2,6 +2,7 @@ const express = require("express");
 
 const clientLogStore = require("../store/clientLogStore");
 const fleetStore = require("../store/fleetStore");
+const perfMetricStore = require("../store/perfMetricStore");
 
 const router = express.Router();
 
@@ -26,6 +27,20 @@ router.post("/report", (req, res) => {
 
 router.post("/logs", (req, res) => {
     const result = clientLogStore.append(req.body || {});
+    if (result.error) {
+        return res.status(400).json({ success: false, error: result.error });
+    }
+
+    res.json({
+        success: true,
+        clientId: result.clientId,
+        accepted: result.accepted,
+        total: result.total
+    });
+});
+
+router.post("/perf", (req, res) => {
+    const result = perfMetricStore.append(req.body || {});
     if (result.error) {
         return res.status(400).json({ success: false, error: result.error });
     }
@@ -63,6 +78,14 @@ router.get("/ships/:clientId/logs", (req, res) => {
         logs: clientLogStore.getLogs(req.params.clientId, {
             limit: req.query.limit
         })
+    });
+});
+
+router.get("/ships/:clientId/perf", (req, res) => {
+    res.json({
+        success: true,
+        clientId: req.params.clientId,
+        perf: perfMetricStore.getClientPerf(req.params.clientId)
     });
 });
 

@@ -1,13 +1,10 @@
 var EVEQuantumFAX = EVEQuantumFAX || {};
 
-EVEQuantumFAX.clientLogReporter = {
+EVEQuantumFAX.perfReporter = {
     REPORT_TIMEOUT_MS: 5000,
-    MAX_QUEUE_SIZE: 200,
-    BATCH_SIZE: 20,
-    FLUSH_INTERVAL_MS: 5000,
-    FORCE_BATCH_LIMIT: 5,
+    MAX_QUEUE_SIZE: 20,
+    BATCH_SIZE: 5,
     _queue: [],
-    _lastFlushAt: 0,
     _flushing: false,
     _backoffUntil: 0,
     _lastLoggedError: "",
@@ -23,25 +20,18 @@ EVEQuantumFAX.clientLogReporter = {
         if (!serverUrl) {
             return "";
         }
-        return String(serverUrl).replace(/\/$/, "") + "/api/fleet/logs";
+        return String(serverUrl).replace(/\/$/, "") + "/api/fleet/perf";
     },
 
-    enqueue: function (entry) {
-        var item;
-
-        if (!entry || !entry.message) {
+    enqueue: function (summary) {
+        if (!summary || !summary.metrics) {
             return;
         }
 
-        item = {
-            time: String(entry.time || ""),
-            timestamp: entry.timestamp || new Date().getTime(),
-            level: String(entry.level || "INFO"),
-            message: String(entry.message)
-        };
-
-        this._queue.push(item);
-        this._trimQueue();
+        this._queue.push(summary);
+        if (this._queue.length > this.MAX_QUEUE_SIZE) {
+            this._queue = this._queue.slice(this._queue.length - this.MAX_QUEUE_SIZE);
+        }
     },
 
     flush: function (force) {
@@ -52,10 +42,7 @@ EVEQuantumFAX.clientLogReporter = {
             return { ok: true, skipped: true };
         }
         if (!this.getReportUrl()) {
-            return { ok: false, skipped: true, error: "未配置客户端日志后端地址" };
-        }
-        if (force !== true && now - this._lastFlushAt < this._getFlushIntervalMs()) {
-            return { ok: true, skipped: true };
+            return { ok: false, skipped: true, error: "未配置性能指标后端地址" };
         }
         if (force !== true && now < this._backoffUntil) {
             return { ok: true, skipped: true, backoff: true };
@@ -64,11 +51,11 @@ EVEQuantumFAX.clientLogReporter = {
         this._flushing = true;
         try {
             workerThread = thread.execAsync(function () {
-                EVEQuantumFAX.clientLogReporter._flushWorker(force === true);
+                EVEQuantumFAX.perfReporter._flushWorker(force === true);
             });
             if (!workerThread) {
                 this._flushing = false;
-                return this._recordError("客户端日志上报线程启动失败");
+                return this._recordError("性能指标上报线程启动失败");
             }
             return { ok: true, scheduled: true };
         } catch (error) {
@@ -84,35 +71,28 @@ EVEQuantumFAX.clientLogReporter = {
         try {
             do {
                 result = this._flushOnce();
-                if (!result.ok) {
-                    return;
-                }
-                if (result.skipped) {
+                if (!result.ok || result.skipped) {
                     return;
                 }
                 sentBatches += 1;
-            } while (force === true && this._queue.length > 0 && sentBatches < this.FORCE_BATCH_LIMIT);
+            } while (force === true && this._queue.length > 0 && sentBatches < this.BATCH_SIZE);
         } finally {
             this._flushing = false;
         }
     },
 
     _flushOnce: function () {
-        var now = new Date().getTime();
-        var url;
+        var url = this.getReportUrl();
         var batch;
         var payload;
         var responseText;
         var responseJson;
-        var start;
 
         if (this._queue.length === 0) {
             return { ok: true, skipped: true };
         }
-
-        url = this.getReportUrl();
         if (!url) {
-            return { ok: false, skipped: true, error: "未配置客户端日志后端地址" };
+            return { ok: false, skipped: true, error: "未配置性能指标后端地址" };
         }
 
         batch = this._queue.slice(0, this.BATCH_SIZE);
@@ -120,79 +100,43 @@ EVEQuantumFAX.clientLogReporter = {
             clientId: EVEQuantumFAX.configManager.ensureClientId(),
             shipType: EVEQuantumFAX.configManager.normalizeShipType(EVEQuantumFAX.config.shipType),
             shipName: EVEQuantumFAX.configManager.getShipTypeLabel(EVEQuantumFAX.config.shipType),
-            sentAt: now,
-            logs: batch
+            sentAt: new Date().getTime(),
+            summaries: batch
         };
 
         try {
-            start = EVEQuantumFAX.perfStats ? EVEQuantumFAX.perfStats.now() : 0;
             responseText = http.postJSON(url, payload, this._getReportTimeoutMs(), {
                 "Content-Type": "application/json"
             });
-            if (EVEQuantumFAX.perfStats && start) {
-                EVEQuantumFAX.perfStats.recordFrom("logs.http", start, "batch=" + batch.length);
-            }
             if (!responseText) {
-                return this._recordError("客户端日志上报无响应");
+                return this._recordError("性能指标上报无响应");
             }
 
             responseJson = JSON.parse(responseText);
             if (!responseJson.success) {
-                return this._recordError(responseJson.error || "客户端日志上报失败");
+                return this._recordError(responseJson.error || "性能指标上报失败");
             }
 
             this._queue.splice(0, batch.length);
-            this._lastFlushAt = now;
             this._backoffUntil = 0;
             return { ok: true, sent: batch.length };
         } catch (error) {
-            if (EVEQuantumFAX.perfStats && start) {
-                EVEQuantumFAX.perfStats.recordFrom("logs.http", start, "batch=" + batch.length);
-            }
             return this._recordError("" + error);
         }
     },
 
     _recordError: function (message) {
         var now = new Date().getTime();
-        this._lastFlushAt = now;
-        this._backoffUntil = now + this._getFlushIntervalMs();
+        this._backoffUntil = now + 10000;
         if (this.shouldLogError(message)) {
-            logw("[ClientLogReporter] " + message);
+            logw("[PerfReporter] " + message);
         }
         return { ok: false, skipped: false, error: message };
     },
 
-    _trimQueue: function () {
-        var i;
-        var removed;
-
-        while (this._queue.length > this.MAX_QUEUE_SIZE) {
-            removed = false;
-            for (i = 0; i < this._queue.length; i++) {
-                if (this._queue[i].level === "INFO") {
-                    this._queue.splice(i, 1);
-                    removed = true;
-                    break;
-                }
-            }
-
-            if (!removed) {
-                this._queue.shift();
-            }
-        }
-    },
-
-    _getFlushIntervalMs: function () {
-        if (EVEQuantumFAX.configManager && EVEQuantumFAX.configManager.getClientLogReportIntervalMs) {
-            return EVEQuantumFAX.configManager.getClientLogReportIntervalMs();
-        }
-        return this.FLUSH_INTERVAL_MS;
-    },
-
     _getReportTimeoutMs: function () {
-        if (EVEQuantumFAX.configManager && EVEQuantumFAX.configManager.getClientLogReportTimeoutMs) {
-            return EVEQuantumFAX.configManager.getClientLogReportTimeoutMs();
+        if (EVEQuantumFAX.configManager && EVEQuantumFAX.configManager.getPerfReportTimeoutMs) {
+            return EVEQuantumFAX.configManager.getPerfReportTimeoutMs();
         }
         return this.REPORT_TIMEOUT_MS;
     },

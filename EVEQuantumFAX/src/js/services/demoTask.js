@@ -6,12 +6,15 @@ EVEQuantumFAX.demoTask = {
         var iteration = 0;
 
         while (state.isRunning && state.runToken === runToken && !isScriptExit()) {
+            var tickStart;
+
             if (state.isPaused) {
                 sleep(250);
                 continue;
             }
 
             iteration += 1;
+            tickStart = EVEQuantumFAX.perfStats ? EVEQuantumFAX.perfStats.now() : 0;
 
             try {
                 EVEQuantumFAX.hooks.onTick(EVEQuantumFAX.createContext({
@@ -20,6 +23,15 @@ EVEQuantumFAX.demoTask = {
                 }));
             } catch (error) {
                 EVEQuantumFAX.logger.error("主循环钩子执行失败：" + error);
+            } finally {
+                if (EVEQuantumFAX.perfStats && tickStart) {
+                    EVEQuantumFAX.perfStats.recordFrom(
+                        "tick",
+                        tickStart,
+                        "iteration=" + iteration,
+                        EVEQuantumFAX.perfStats.getSlowTickThresholdMs()
+                    );
+                }
             }
 
             sleep(EVEQuantumFAX.configManager.getTickIntervalMs());

@@ -2,6 +2,11 @@ var EVEQuantumFAX = EVEQuantumFAX || {};
 
 EVEQuantumFAX.fleetReporter = {
     REPORT_TIMEOUT_MS: 5000,
+    _pendingPayload: null,
+    _flushing: false,
+    _lastSentAt: 0,
+    _lastScheduleAt: 0,
+    _backoffUntil: 0,
     _lastError: "",
     _lastErrorAt: 0,
     _lastLoggedError: "",
@@ -52,8 +57,6 @@ EVEQuantumFAX.fleetReporter = {
     report: function (healthResult, context) {
         var url = this.getReportUrl();
         var payload;
-        var responseText;
-        var responseJson;
 
         if (!healthResult || !healthResult.ok) {
             return { ok: false, skipped: true, error: "血量检测失败，跳过上报" };
@@ -63,29 +66,101 @@ EVEQuantumFAX.fleetReporter = {
         }
 
         payload = this.buildPayload(healthResult, context);
+        this._pendingPayload = payload;
+        return this.flush(false);
+    },
+
+    flush: function (force) {
+        var now = new Date().getTime();
+        var intervalMs = EVEQuantumFAX.configManager.getFleetReportIntervalMs();
+        var workerThread;
+
+        if (!this._pendingPayload) {
+            return { ok: true, skipped: true };
+        }
+        if (this._flushing) {
+            return { ok: true, skipped: true, pending: true };
+        }
+        if (force !== true && now - this._lastSentAt < intervalMs) {
+            return { ok: true, skipped: true, pending: true };
+        }
+        if (force !== true && now < this._backoffUntil) {
+            return { ok: true, skipped: true, backoff: true };
+        }
+
+        this._flushing = true;
+        this._lastScheduleAt = now;
         try {
-            responseText = http.postJSON(url, payload, this.REPORT_TIMEOUT_MS, {
-                "Content-Type": "application/json"
+            workerThread = thread.execAsync(function () {
+                EVEQuantumFAX.fleetReporter._flushPendingPayload();
             });
-            if (!responseText) {
-                return this._recordError("舰队上报无响应");
+            if (!workerThread) {
+                this._flushing = false;
+                return this._recordError("舰队上报线程启动失败");
             }
-
-            responseJson = JSON.parse(responseText);
-            if (!responseJson.success) {
-                return this._recordError(responseJson.error || "舰队上报失败");
-            }
-
-            this._lastError = "";
-            return { ok: true };
+            return { ok: true, scheduled: true };
         } catch (error) {
+            this._flushing = false;
             return this._recordError("" + error);
         }
     },
 
+    _flushPendingPayload: function () {
+        var payload = this._pendingPayload;
+        var url = this.getReportUrl();
+        var start = EVEQuantumFAX.perfStats ? EVEQuantumFAX.perfStats.now() : 0;
+        var responseText;
+        var responseJson;
+
+        if (!payload || !url) {
+            this._flushing = false;
+            return;
+        }
+
+        this._pendingPayload = null;
+        try {
+            responseText = http.postJSON(url, payload, this._getReportTimeoutMs(), {
+                "Content-Type": "application/json"
+            });
+            if (!responseText) {
+                this._pendingPayload = this._pendingPayload || payload;
+                this._recordError("舰队上报无响应");
+                return;
+            }
+
+            responseJson = JSON.parse(responseText);
+            if (!responseJson.success) {
+                this._pendingPayload = this._pendingPayload || payload;
+                this._recordError(responseJson.error || "舰队上报失败");
+                return;
+            }
+
+            this._lastSentAt = new Date().getTime();
+            this._backoffUntil = 0;
+            this._lastError = "";
+        } catch (error) {
+            this._pendingPayload = this._pendingPayload || payload;
+            this._recordError("" + error);
+        } finally {
+            if (EVEQuantumFAX.perfStats && start) {
+                EVEQuantumFAX.perfStats.recordFrom("fleet.http", start);
+            }
+            this._flushing = false;
+        }
+    },
+
+    _getReportTimeoutMs: function () {
+        if (EVEQuantumFAX.configManager && EVEQuantumFAX.configManager.getFleetReportTimeoutMs) {
+            return EVEQuantumFAX.configManager.getFleetReportTimeoutMs();
+        }
+        return this.REPORT_TIMEOUT_MS;
+    },
+
     _recordError: function (message) {
+        var now = new Date().getTime();
         this._lastError = message;
-        this._lastErrorAt = new Date().getTime();
+        this._lastErrorAt = now;
+        this._backoffUntil = now + EVEQuantumFAX.configManager.getFleetReportIntervalMs();
         return { ok: false, skipped: false, error: message };
     },
 

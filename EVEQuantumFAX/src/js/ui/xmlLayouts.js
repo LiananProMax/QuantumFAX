@@ -375,6 +375,9 @@ EVEQuantumFAX.xmlLayouts = {
 
     _getStatusText: function () {
         var state = EVEQuantumFAX.state;
+        if (state.isStarting) {
+            return "启动中";
+        }
         if (!state.isRunning) {
             return "未运行";
         }
@@ -387,6 +390,9 @@ EVEQuantumFAX.xmlLayouts = {
     _getStatusColor: function () {
         var theme = this.THEME;
         var state = EVEQuantumFAX.state;
+        if (state.isStarting) {
+            return theme.ACCENT_YELLOW;
+        }
         if (!state.isRunning) {
             return theme.TEXT_MUTED;
         }
@@ -398,6 +404,9 @@ EVEQuantumFAX.xmlLayouts = {
 
     _getStartPauseLabel: function () {
         var state = EVEQuantumFAX.state;
+        if (state.isStarting) {
+            return "启动中";
+        }
         if (!state.isRunning) {
             return "启动";
         }
@@ -410,6 +419,9 @@ EVEQuantumFAX.xmlLayouts = {
     _getStartPauseColor: function () {
         var theme = this.THEME;
         var state = EVEQuantumFAX.state;
+        if (state.isStarting) {
+            return theme.ACCENT_YELLOW;
+        }
         if (!state.isRunning || state.isPaused) {
             return theme.ACCENT_GREEN;
         }

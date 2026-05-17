@@ -90,10 +90,12 @@ EVEQuantumFAX.healthMonitor = {
     _openCvReady: false,
     _targetRgbList: null,
     _equipmentActiveRgbList: null,
+    _templateCache: {},
     _lastShipEmergencySnapshot: null,
 
     ensureScreenCapture: function () {
         var requested;
+        var waitStart;
 
         if (this._screenCaptureReady) {
             return true;
@@ -109,70 +111,62 @@ EVEQuantumFAX.healthMonitor = {
         }
 
         this._screenCaptureReady = true;
+        waitStart = EVEQuantumFAX.perfStats ? EVEQuantumFAX.perfStats.now() : 0;
         sleep(1000);
+        if (EVEQuantumFAX.perfStats && waitStart) {
+            EVEQuantumFAX.perfStats.excludeFrom("screenCapture.initWait", waitStart);
+        }
         return true;
     },
 
     detect: function () {
         var screenImage;
-        var shieldPercent;
-        var armorPercent;
-        var result = {
-            ok: false,
-            shield: "",
-            armor: "",
-            shieldPercent: null,
-            armorPercent: null,
-            error: ""
-        };
 
         if (!this.ensureScreenCapture()) {
-            result.error = "截图权限申请失败";
-            return result;
+            return this._createDetectionResult("截图权限申请失败");
         }
 
-        screenImage = this._captureScreen();
+        screenImage = this._captureScreenTimed("health.capture");
         if (screenImage == null) {
-            result.error = "截图失败";
-            return result;
+            return this._createDetectionResult("截图失败");
         }
 
         try {
-            shieldPercent = this._detectPercentByPoints(screenImage, this.SHIELD_POINTS);
-            armorPercent = this._detectPercentByPoints(screenImage, this.ARMOR_POINTS);
-
-            result.shieldPercent = shieldPercent;
-            result.armorPercent = armorPercent;
-            result.shield = this._formatHealthRange(shieldPercent);
-            result.armor = this._formatHealthRange(armorPercent);
-            result.ok = true;
-            return result;
+            return this._detectFromScreen(screenImage);
         } catch (error) {
-            result.error = "" + error;
-            return result;
+            return this._createDetectionResult("" + error);
         } finally {
             this._recycleImage(screenImage);
         }
     },
 
     handleShipEmergency: function () {
-        var detection = this.detect();
+        var screenImage;
+        var detection;
         var now = new Date().getTime();
+
+        if (!this.ensureScreenCapture()) {
+            return this._createEmergencyResult(this._createDetectionResult("截图权限申请失败"));
+        }
+
+        screenImage = this._captureScreenTimed("health.capture");
+        if (screenImage == null) {
+            return this._createEmergencyResult(this._createDetectionResult("截图失败"));
+        }
+
+        try {
+            detection = this._detectFromScreen(screenImage);
+            return this._handleShipEmergencyWithDetection(detection, now, screenImage);
+        } catch (error) {
+            return this._createEmergencyResult(this._createDetectionResult("" + error));
+        } finally {
+            this._recycleImage(screenImage);
+        }
+    },
+
+    _handleShipEmergencyWithDetection: function (detection, now, screenImage) {
         var rates;
-        var result = {
-            ok: detection.ok,
-            triggered: false,
-            activated: false,
-            shield: detection.shield,
-            armor: detection.armor,
-            shieldPercent: detection.shieldPercent,
-            armorPercent: detection.armorPercent,
-            shieldDropRate: 0,
-            armorDropRate: 0,
-            armorDropPercent: 0,
-            reason: "",
-            error: detection.error || ""
-        };
+        var result = this._createEmergencyResult(detection);
 
         if (!detection.ok) {
             result.reason = "血量检测失败";
@@ -212,7 +206,7 @@ EVEQuantumFAX.healthMonitor = {
             return result;
         }
 
-        result.activated = this.activateDamageControl();
+        result.activated = this.activateDamageControl(screenImage);
         if (!result.activated) {
             result.reason += "，损控不可开启";
         }
@@ -220,28 +214,83 @@ EVEQuantumFAX.healthMonitor = {
         return result;
     },
 
-    canActivateDamageControl: function () {
-        var screenImage = null;
+    _createDetectionResult: function (error) {
+        return {
+            ok: false,
+            shield: "",
+            armor: "",
+            shieldPercent: null,
+            armorPercent: null,
+            error: error || ""
+        };
+    },
+
+    _createEmergencyResult: function (detection) {
+        detection = detection || this._createDetectionResult("");
+        return {
+            ok: detection.ok,
+            triggered: false,
+            activated: false,
+            shield: detection.shield,
+            armor: detection.armor,
+            shieldPercent: detection.shieldPercent,
+            armorPercent: detection.armorPercent,
+            shieldDropRate: 0,
+            armorDropRate: 0,
+            armorDropPercent: 0,
+            reason: "",
+            error: detection.error || ""
+        };
+    },
+
+    _detectFromScreen: function (screenImage) {
+        var start = EVEQuantumFAX.perfStats ? EVEQuantumFAX.perfStats.now() : 0;
+        var shieldPercent;
+        var armorPercent;
+        var result = this._createDetectionResult("");
+
+        shieldPercent = this._detectPercentByPoints(screenImage, this.SHIELD_POINTS);
+        armorPercent = this._detectPercentByPoints(screenImage, this.ARMOR_POINTS);
+
+        result.shieldPercent = shieldPercent;
+        result.armorPercent = armorPercent;
+        result.shield = this._formatHealthRange(shieldPercent);
+        result.armor = this._formatHealthRange(armorPercent);
+        result.ok = true;
+
+        if (EVEQuantumFAX.perfStats && start) {
+            EVEQuantumFAX.perfStats.recordFrom("health.pixel", start);
+        }
+
+        return result;
+    },
+
+    canActivateDamageControl: function (screenImage) {
+        var ownsScreenImage = screenImage == null;
         var templateImage = null;
         var matches;
         var region = this.DAMAGE_CONTROL_REGION;
+        var matchStart;
 
         if (!this.ensureScreenCapture() || !this._ensureOpenCV()) {
             return false;
         }
 
         try {
-            templateImage = readResAutoImage(this.DAMAGE_CONTROL_ICON);
+            templateImage = this._getTemplateImage(this.DAMAGE_CONTROL_ICON);
             if (templateImage == null) {
                 logw("damage control template missing: " + this.DAMAGE_CONTROL_ICON);
                 return false;
             }
 
-            screenImage = this._captureScreen();
+            if (ownsScreenImage) {
+                screenImage = this._captureScreenTimed("health.capture");
+            }
             if (screenImage == null) {
                 return false;
             }
 
+            matchStart = EVEQuantumFAX.perfStats ? EVEQuantumFAX.perfStats.now() : 0;
             matches = image.findImage(
                 screenImage,
                 templateImage,
@@ -254,6 +303,9 @@ EVEQuantumFAX.healthMonitor = {
                 this.DAMAGE_CONTROL_MATCH_LIMIT,
                 this.DAMAGE_CONTROL_MATCH_METHOD
             );
+            if (EVEQuantumFAX.perfStats && matchStart) {
+                EVEQuantumFAX.perfStats.recordFrom("health.damageTemplate", matchStart);
+            }
 
             if (!(matches && matches.length > 0)) {
                 return false;
@@ -268,15 +320,16 @@ EVEQuantumFAX.healthMonitor = {
             logw("damage control detection failed: " + error);
             return false;
         } finally {
-            this._recycleImage(screenImage);
-            this._recycleImage(templateImage);
+            if (ownsScreenImage) {
+                this._recycleImage(screenImage);
+            }
         }
     },
 
-    activateDamageControl: function () {
+    activateDamageControl: function (screenImage) {
         var point;
 
-        if (!this.canActivateDamageControl()) {
+        if (!this.canActivateDamageControl(screenImage)) {
             return false;
         }
 
@@ -295,23 +348,25 @@ EVEQuantumFAX.healthMonitor = {
         var templateImage = null;
         var matches;
         var region = this.SHIP_IN_SPACE_REGION;
+        var matchStart;
 
         if (!this.ensureScreenCapture() || !this._ensureOpenCV()) {
             return false;
         }
 
         try {
-            templateImage = readResAutoImage(this.SHIP_IN_SPACE_ICON);
+            templateImage = this._getTemplateImage(this.SHIP_IN_SPACE_ICON);
             if (templateImage == null) {
                 logw("ship in space template missing: " + this.SHIP_IN_SPACE_ICON);
                 return false;
             }
 
-            screenImage = this._captureScreen();
+            screenImage = this._captureScreenTimed("health.capture");
             if (screenImage == null) {
                 return false;
             }
 
+            matchStart = EVEQuantumFAX.perfStats ? EVEQuantumFAX.perfStats.now() : 0;
             matches = image.findImage(
                 screenImage,
                 templateImage,
@@ -324,6 +379,9 @@ EVEQuantumFAX.healthMonitor = {
                 this.SHIP_IN_SPACE_MATCH_LIMIT,
                 this.SHIP_IN_SPACE_MATCH_METHOD
             );
+            if (EVEQuantumFAX.perfStats && matchStart) {
+                EVEQuantumFAX.perfStats.recordFrom("health.spaceTemplate", matchStart);
+            }
 
             return !!(matches && matches.length > 0);
         } catch (error) {
@@ -331,7 +389,6 @@ EVEQuantumFAX.healthMonitor = {
             return false;
         } finally {
             this._recycleImage(screenImage);
-            this._recycleImage(templateImage);
         }
     },
 
@@ -343,7 +400,7 @@ EVEQuantumFAX.healthMonitor = {
         }
 
         try {
-            screenImage = this._captureScreen();
+            screenImage = this._captureScreenTimed("health.capture");
             if (screenImage == null) {
                 return false;
             }
@@ -388,6 +445,45 @@ EVEQuantumFAX.healthMonitor = {
         }
 
         return image.captureFullScreen();
+    },
+
+    _captureScreenTimed: function (metricName) {
+        var start = EVEQuantumFAX.perfStats ? EVEQuantumFAX.perfStats.now() : 0;
+        var screenImage = this._captureScreen();
+
+        if (EVEQuantumFAX.perfStats && start) {
+            EVEQuantumFAX.perfStats.recordFrom(metricName || "health.capture", start);
+        }
+
+        return screenImage;
+    },
+
+    _getTemplateImage: function (resourceName) {
+        var start;
+
+        if (this._templateCache[resourceName]) {
+            return this._templateCache[resourceName];
+        }
+
+        start = EVEQuantumFAX.perfStats ? EVEQuantumFAX.perfStats.now() : 0;
+        this._templateCache[resourceName] = readResAutoImage(resourceName);
+        if (EVEQuantumFAX.perfStats && start) {
+            EVEQuantumFAX.perfStats.recordFrom("health.templateLoad", start, resourceName);
+        }
+
+        return this._templateCache[resourceName];
+    },
+
+    releaseResources: function () {
+        var name;
+
+        for (name in this._templateCache) {
+            if (this._templateCache.hasOwnProperty(name)) {
+                this._recycleImage(this._templateCache[name]);
+            }
+        }
+
+        this._templateCache = {};
     },
 
     _ensureOpenCV: function () {

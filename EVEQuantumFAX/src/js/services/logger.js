@@ -33,6 +33,8 @@ EVEQuantumFAX.logger = {
         }
     },
 
+    _lastRemoteInfoAt: 0,
+
     add: function (message, level) {
         var constants = EVEQuantumFAX.constants;
         var state = EVEQuantumFAX.state;
@@ -52,13 +54,32 @@ EVEQuantumFAX.logger = {
 
         logd("[" + entry.level + "] " + entry.message);
 
-        if (EVEQuantumFAX.clientLogReporter && EVEQuantumFAX.clientLogReporter.enqueue) {
+        if (this._shouldEnqueueRemote(entry) &&
+            EVEQuantumFAX.clientLogReporter && EVEQuantumFAX.clientLogReporter.enqueue) {
             try {
                 EVEQuantumFAX.clientLogReporter.enqueue(entry);
             } catch (error) {
                 logw("clientLogReporter.enqueue failed: " + error);
             }
         }
+    },
+
+    _shouldEnqueueRemote: function (entry) {
+        var now;
+        var intervalMs;
+
+        if (!entry || entry.level !== this.LEVEL.INFO) {
+            return true;
+        }
+
+        now = new Date().getTime();
+        intervalMs = EVEQuantumFAX.configManager.getClientInfoLogSampleIntervalMs();
+        if (now - this._lastRemoteInfoAt >= intervalMs) {
+            this._lastRemoteInfoAt = now;
+            return true;
+        }
+
+        return false;
     },
 
     info: function (message) {

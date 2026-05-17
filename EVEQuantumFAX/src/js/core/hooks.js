@@ -13,6 +13,11 @@ EVEQuantumFAX.createContext = function (extra) {
 };
 
 EVEQuantumFAX.hooks = {
+    _lastHealthStatusSignature: "",
+    _lastHealthStatusLogAt: 0,
+    _lastHealthErrorSignature: "",
+    _lastHealthErrorAt: 0,
+
     onStart: function (context) {
         context.logger.success("启动钩子已执行");
         EVEQuantumFAX.hooks._flushClientLogs(true);
@@ -45,6 +50,7 @@ EVEQuantumFAX.hooks = {
     },
 
     _checkDamageControl: function (context, iteration) {
+        var start = EVEQuantumFAX.perfStats ? EVEQuantumFAX.perfStats.now() : 0;
         var emergencyResult;
         var message;
 
@@ -54,10 +60,16 @@ EVEQuantumFAX.hooks = {
         }
 
         emergencyResult = EVEQuantumFAX.healthMonitor.handleShipEmergency();
+        if (EVEQuantumFAX.perfStats && start) {
+            EVEQuantumFAX.perfStats.recordFrom("health.emergency", start, "iteration=" + iteration);
+        }
+
         if (!emergencyResult.ok) {
             message = "舰船应急检测 #" + iteration + "失败：" + emergencyResult.error;
-            context.logger.warn(message);
-            EVEQuantumFAX.toast(message);
+            if (this._shouldLogHealthError(message)) {
+                context.logger.warn(message);
+                EVEQuantumFAX.toast(message);
+            }
             return;
         }
 
@@ -73,8 +85,9 @@ EVEQuantumFAX.hooks = {
         message = "舰船应急 #" + iteration + "：" + emergencyResult.reason +
             "，护盾 " + emergencyResult.shield +
             "，装甲 " + emergencyResult.armor;
-        context.logger.info(message);
-        EVEQuantumFAX.toast(message);
+        if (this._shouldLogHealthStatus(emergencyResult)) {
+            context.logger.info(message);
+        }
     },
 
     _showHealthToast: function (context) {
@@ -87,6 +100,7 @@ EVEQuantumFAX.hooks = {
     },
 
     _reportFleetHealth: function (context, emergencyResult) {
+        var start = EVEQuantumFAX.perfStats ? EVEQuantumFAX.perfStats.now() : 0;
         var reportResult;
 
         if (!EVEQuantumFAX.fleetReporter) {
@@ -94,6 +108,9 @@ EVEQuantumFAX.hooks = {
         }
 
         reportResult = EVEQuantumFAX.fleetReporter.report(emergencyResult, context);
+        if (EVEQuantumFAX.perfStats && start) {
+            EVEQuantumFAX.perfStats.recordFrom("fleet.schedule", start);
+        }
         if (!reportResult.ok && !reportResult.skipped &&
             EVEQuantumFAX.fleetReporter.shouldLogError(reportResult.error)) {
             context.logger.warn("舰队上报失败：" + reportResult.error);
@@ -101,6 +118,7 @@ EVEQuantumFAX.hooks = {
     },
 
     _flushClientLogs: function (force) {
+        var start = EVEQuantumFAX.perfStats ? EVEQuantumFAX.perfStats.now() : 0;
         var result;
 
         if (!EVEQuantumFAX.clientLogReporter) {
@@ -108,9 +126,43 @@ EVEQuantumFAX.hooks = {
         }
 
         result = EVEQuantumFAX.clientLogReporter.flush(force === true);
+        if (EVEQuantumFAX.perfStats && start) {
+            EVEQuantumFAX.perfStats.recordFrom("logs.schedule", start);
+        }
         if (!result.ok && !result.skipped &&
             EVEQuantumFAX.clientLogReporter.shouldLogError(result.error)) {
             logw("客户端日志上报失败：" + result.error);
         }
+    },
+
+    _shouldLogHealthStatus: function (emergencyResult) {
+        var now = new Date().getTime();
+        var intervalMs = EVEQuantumFAX.configManager.getNormalStatusLogIntervalMs();
+        var signature = [
+            emergencyResult.reason,
+            emergencyResult.shield,
+            emergencyResult.armor,
+            emergencyResult.triggered ? "1" : "0",
+            emergencyResult.activated ? "1" : "0"
+        ].join("|");
+
+        if (signature !== this._lastHealthStatusSignature ||
+            now - this._lastHealthStatusLogAt >= intervalMs) {
+            this._lastHealthStatusSignature = signature;
+            this._lastHealthStatusLogAt = now;
+            return true;
+        }
+
+        return false;
+    },
+
+    _shouldLogHealthError: function (message) {
+        var now = new Date().getTime();
+        if (message !== this._lastHealthErrorSignature || now - this._lastHealthErrorAt >= 10000) {
+            this._lastHealthErrorSignature = message;
+            this._lastHealthErrorAt = now;
+            return true;
+        }
+        return false;
     }
 };

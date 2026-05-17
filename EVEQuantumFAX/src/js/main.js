@@ -2,6 +2,7 @@ require("js/core/state.js");
 require("js/core/runtime.js");
 require("js/core/utils.js");
 require("js/core/config.js");
+require("js/services/perfStats.js");
 require("js/services/logger.js");
 require("js/core/hotupdateConfig.js");
 require("js/services/updater.js");
@@ -9,6 +10,7 @@ require("js/constants/healthMonitorColors.js");
 require("js/services/healthMonitor.js");
 require("js/services/fleetReporter.js");
 require("js/services/clientLogReporter.js");
+require("js/services/perfReporter.js");
 require("js/services/permissionManager.js");
 require("js/core/hooks.js");
 require("js/services/demoTask.js");
@@ -32,6 +34,33 @@ setStopCallback(function () {
         }
     } catch (flushError) {
         logw("clientLogReporter.flush failed: " + flushError);
+    }
+
+    try {
+        if (EVEQuantumFAX.perfStats) {
+            EVEQuantumFAX.perfStats.flush();
+        }
+        if (EVEQuantumFAX.perfReporter) {
+            EVEQuantumFAX.perfReporter.flush(true);
+        }
+    } catch (perfFlushError) {
+        logw("perfReporter.flush failed: " + perfFlushError);
+    }
+
+    try {
+        if (EVEQuantumFAX.fleetReporter) {
+            EVEQuantumFAX.fleetReporter.flush(true);
+        }
+    } catch (fleetFlushError) {
+        logw("fleetReporter.flush failed: " + fleetFlushError);
+    }
+
+    try {
+        if (EVEQuantumFAX.healthMonitor) {
+            EVEQuantumFAX.healthMonitor.releaseResources();
+        }
+    } catch (resourceError) {
+        logw("healthMonitor.releaseResources failed: " + resourceError);
     }
 
     try {
