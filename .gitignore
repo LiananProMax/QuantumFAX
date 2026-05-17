@@ -5,9 +5,12 @@ out/
 
 # Node hot update server dependencies
 server/node_modules/
+server/dashboard/node_modules/
+server/dashboard/dist/
 
 # Server local environment
 server/.env
+server/data/fleetState.json
 
 # Logs and temporary files
 *.log

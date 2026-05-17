@@ -7,10 +7,13 @@ require("js/core/hotupdateConfig.js");
 require("js/services/updater.js");
 require("js/constants/healthMonitorColors.js");
 require("js/services/healthMonitor.js");
+require("js/services/fleetReporter.js");
+require("js/services/permissionManager.js");
 require("js/core/hooks.js");
 require("js/services/demoTask.js");
 require("js/ui/xmlLayouts.js");
 require("js/ui/floatWindow.js");
+require("js/ui/entryScreen.js");
 require("js/controller/appController.js");
 
 setStopCallback(function () {
@@ -29,52 +32,7 @@ setStopCallback(function () {
     }
 });
 
-function runHotUpdateCheck() {
-    var debugInfo;
-    var updateResult;
-    var newVersion;
-    var currentVersion;
-
-    EVEQuantumFAX.hotupdate.configManager.load();
-
-    try {
-        debugInfo = EVEQuantumFAX.hotupdate.updater.getDebugInfo();
-        logd("[Update] IEC version: " + debugInfo.iecVersion);
-        logd("[Update] local version: " + debugInfo.localVersion);
-        logd("[Update] current version: " + debugInfo.currentVersion);
-
-        updateResult = EVEQuantumFAX.hotupdate.updater.checkUpdate(true);
-        if (!updateResult.hasUpdate) {
-            EVEQuantumFAX.logger.info("暂无可用热更新");
-            return false;
-        }
-
-        newVersion = updateResult.version;
-        currentVersion = debugInfo.currentVersion;
-        logd("[Update] server version: " + newVersion + ", current version: " + currentVersion);
-        if (newVersion <= currentVersion) {
-            EVEQuantumFAX.logger.info("服务端版本未更新，跳过热更新");
-            return false;
-        }
-
-        EVEQuantumFAX.logger.info("发现热更新：v" + newVersion);
-        EVEQuantumFAX.toast("发现更新 v" + newVersion);
-        if (EVEQuantumFAX.hotupdate.updater.performUpdate(newVersion)) {
-            return true;
-        }
-
-        EVEQuantumFAX.logger.warn("热更新失败，继续使用当前版本");
-        return false;
-    } catch (error) {
-        logw("[Update] check failed: " + error);
-        EVEQuantumFAX.logger.warn("热更新检查失败：" + error);
-        return false;
-    }
-}
-
 function main() {
-    var hasPermission;
-
     logd("========== EVEQuantumFAX start ==========");
 
     EVEQuantumFAX.utils.initScreen();
@@ -84,26 +42,24 @@ function main() {
     EVEQuantumFAX.logger.info("QuantumFAX 启动完成");
     EVEQuantumFAX.logger.info("屏幕尺寸：" + EVEQuantumFAX.screen.width + "x" + EVEQuantumFAX.screen.height);
 
-    if (runHotUpdateCheck()) {
+    if (EVEQuantumFAX.hotupdate.updater.checkAndApplyUpdate("程序启动")) {
         return;
     }
 
-    hasPermission = floaty.requestFloatViewPermission(10000);
-    logd("[Permission] floaty=" + hasPermission);
+    EVEQuantumFAX.entryScreen.show();
+    EVEQuantumFAX.entryScreen.refreshVersionInfoAsync();
 
-    if (!hasPermission) {
-        EVEQuantumFAX.logger.error("未授予悬浮窗权限");
-        EVEQuantumFAX.toast("请授予悬浮窗权限后重试");
-        sleep(1500);
-        return;
+    if (EVEQuantumFAX.permissions.hasFloatPermission()) {
+        EVEQuantumFAX.entryScreen.startFloatingControls("程序启动");
+    } else {
+        EVEQuantumFAX.logger.warn("等待用户在入口界面授予悬浮窗权限");
     }
-
-    EVEQuantumFAX.ui.showMiniFloat();
-    EVEQuantumFAX.logger.success("迷你悬浮窗已就绪");
-    EVEQuantumFAX.toast(EVEQuantumFAX.appInfo.title + "已就绪");
 
     while (!isScriptExit()) {
-        EVEQuantumFAX.ui.syncOrientation();
+        EVEQuantumFAX.entryScreen.refreshPermissionInfo();
+        if (EVEQuantumFAX.state.miniView) {
+            EVEQuantumFAX.ui.syncOrientation();
+        }
         sleep(1000);
     }
 }

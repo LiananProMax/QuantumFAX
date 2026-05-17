@@ -55,6 +55,8 @@ EVEQuantumFAX.hooks = {
             return;
         }
 
+        EVEQuantumFAX.hooks._reportFleetHealth(context, emergencyResult);
+
         if (emergencyResult.activated) {
             message = "舰船应急 #" + iteration + "：已开启损控（" + emergencyResult.reason + "）";
             context.logger.warn(message);
@@ -76,5 +78,19 @@ EVEQuantumFAX.hooks = {
         }
 
         EVEQuantumFAX.healthMonitor.showHealthToast();
+    },
+
+    _reportFleetHealth: function (context, emergencyResult) {
+        var reportResult;
+
+        if (!EVEQuantumFAX.fleetReporter) {
+            return;
+        }
+
+        reportResult = EVEQuantumFAX.fleetReporter.report(emergencyResult, context);
+        if (!reportResult.ok && !reportResult.skipped &&
+            EVEQuantumFAX.fleetReporter.shouldLogError(reportResult.error)) {
+            context.logger.warn("舰队上报失败：" + reportResult.error);
+        }
     }
 };

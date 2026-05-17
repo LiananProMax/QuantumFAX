@@ -318,6 +318,15 @@ EVEQuantumFAX.ui = {
                     bind("btnStop", function () {
                         EVEQuantumFAX.controller.onStopClick();
                     });
+                    bind("btnShipTypeApostle", function () {
+                        EVEQuantumFAX.ui.selectShipType("apostle");
+                    });
+                    bind("btnShipTypeTelemachus", function () {
+                        EVEQuantumFAX.ui.selectShipType("telemachus");
+                    });
+                    bind("btnShipTypeSeaArchon", function () {
+                        EVEQuantumFAX.ui.selectShipType("sea_archon");
+                    });
                     bind("btnClearLog", function () {
                         EVEQuantumFAX.logger.clear();
                         EVEQuantumFAX.ui.refreshLogPanel();
@@ -383,12 +392,24 @@ EVEQuantumFAX.ui = {
         return String(editText.getText()).trim();
     },
 
+    selectShipType: function (shipType) {
+        if (!EVEQuantumFAX.state.panelView || EVEQuantumFAX.state.currentTab !== "config") {
+            return;
+        }
+
+        this.savePanelConfig();
+        EVEQuantumFAX.config.shipType = EVEQuantumFAX.configManager.normalizeShipType(shipType);
+        EVEQuantumFAX.configManager.save();
+        this.refreshPanel();
+    },
+
     savePanelConfig: function () {
         var config = EVEQuantumFAX.config;
         var configManager = EVEQuantumFAX.configManager;
         var state = EVEQuantumFAX.state;
         var utils = EVEQuantumFAX.utils;
         var tickInterval;
+        var fleetServerUrl;
 
         if (!state.panelView || state.currentTab !== "config") {
             return;
@@ -396,8 +417,12 @@ EVEQuantumFAX.ui = {
 
         try {
             tickInterval = utils.parsePositiveInt(this._readEditText("etTickInterval"), config.tickIntervalSec);
+            fleetServerUrl = this._readEditText("etFleetServerUrl");
 
             config.tickIntervalSec = tickInterval;
+            config.fleetServerUrl = fleetServerUrl || config.fleetServerUrl;
+            config.clientId = config.clientId || configManager.createClientId();
+            config.shipType = configManager.normalizeShipType(config.shipType);
             configManager.save();
         } catch (error) {
             loge("Config save failed: " + error);
@@ -456,10 +481,12 @@ EVEQuantumFAX.ui = {
         var constants = EVEQuantumFAX.constants;
         var state = EVEQuantumFAX.state;
 
+        floaty.close(constants.FLOAT_TAG_TOAST);
         floaty.close(constants.FLOAT_TAG_OVERLAY);
         floaty.close(constants.FLOAT_TAG_PANEL);
         floaty.close(constants.FLOAT_TAG_MINI);
 
+        state.toastView = null;
         state.overlayView = null;
         state.panelView = null;
         state.miniView = null;

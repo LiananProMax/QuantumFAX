@@ -7,12 +7,14 @@ var EVEQuantumFAX = EVEQuantumFAX || {};
 EVEQuantumFAX.hotupdate = EVEQuantumFAX.hotupdate || {};
 
 /** Local debug server address. Use the host LAN IP so Android devices/emulators can reach it. */
-var EVE_QUANTUM_FAX_UPDATE_SERVER_URL = "http://192.168.31.141:3000";
+var EVE_QUANTUM_FAX_UPDATE_SERVER_URL = "http://10.0.0.77:3000";
 
 EVEQuantumFAX.hotupdate.config = {
     serverUrl: EVE_QUANTUM_FAX_UPDATE_SERVER_URL,
     /** Optional: sent as query param licenseKey and header X-License-Key. */
-    licenseKey: ""
+    licenseKey: "",
+    /** Local EasyClick debug runs should not restart into server IEC packages. */
+    allowDebugAutoUpdate: false
 };
 
 EVEQuantumFAX.hotupdate.logger = {

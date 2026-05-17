@@ -165,6 +165,8 @@ EVEQuantumFAX.healthMonitor = {
             activated: false,
             shield: detection.shield,
             armor: detection.armor,
+            shieldPercent: detection.shieldPercent,
+            armorPercent: detection.armorPercent,
             shieldDropRate: 0,
             armorDropRate: 0,
             armorDropPercent: 0,

@@ -11,6 +11,28 @@ var STORAGE_NAMESPACE = "EVEQuantumFAXHotupdate";
 EVEQuantumFAX.hotupdate.updater = {
     _cachedLocalVersion: null,
 
+    isReleaseRuntime: function () {
+        try {
+            if (typeof isReleaseIec === "function") {
+                return isReleaseIec() === true;
+            }
+        } catch (e) {
+            logd("[Updater] 判断运行模式失败: " + e);
+        }
+        return true;
+    },
+
+    resolveCurrentVersion: function (iecVersion, localVersion) {
+        var isRelease = this.isReleaseRuntime();
+        var currentVersion = isRelease ? Math.max(iecVersion, localVersion) : iecVersion;
+        logd("[Updater] 运行模式=" + (isRelease ? "release" : "debug") + ", IEC版本=" + iecVersion + ", 本地版本=" + localVersion + ", 当前版本=" + currentVersion);
+        return {
+            currentVersion: currentVersion,
+            isRelease: isRelease,
+            isLocalDebug: !isRelease
+        };
+    },
+
     getIecVersion: function () {
         try {
             var updateJson = readIECFileAsString("update.json");
@@ -47,9 +69,21 @@ EVEQuantumFAX.hotupdate.updater = {
     getCurrentVersion: function () {
         var iecVersion = this.getIecVersion();
         var localVersion = this.getLocalSavedVersion();
-        var currentVersion = Math.max(iecVersion, localVersion);
-        logd("[Updater] IEC版本=" + iecVersion + ", 本地版本=" + localVersion + ", 当前版本=" + currentVersion);
-        return currentVersion;
+        return this.resolveCurrentVersion(iecVersion, localVersion).currentVersion;
+    },
+
+    shouldApplyUpdate: function (debugInfo) {
+        var cfg = EVEQuantumFAX.hotupdate.config || {};
+
+        if (debugInfo && debugInfo.isLocalDebug && cfg.allowDebugAutoUpdate !== true) {
+            logd("[Updater] 本地调试模式跳过自动应用热更新");
+            if (EVEQuantumFAX.logger) {
+                EVEQuantumFAX.logger.info("本地调试模式已跳过自动热更新");
+            }
+            return false;
+        }
+
+        return true;
     },
 
     saveUpdatedVersion: function (version) {
@@ -72,6 +106,14 @@ EVEQuantumFAX.hotupdate.updater = {
             return cfg.serverUrl.replace(/\/$/, "") + "/api/update/check";
         }
         return "http://127.0.0.1:3000/api/update/check";
+    },
+
+    getVersionUrl: function () {
+        var cfg = EVEQuantumFAX.hotupdate.config;
+        if (cfg && cfg.serverUrl) {
+            return cfg.serverUrl.replace(/\/$/, "") + "/api/update/version";
+        }
+        return "http://127.0.0.1:3000/api/update/version";
     },
 
     _doHttpCheck: function (checkUrl) {
@@ -189,8 +231,46 @@ EVEQuantumFAX.hotupdate.updater = {
         }
     },
 
+    fetchLatestVersionInfo: function () {
+        var versionUrl;
+        var resp;
+
+        try {
+            EVEQuantumFAX.hotupdate.configManager.load();
+            versionUrl = this.getVersionUrl();
+            logd("[Updater] 最新版本信息URL: " + versionUrl);
+            resp = this._doHttpCheck(versionUrl);
+            if (!resp || resp.noUpdate) {
+                return {
+                    success: false,
+                    error: "服务器无响应"
+                };
+            }
+            if (resp.success === false) {
+                return {
+                    success: false,
+                    error: resp.error || "服务器返回失败"
+                };
+            }
+            return {
+                success: true,
+                version: resp.version,
+                versionName: resp.versionName || resp.version,
+                msg: resp.msg || "",
+                updatedAt: resp.updatedAt || ""
+            };
+        } catch (error) {
+            logw("[Updater] 获取最新版本信息失败: " + error);
+            return {
+                success: false,
+                error: String(error)
+            };
+        }
+    },
+
     performUpdate: function (newVersion) {
         var logger = EVEQuantumFAX.hotupdate.logger;
+        var versionSaved = false;
         try {
             logd("[Updater] ===== 开始更新流程 =====");
             logd("[Updater] 目标版本: " + newVersion);
@@ -205,19 +285,35 @@ EVEQuantumFAX.hotupdate.updater = {
                 EVEQuantumFAX.toast("下载失败: " + errMsg);
                 return false;
             }
-            if (newVersion) {
-                logd("[Updater] 保存版本号: " + newVersion);
-                this.saveUpdatedVersion(newVersion);
-            }
             logd("[Updater] 下载成功，准备重启");
             if (logger) logger.success("更新下载完成");
+
+            if (newVersion) {
+                logd("[Updater] 重启前保存版本号: " + newVersion);
+                versionSaved = this.saveUpdatedVersion(newVersion);
+                if (!versionSaved) {
+                    logd("[Updater] 保存版本号失败，取消重启以避免更新循环");
+                    if (logger) logger.error("保存更新版本失败，已取消自动重启");
+                    EVEQuantumFAX.toast("保存版本失败，请检查存储权限");
+                    return false;
+                }
+            }
+
             if (logger) logger.info("正在重启以应用更新...");
             EVEQuantumFAX.toast("更新完成，正在重启...");
             sleep(1000);
+            try {
+                EVEQuantumFAX.ui.closeAll();
+            } catch (closeError) {
+                logw("[Updater] 重启前关闭悬浮窗失败: " + closeError);
+            }
             var success = restartScript(iecPath, true, 2);
             if (!success) {
                 logd("[Updater] 重启脚本失败");
                 if (logger) logger.error("重启脚本失败");
+                if (versionSaved) {
+                    this.clearLocalVersion();
+                }
                 EVEQuantumFAX.toast("重启失败，请手动重启");
                 return false;
             }
@@ -227,6 +323,55 @@ EVEQuantumFAX.hotupdate.updater = {
             loge("[Updater] 执行更新异常: " + e);
             if (logger) logger.error("更新异常: " + e);
             EVEQuantumFAX.toast("更新异常: " + e);
+            return false;
+        }
+    },
+
+    checkAndApplyUpdate: function (stageName) {
+        var debugInfo;
+        var updateResult;
+        var newVersion;
+        var currentVersion;
+        var stage = stageName || "启动前";
+
+        EVEQuantumFAX.hotupdate.configManager.load();
+
+        try {
+            debugInfo = this.getDebugInfo();
+            logd("[Update][" + stage + "] runtime: " + (debugInfo.isRelease ? "release" : "debug"));
+            logd("[Update][" + stage + "] IEC version: " + debugInfo.iecVersion);
+            logd("[Update][" + stage + "] local version: " + debugInfo.localVersion);
+            logd("[Update][" + stage + "] current version: " + debugInfo.currentVersion);
+
+            if (!this.shouldApplyUpdate(debugInfo)) {
+                return false;
+            }
+
+            updateResult = this.checkUpdate(true);
+            if (!updateResult.hasUpdate) {
+                EVEQuantumFAX.logger.info("暂无可用热更新");
+                return false;
+            }
+
+            newVersion = updateResult.version;
+            currentVersion = debugInfo.currentVersion;
+            logd("[Update][" + stage + "] server version: " + newVersion + ", current version: " + currentVersion);
+            if (newVersion <= currentVersion) {
+                EVEQuantumFAX.logger.info("服务端版本未更新，跳过热更新");
+                return false;
+            }
+
+            EVEQuantumFAX.logger.info("发现热更新：v" + newVersion);
+            EVEQuantumFAX.toast("发现更新 v" + newVersion);
+            if (this.performUpdate(newVersion)) {
+                return true;
+            }
+
+            EVEQuantumFAX.logger.warn("热更新失败，继续使用当前版本");
+            return false;
+        } catch (error) {
+            logw("[Update][" + stage + "] check failed: " + error);
+            EVEQuantumFAX.logger.warn("热更新检查失败：" + error);
             return false;
         }
     },
@@ -291,6 +436,7 @@ EVEQuantumFAX.hotupdate.updater = {
     getDebugInfo: function () {
         var iecVer = 0;
         var localVer = 0;
+        var resolved;
         try {
             var updateJson = readIECFileAsString("update.json");
             if (updateJson) {
@@ -302,10 +448,13 @@ EVEQuantumFAX.hotupdate.updater = {
             var storage = storages.create(STORAGE_NAMESPACE);
             localVer = storage.getInt("updated_version", 0);
         } catch (e) {}
+        resolved = this.resolveCurrentVersion(iecVer, localVer);
         return {
             iecVersion: iecVer,
             localVersion: localVer,
-            currentVersion: Math.max(iecVer, localVer),
+            currentVersion: resolved.currentVersion,
+            isRelease: resolved.isRelease,
+            isLocalDebug: resolved.isLocalDebug,
             updateUrl: this.getUpdateUrl(),
             storageKey: STORAGE_NAMESPACE + "/updated_version"
         };

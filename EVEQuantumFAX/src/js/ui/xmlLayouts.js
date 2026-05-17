@@ -76,6 +76,59 @@ EVEQuantumFAX.xmlLayouts = {
         return parts.join("");
     },
 
+    createEntryXml: function (model) {
+        var theme = this.THEME;
+        var escapeXml = EVEQuantumFAX.utils.escapeXml;
+        var data = model || {};
+        var parts = [];
+
+        parts.push('<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" ');
+        parts.push('android:layout_width="match_parent" android:layout_height="match_parent" ');
+        parts.push('android:tag="entryRoot" android:background="' + theme.BG_PRIMARY + '" android:fillViewport="true">');
+        parts.push('<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" ');
+        parts.push('android:orientation="vertical" android:padding="18dp">');
+
+        parts.push('<TextView android:layout_width="match_parent" android:layout_height="wrap_content" ');
+        parts.push('android:text="QuantumFAX" android:textColor="' + theme.TEXT_PRIMARY + '" ');
+        parts.push('android:textSize="24sp" android:textStyle="bold" android:fontFamily="monospace"/>');
+        parts.push('<TextView android:layout_width="match_parent" android:layout_height="wrap_content" ');
+        parts.push('android:text="启动前检查权限、服务器和版本状态" android:textColor="' + theme.TEXT_MUTED + '" ');
+        parts.push('android:textSize="12sp" android:layout_marginTop="4dp" android:layout_marginBottom="14dp"/>');
+
+        parts.push(this._createEntrySectionTitle("权限信息"));
+        parts.push(this._createEntryCardStart());
+        parts.push('<TextView android:tag="tvPermissionSummary" android:layout_width="match_parent" android:layout_height="wrap_content" ');
+        parts.push('android:text="' + escapeXml(data.permissionSummary || "") + '" android:textColor="' + theme.TEXT_SECONDARY + '" ');
+        parts.push('android:textSize="13sp" android:layout_marginBottom="10dp"/>');
+        parts.push(this._createEntryInfoRow("悬浮窗权限", "tvFloatPermission", data.floatPermission));
+        parts.push(this._createEntryInfoRow("无障碍服务", "tvAccessibilityPermission", data.accessibilityPermission));
+        parts.push('<TextView android:tag="tvPermissionFlowStatus" android:layout_width="match_parent" android:layout_height="wrap_content" ');
+        parts.push('android:text="' + escapeXml(data.permissionFlowStatus || "") + '" android:textColor="' + theme.TEXT_MUTED + '" ');
+        parts.push('android:textSize="11sp" android:layout_marginTop="10dp" android:layout_marginBottom="8dp"/>');
+        parts.push('<Button android:tag="btnGrantPermissions" android:layout_width="match_parent" android:layout_height="42dp" ');
+        parts.push('android:text="' + escapeXml(data.grantButtonText || "授予/检查权限") + '" android:background="' + theme.ACCENT_BLUE + '" ');
+        parts.push('android:textColor="#FFFFFF" android:textSize="14sp"/>');
+        parts.push('</LinearLayout>');
+
+        parts.push(this._createEntrySectionTitle("程序信息"));
+        parts.push(this._createEntryCardStart());
+        parts.push(this._createEntryInfoRow("当前版本", "tvCurrentVersion", data.currentVersion));
+        parts.push(this._createEntryInfoRow("最新版本", "tvLatestVersion", data.latestVersion));
+        parts.push('<Button android:tag="btnRefreshVersion" android:layout_width="match_parent" android:layout_height="38dp" ');
+        parts.push('android:text="刷新版本信息" android:background="' + theme.BG_INPUT + '" ');
+        parts.push('android:textColor="' + theme.ACCENT_GREEN + '" android:textSize="13sp" android:layout_marginTop="10dp"/>');
+        parts.push('</LinearLayout>');
+
+        parts.push(this._createEntrySectionTitle("服务器地址"));
+        parts.push(this._createEntryCardStart());
+        parts.push(this._createEntryInfoRow("热更新服务器", "tvUpdateServer", data.updateServer));
+        parts.push(this._createEntryInfoRow("舰队后端", "tvFleetServer", data.fleetServer));
+        parts.push('</LinearLayout>');
+
+        parts.push('</LinearLayout></ScrollView>');
+        return parts.join("");
+    },
+
     createPortraitPanelXml: function () {
         return this._createPanelXml(false);
     },
@@ -160,6 +213,7 @@ EVEQuantumFAX.xmlLayouts = {
 
     _createConfigTabXml: function (isLandscape) {
         var config = EVEQuantumFAX.config;
+        var configManager = EVEQuantumFAX.configManager;
         var escapeXml = EVEQuantumFAX.utils.escapeXml;
         var theme = this.THEME;
         var parts = [];
@@ -177,8 +231,32 @@ EVEQuantumFAX.xmlLayouts = {
         parts.push('android:background="' + theme.BG_INPUT + '" android:padding="6dp" android:textSize="11sp" ');
         parts.push('android:singleLine="true" android:inputType="number" android:layout_marginTop="2dp" android:layout_marginBottom="6dp"/>');
 
+        parts.push(this._createFieldLabel("舰队后端地址"));
+        parts.push('<EditText android:tag="etFleetServerUrl" android:layout_width="match_parent" android:layout_height="wrap_content" ');
+        parts.push('android:hint="http://服务器IP:3000" android:text="' + escapeXml(config.fleetServerUrl) + '" ');
+        parts.push('android:textColor="' + theme.TEXT_PRIMARY + '" android:textColorHint="' + theme.TEXT_MUTED + '" ');
+        parts.push('android:background="' + theme.BG_INPUT + '" android:padding="6dp" android:textSize="11sp" ');
+        parts.push('android:singleLine="true" android:layout_marginTop="2dp" android:layout_marginBottom="6dp"/>');
+
+        parts.push(this._createFieldLabel("客户端 ID"));
+        parts.push('<TextView android:tag="tvClientId" android:layout_width="match_parent" android:layout_height="wrap_content" ');
+        parts.push('android:text="' + escapeXml(config.clientId) + '" android:textColor="' + theme.TEXT_PRIMARY + '" ');
+        parts.push('android:background="' + theme.BG_INPUT + '" android:padding="6dp" android:textSize="11sp" ');
+        parts.push('android:singleLine="true" android:layout_marginTop="2dp"/>');
         parts.push('<TextView android:layout_width="match_parent" android:layout_height="wrap_content" ');
-        parts.push('android:text="只保留主循环间隔配置，业务逻辑请在 hooks 或 demoTask 中调整。" ');
+        parts.push('android:text="客户端 ID 首次运行自动随机生成，用于舰队后端识别本设备。" ');
+        parts.push('android:textColor="' + theme.TEXT_MUTED + '" android:textSize="8sp" android:layout_marginBottom="6dp"/>');
+
+        parts.push(this._createFieldLabel("舰船类型"));
+        parts.push('<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" ');
+        parts.push('android:orientation="horizontal" android:layout_marginTop="2dp" android:layout_marginBottom="6dp">');
+        parts.push(this._createShipTypeButton("btnShipTypeApostle", "使徒", config.shipType === "apostle", true));
+        parts.push(this._createShipTypeButton("btnShipTypeTelemachus", "特勒马科斯", config.shipType === "telemachus", false));
+        parts.push(this._createShipTypeButton("btnShipTypeSeaArchon", "海执政官", config.shipType === "sea_archon", false));
+        parts.push('</LinearLayout>');
+
+        parts.push('<TextView android:layout_width="match_parent" android:layout_height="wrap_content" ');
+        parts.push('android:text="当前舰船：' + escapeXml(configManager.getShipTypeLabel(config.shipType)) + '。血量会随主循环上报到舰队后端。" ');
         parts.push('android:textColor="' + theme.TEXT_MUTED + '" android:textSize="8sp" android:layout_marginBottom="6dp"/>');
 
         parts.push('<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">');
@@ -196,10 +274,54 @@ EVEQuantumFAX.xmlLayouts = {
         return parts.join("");
     },
 
+    _createShipTypeButton: function (tag, title, active, first) {
+        var theme = this.THEME;
+        var parts = [];
+        var background = active ? theme.ACCENT_BLUE : theme.BG_CARD;
+        var color = active ? "#FFFFFF" : theme.TEXT_SECONDARY;
+
+        parts.push('<Button android:tag="' + tag + '" android:text="' + title + '" ');
+        parts.push('android:layout_width="0dp" android:layout_height="30dp" android:layout_weight="1" ');
+        parts.push('android:background="' + background + '" android:textColor="' + color + '" ');
+        parts.push('android:textSize="9sp" android:paddingTop="2dp" android:paddingBottom="2dp" ');
+        if (!first) {
+            parts.push('android:layout_marginLeft="3dp" ');
+        }
+        parts.push('/>');
+        return parts.join("");
+    },
+
     _createFieldLabel: function (text) {
         var theme = this.THEME;
         return '<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" ' +
             'android:text="' + text + '" android:textColor="' + theme.TEXT_MUTED + '" android:textSize="9sp"/>';
+    },
+
+    _createEntrySectionTitle: function (text) {
+        var theme = this.THEME;
+        return '<TextView android:layout_width="match_parent" android:layout_height="wrap_content" ' +
+            'android:text="' + text + '" android:textColor="' + theme.ACCENT_GREEN + '" android:textSize="13sp" ' +
+            'android:textStyle="bold" android:layout_marginTop="4dp" android:layout_marginBottom="6dp"/>';
+    },
+
+    _createEntryCardStart: function () {
+        var theme = this.THEME;
+        return '<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" ' +
+            'android:orientation="vertical" android:background="' + theme.BG_CARD + '" android:padding="12dp" ' +
+            'android:layout_marginBottom="14dp">';
+    },
+
+    _createEntryInfoRow: function (label, tag, value) {
+        var theme = this.THEME;
+        var escapeXml = EVEQuantumFAX.utils.escapeXml;
+        return '<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" ' +
+            'android:orientation="horizontal" android:gravity="top" android:layout_marginBottom="6dp">' +
+            '<TextView android:layout_width="110dp" android:layout_height="wrap_content" android:text="' + escapeXml(label) + '" ' +
+            'android:textColor="' + theme.TEXT_MUTED + '" android:textSize="12sp"/>' +
+            '<TextView android:tag="' + tag + '" android:layout_width="0dp" android:layout_height="wrap_content" ' +
+            'android:layout_weight="1" android:text="' + escapeXml(value || "") + '" android:textColor="' + theme.TEXT_PRIMARY + '" ' +
+            'android:textSize="12sp"/>' +
+            '</LinearLayout>';
     },
 
     _createLogTabXml: function (isLandscape) {

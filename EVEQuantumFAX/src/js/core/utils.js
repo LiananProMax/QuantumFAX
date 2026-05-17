@@ -61,10 +61,10 @@ EVEQuantumFAX.utils = {
 
     getToastExtra: function (extra) {
         var screen = EVEQuantumFAX.screen || {};
-        var width = this.TOAST_WIDTH;
-        var height = this.TOAST_HEIGHT;
         var screenWidth = screen.width || device.getScreenWidth() || 1080;
         var screenHeight = screen.height || device.getScreenHeight() || 1920;
+        var width = Math.min(this.TOAST_WIDTH, Math.max(240, screenWidth - 80));
+        var height = this.TOAST_HEIGHT;
         var options = {
             x: Math.max(0, Math.round((screenWidth - width) / 2)),
             y: Math.max(40, Math.round(screenHeight * this.TOAST_Y_RATIO)),
@@ -87,8 +87,105 @@ EVEQuantumFAX.utils = {
         return options;
     },
 
+    createToastXml: function (message, options) {
+        var safeMessage = this.escapeXml(message);
+
+        return '<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" ' +
+            'android:layout_width="' + options.width + 'px" android:layout_height="' + options.height + 'px" ' +
+            'android:tag="toastContainer" android:paddingLeft="16px" android:paddingRight="16px" ' +
+            'android:background="#CC111827" android:gravity="center">' +
+            '<TextView android:layout_width="match_parent" android:layout_height="match_parent" ' +
+            'android:gravity="center" android:text="' + safeMessage + '" ' +
+            'android:textColor="' + options.textColor + '" android:textSize="16sp" ' +
+            'android:maxLines="2" android:ellipsize="end"/>' +
+            '</FrameLayout>';
+    },
+
+    _applyToastBackground: function (view) {
+        var self = this;
+
+        if (!view || !view.post) {
+            return;
+        }
+
+        view.post(new java.lang.Runnable({
+            run: function () {
+                var container;
+                var drawable;
+
+                try {
+                    container = view.findViewWithTag("toastContainer");
+                    if (!container) {
+                        return;
+                    }
+
+                    drawable = new android.graphics.drawable.GradientDrawable();
+                    drawable.setColor(self._parseToastColor("#CC111827"));
+                    drawable.setCornerRadius(28);
+                    drawable.setStroke(1, self._parseToastColor("#6634D399"));
+                    container.setBackground(drawable);
+                } catch (error) {
+                    logw("Toast background failed: " + error);
+                }
+            }
+        }));
+    },
+
+    _parseToastColor: function (colorText) {
+        try {
+            return android.graphics.Color.parseColor(colorText);
+        } catch (error) {
+            return android.graphics.Color.DKGRAY;
+        }
+    },
+
+    closeToast: function (token) {
+        var state = EVEQuantumFAX.state;
+        var constants = EVEQuantumFAX.constants;
+
+        if (token != null && token !== state.toastToken) {
+            return;
+        }
+
+        floaty.close(constants.FLOAT_TAG_TOAST);
+        state.toastView = null;
+    },
+
     toast: function (message, extra) {
-        return toast(message, this.getToastExtra(extra));
+        var state = EVEQuantumFAX.state;
+        var constants = EVEQuantumFAX.constants;
+        var options;
+        var text;
+        var view;
+        var token;
+
+        text = String(message == null ? "" : message);
+
+        if (!floaty.hasFloatViewPermission()) {
+            return toast(text);
+        }
+
+        EVEQuantumFAX.utils.initScreen();
+        options = this.getToastExtra(extra);
+        token = (state.toastToken || 0) + 1;
+        state.toastToken = token;
+
+        floaty.close(constants.FLOAT_TAG_TOAST);
+        view = floaty.showFloatXml(constants.FLOAT_TAG_TOAST, this.createToastXml(text, options), options.x, options.y);
+        if (!view) {
+            return toast(text);
+        }
+
+        state.toastView = view;
+        floaty.updateSize(constants.FLOAT_TAG_TOAST, options.width, options.height);
+        floaty.touchable(constants.FLOAT_TAG_TOAST, !!options.draggable);
+        this._applyToastBackground(view);
+
+        setTimeout(function () {
+            EVEQuantumFAX.utils.closeToast(token);
+        }, options.duration);
+
+        return true;
     }
 };
 

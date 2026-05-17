@@ -1,11 +1,12 @@
 {
-  "version": 1,
-  "versionName": "1.0.0",
-  "fileName": "",
-  "msg": "",
+  "version": 7,
+  "versionName": "7",
+  "downloadUrl": "",
+  "fileName": "release_1779005779823.iec",
+  "md5": "1783a43d935b2c1e4e29c938b534cc5c",
+  "msg": "版本 7 更新",
   "dialog": true,
   "force": false,
   "downloadTimeout": 60,
-  "md5": "",
-  "updatedAt": null
+  "updatedAt": "2026-05-17T08:16:19.825Z"
 }
