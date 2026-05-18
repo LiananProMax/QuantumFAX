@@ -45,5 +45,18 @@ EVEQuantumFAX.healthMonitorColors = {
         "#AE2628",
         "#C8201F",
         "#D42625"
+    ],
+
+    TEAMMATE_ICON_COLORS: [
+        "#9D14E0",
+        "#8624B7",
+        "#9D12E1",
+        "#9A17D7",
+        "#9817D6",
+        "#8418B9",
+        "#752D99",
+        "#560082",
+        "#9519CF",
+        "#7A2FA5"
     ]
 };

@@ -13,16 +13,19 @@ EVEQuantumFAX.fleetCommandCenter = {
     _lastCommand: null,
     _lastStatus: null,
     _lastHandledCommandId: "",
+    _watchlistRunning: false,
+    _watchlistCancelRequested: false,
+    _watchlistCommandId: "",
     _acking: false,
     _lastLoggedError: "",
     _lastLoggedAt: 0,
 
     getCommandUrl: function () {
-        return this._getFleetUrl("/api/fleet/remote-damage-control/command");
+        return this._getFleetUrl("/api/fleet/commands");
     },
 
     getAckUrl: function () {
-        return this._getFleetUrl("/api/fleet/remote-damage-control/ack");
+        return this._getFleetUrl("/api/fleet/commands/ack");
     },
 
     _getFleetUrl: function (path) {
@@ -42,10 +45,6 @@ EVEQuantumFAX.fleetCommandCenter = {
         var now = new Date().getTime();
         var workerThread;
 
-        if (!this._isLocalEligible()) {
-            this._lastCommand = null;
-            return { ok: true, skipped: true };
-        }
         if (!this.getCommandUrl()) {
             return { ok: false, skipped: true, error: "未配置舰队后端地址" };
         }
@@ -89,10 +88,7 @@ EVEQuantumFAX.fleetCommandCenter = {
             logger.warn("舰队指令轮询失败：" + pollResult.error);
         }
 
-        if (!command || command.type !== "activate_remote_damage_control") {
-            return { ok: true, skipped: true };
-        }
-        if (command.clientId !== EVEQuantumFAX.configManager.ensureClientId()) {
+        if (!command) {
             return { ok: true, skipped: true };
         }
         if (command.commandId === this._lastHandledCommandId) {
@@ -102,11 +98,32 @@ EVEQuantumFAX.fleetCommandCenter = {
             return { ok: true, skipped: true, expired: true };
         }
 
+        if (command.type === "cancel_fleet_members_to_watchlist") {
+            this._lastHandledCommandId = command.commandId;
+            if (!command.targetCommandId || command.targetCommandId === this._watchlistCommandId) {
+                this._watchlistCancelRequested = true;
+                logger.warn("舰队关注列表：收到终止指令");
+            }
+            return { ok: true, cancelled: true, reason: command.reason || "用户终止" };
+        }
+
+        if (command.type === "add_fleet_members_to_watchlist") {
+            this._lastHandledCommandId = command.commandId;
+            return this._startFleetWatchlistWorker(command, logger);
+        }
+
+        if (command.type !== "activate_remote_damage_control") {
+            return { ok: true, skipped: true };
+        }
+        if (command.clientId !== EVEQuantumFAX.configManager.ensureClientId()) {
+            return { ok: true, skipped: true };
+        }
+
         this._lastHandledCommandId = command.commandId;
         result = this._activateRemoteDamageControl();
         activated = result && result.activated === true;
         reason = (result && (result.reason || result.error)) || (activated ? "已开启" : "不可开启");
-        this._ack(command, activated, reason);
+        this._ack(command, activated, reason, result);
 
         if (activated) {
             logger.warn("舰队远程损害管控：已执行轮转指令");
@@ -165,7 +182,85 @@ EVEQuantumFAX.fleetCommandCenter = {
         return EVEQuantumFAX.healthMonitor.activateRemoteDamageControlSkill();
     },
 
-    _ack: function (command, activated, reason) {
+    _startFleetWatchlistWorker: function (command, logger) {
+        var workerThread;
+
+        if (this._watchlistRunning) {
+            return { ok: true, skipped: true, pending: true };
+        }
+
+        this._watchlistRunning = true;
+        this._watchlistCancelRequested = false;
+        this._watchlistCommandId = command.commandId;
+
+        try {
+            workerThread = thread.execAsync(function () {
+                EVEQuantumFAX.fleetCommandCenter._watchlistWorker(command);
+            });
+            if (!workerThread) {
+                this._watchlistRunning = false;
+                this._watchlistCommandId = "";
+                return this._recordError("关注列表执行线程启动失败");
+            }
+            logger.warn("舰队关注列表：开始执行加入关注操作");
+            return { ok: true, scheduled: true };
+        } catch (error) {
+            this._watchlistRunning = false;
+            this._watchlistCommandId = "";
+            return this._recordError("" + error);
+        }
+    },
+
+    _watchlistWorker: function (command) {
+        var result;
+        var completed;
+        var reason;
+
+        try {
+            result = this._addFleetMembersToWatchlist(command.commandId);
+            completed = result && result.completed === true;
+            reason = (result && (result.reason || result.error)) || (completed ? "已执行" : "执行失败");
+            this._ack(command, completed, reason, result);
+
+            if (result && result.cancelled) {
+                EVEQuantumFAX.logger.warn("舰队关注列表：已终止，" + reason);
+                EVEQuantumFAX.toast("已终止舰队关注列表操作");
+            } else if (completed) {
+                EVEQuantumFAX.logger.warn("舰队关注列表：已执行加入关注操作，" + reason);
+                EVEQuantumFAX.toast("已执行舰队关注列表操作");
+            } else {
+                EVEQuantumFAX.logger.warn("舰队关注列表：执行失败，" + reason);
+            }
+        } catch (error) {
+            result = { ok: false, completed: false, error: "" + error };
+            this._ack(command, false, "" + error, result);
+            EVEQuantumFAX.logger.warn("舰队关注列表：执行失败，" + error);
+        } finally {
+            if (this._watchlistCommandId === command.commandId) {
+                this._watchlistRunning = false;
+                this._watchlistCancelRequested = false;
+                this._watchlistCommandId = "";
+            }
+        }
+    },
+
+    _addFleetMembersToWatchlist: function (commandId) {
+        var self = this;
+
+        if (!EVEQuantumFAX.healthMonitor || !EVEQuantumFAX.healthMonitor.addFleetMembersToWatchlist) {
+            return { ok: false, completed: false, error: "关注列表服务未加载" };
+        }
+
+        return EVEQuantumFAX.healthMonitor.addFleetMembersToWatchlist(function () {
+            return self._watchlistCancelRequested === true || self._watchlistCommandId !== commandId;
+        });
+    },
+
+    _isWatchlistCommandRunning: function (commandId) {
+        return this._watchlistRunning && this._watchlistCommandId === commandId;
+    },
+
+    _ack: function (command, activated, reason, details) {
         var url = this.getAckUrl();
         var workerThread;
 
@@ -176,7 +271,7 @@ EVEQuantumFAX.fleetCommandCenter = {
         this._acking = true;
         try {
             workerThread = thread.execAsync(function () {
-                EVEQuantumFAX.fleetCommandCenter._ackWorker(command, activated, reason);
+                EVEQuantumFAX.fleetCommandCenter._ackWorker(command, activated, reason, details);
             });
             if (!workerThread) {
                 this._acking = false;
@@ -188,19 +283,30 @@ EVEQuantumFAX.fleetCommandCenter = {
         }
     },
 
-    _ackWorker: function (command, activated, reason) {
+    _ackWorker: function (command, activated, reason, details) {
         var responseText;
         var responseJson;
+        var payload;
 
         try {
-            responseText = http.postJSON(this.getAckUrl(), {
+            details = details || {};
+            payload = {
                 clientId: EVEQuantumFAX.configManager.ensureClientId(),
                 shipType: EVEQuantumFAX.configManager.normalizeShipType(EVEQuantumFAX.config.shipType),
                 commandId: command.commandId,
+                type: command.type,
                 activated: activated === true,
+                completed: activated === true,
                 reason: reason || "",
+                matchedCount: Number(details.matchedCount || 0) || 0,
+                addedCount: Number(details.addedCount || 0) || 0,
+                fallbackCount: Number(details.fallbackCount || 0) || 0,
+                cancelled: details.cancelled === true,
+                error: details.error || "",
                 resultAt: new Date().getTime()
-            }, this._getTimeoutMs(), {
+            };
+
+            responseText = http.postJSON(this.getAckUrl(), payload, this._getTimeoutMs(), {
                 "Content-Type": "application/json"
             });
             if (!responseText) {

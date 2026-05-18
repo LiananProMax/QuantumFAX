@@ -110,6 +110,53 @@ router.post("/remote-damage-control/ack", (req, res) => {
     });
 });
 
+router.get("/watchlist/status", (req, res) => {
+    res.json({
+        success: true,
+        status: fleetStore.getFleetWatchlistStatus()
+    });
+});
+
+router.post("/watchlist/run", (req, res) => {
+    res.json({
+        success: true,
+        status: fleetStore.createFleetWatchlistCommand(req.body || {})
+    });
+});
+
+router.post("/watchlist/cancel", (req, res) => {
+    res.json({
+        success: true,
+        status: fleetStore.cancelFleetWatchlistCommand(req.body || {})
+    });
+});
+
+router.get("/commands", (req, res) => {
+    const result = fleetStore.getFleetCommand(req.query || {});
+    if (result.error) {
+        return res.status(400).json({ success: false, error: result.error });
+    }
+
+    res.json({
+        success: true,
+        status: result.status,
+        command: result.command
+    });
+});
+
+router.post("/commands/ack", (req, res) => {
+    const result = fleetStore.acknowledgeFleetCommand(req.body || {});
+    if (result.error) {
+        return res.status(400).json({ success: false, error: result.error });
+    }
+
+    res.json({
+        success: true,
+        accepted: result.accepted,
+        status: result.status
+    });
+});
+
 router.get("/ships/:clientId/logs", (req, res) => {
     res.json({
         success: true,

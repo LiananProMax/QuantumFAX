@@ -18,6 +18,9 @@ const REMOTE_DAMAGE_CONTROL_COOLDOWN_MS =
     REMOTE_DAMAGE_CONTROL_ACTIVATION_MS + REMOTE_DAMAGE_CONTROL_REACTIVATION_DELAY_MS;
 const REMOTE_DAMAGE_CONTROL_ELIGIBLE_TYPES = ["apostle", "telemachus"];
 const REMOTE_DAMAGE_CONTROL_COMMAND_TIMEOUT_MS = 8 * 1000;
+const FLEET_WATCHLIST_COMMAND_TIMEOUT_MS = 90 * 1000;
+const FLEET_WATCHLIST_CANCEL_GRACE_MS = 15 * 1000;
+const FLEET_WATCHLIST_RESULT_LIMIT = 20;
 
 const SHIP_TYPES = {
     apostle: { id: "apostle", label: "使徒" },
@@ -39,6 +42,7 @@ let state = {
     ships: {},
     histories: {},
     remoteDamageControl: createDefaultRemoteDamageControlState(),
+    fleetWatchlist: createDefaultFleetWatchlistState(),
     updatedAt: null
 };
 
@@ -50,6 +54,15 @@ function createDefaultRemoteDamageControlState() {
         cooldowns: {},
         lastAssignedClientId: "",
         lastDecisionReason: "",
+        lastCommandResult: null,
+        updatedAt: null
+    };
+}
+
+function createDefaultFleetWatchlistState() {
+    return {
+        commandSeq: 0,
+        currentCommand: null,
         lastCommandResult: null,
         updatedAt: null
     };
@@ -73,6 +86,10 @@ function loadState() {
                     ...createDefaultRemoteDamageControlState(),
                     ...(data.remoteDamageControl || {}),
                     cooldowns: (data.remoteDamageControl && data.remoteDamageControl.cooldowns) || {}
+                },
+                fleetWatchlist: {
+                    ...createDefaultFleetWatchlistState(),
+                    ...(data.fleetWatchlist || {})
                 },
                 updatedAt: data.updatedAt || null
             };
@@ -256,6 +273,14 @@ function ensureRemoteDamageControlState() {
     state.remoteDamageControl.cooldowns = state.remoteDamageControl.cooldowns || {};
     state.remoteDamageControl.commandSeq = Number(state.remoteDamageControl.commandSeq) || 0;
     return state.remoteDamageControl;
+}
+
+function ensureFleetWatchlistState() {
+    if (!state.fleetWatchlist) {
+        state.fleetWatchlist = createDefaultFleetWatchlistState();
+    }
+    state.fleetWatchlist.commandSeq = Number(state.fleetWatchlist.commandSeq) || 0;
+    return state.fleetWatchlist;
 }
 
 function getOnlineRemoteDamageControlShips(now = Date.now()) {
@@ -540,6 +565,188 @@ function acknowledgeRemoteDamageControlCommand(raw) {
     return { accepted: true, status: buildRemoteDamageControlStatus(now) };
 }
 
+function createFleetWatchlistCommand() {
+    const watchlist = ensureFleetWatchlistState();
+    const now = Date.now();
+    const commandSeq = (Number(watchlist.commandSeq) || 0) + 1;
+
+    watchlist.commandSeq = commandSeq;
+    watchlist.currentCommand = {
+        commandId: `watchlist-${commandSeq}-${now}`,
+        type: "add_fleet_members_to_watchlist",
+        requestedAt: now,
+        commandExpiresAt: now + FLEET_WATCHLIST_COMMAND_TIMEOUT_MS,
+        cancelRequestedAt: null,
+        cancelReason: "",
+        acknowledgedClientIds: {},
+        results: []
+    };
+    watchlist.updatedAt = new Date(now).toISOString();
+    saveState();
+
+    return buildFleetWatchlistStatus(now);
+}
+
+function buildFleetWatchlistStatus(now = Date.now()) {
+    const watchlist = ensureFleetWatchlistState();
+    const command = watchlist.currentCommand || null;
+    const active = !!(command && Number(command.commandExpiresAt || 0) > now);
+    const cancelRequestedAt = command ? Number(command.cancelRequestedAt || 0) || null : null;
+    const acknowledgedClientIds = command && command.acknowledgedClientIds ? command.acknowledgedClientIds : {};
+    const acknowledgedCount = Object.keys(acknowledgedClientIds).length;
+
+    return {
+        active,
+        cancelling: active && !!cancelRequestedAt,
+        timeoutMs: FLEET_WATCHLIST_COMMAND_TIMEOUT_MS,
+        currentCommand: command ? {
+            commandId: command.commandId,
+            type: command.type,
+            requestedAt: command.requestedAt,
+            commandExpiresAt: command.commandExpiresAt,
+            cancelRequestedAt,
+            cancelReason: command.cancelReason || "",
+            acknowledgedCount,
+            results: (command.results || []).slice(-FLEET_WATCHLIST_RESULT_LIMIT)
+        } : null,
+        lastCommandResult: watchlist.lastCommandResult || null,
+        updatedAt: watchlist.updatedAt,
+        now
+    };
+}
+
+function getFleetWatchlistStatus() {
+    return buildFleetWatchlistStatus();
+}
+
+function getFleetWatchlistCommand(raw) {
+    const request = raw || {};
+    const clientId = normalizeText(request.clientId);
+    const status = buildFleetWatchlistStatus();
+    const command = status.active ? ensureFleetWatchlistState().currentCommand : null;
+    const acknowledgedClientIds = command && command.acknowledgedClientIds ? command.acknowledgedClientIds : {};
+
+    if (!clientId) {
+        return { error: "缺少 clientId" };
+    }
+
+    return {
+        status,
+        command: command && command.cancelRequestedAt ? {
+            commandId: `${command.commandId}-cancel`,
+            type: "cancel_fleet_members_to_watchlist",
+            targetCommandId: command.commandId,
+            requestedAt: command.cancelRequestedAt,
+            commandExpiresAt: command.commandExpiresAt,
+            reason: command.cancelReason || "用户终止"
+        } : command && !acknowledgedClientIds[clientId] ? {
+            commandId: command.commandId,
+            type: command.type,
+            requestedAt: command.requestedAt,
+            commandExpiresAt: command.commandExpiresAt
+        } : null
+    };
+}
+
+function cancelFleetWatchlistCommand(raw) {
+    const watchlist = ensureFleetWatchlistState();
+    const command = watchlist.currentCommand;
+    const now = Date.now();
+
+    if (!command || Number(command.commandExpiresAt || 0) <= now) {
+        return buildFleetWatchlistStatus(now);
+    }
+
+    command.cancelRequestedAt = command.cancelRequestedAt || now;
+    command.cancelReason = normalizeText(raw && raw.reason) || "用户终止";
+    command.commandExpiresAt = Math.min(Number(command.commandExpiresAt || 0), now + FLEET_WATCHLIST_CANCEL_GRACE_MS);
+    watchlist.updatedAt = new Date(now).toISOString();
+    saveState();
+
+    return buildFleetWatchlistStatus(now);
+}
+
+function acknowledgeFleetWatchlistCommand(raw) {
+    const watchlist = ensureFleetWatchlistState();
+    const payload = raw || {};
+    const clientId = normalizeText(payload.clientId);
+    const commandId = normalizeText(payload.commandId);
+    const completed = payload.completed !== undefined
+        ? toBool(payload.completed)
+        : toBool(payload.activated || payload.success);
+    const now = Date.now();
+    const command = watchlist.currentCommand;
+    let result;
+
+    if (!clientId || !commandId) {
+        return { error: "缺少 clientId 或 commandId" };
+    }
+    if (!command || command.commandId !== commandId) {
+        return { accepted: false, status: buildFleetWatchlistStatus(now) };
+    }
+
+    command.acknowledgedClientIds = command.acknowledgedClientIds || {};
+    command.results = command.results || [];
+    command.acknowledgedClientIds[clientId] = true;
+
+    result = {
+        clientId,
+        commandId,
+        completed,
+        reason: normalizeText(payload.reason),
+        matchedCount: Number(payload.matchedCount || 0) || 0,
+        addedCount: Number(payload.addedCount || 0) || 0,
+        fallbackCount: Number(payload.fallbackCount || 0) || 0,
+        cancelled: toBool(payload.cancelled),
+        error: normalizeText(payload.error),
+        resultAt: normalizeTimestamp(payload.resultAt),
+        receivedAt: now
+    };
+
+    command.results.push(result);
+    command.results = command.results.slice(-FLEET_WATCHLIST_RESULT_LIMIT);
+    watchlist.lastCommandResult = result;
+    watchlist.updatedAt = new Date(now).toISOString();
+    saveState();
+
+    return { accepted: true, status: buildFleetWatchlistStatus(now) };
+}
+
+function getFleetCommand(raw) {
+    const request = raw || {};
+    const remoteResult = getRemoteDamageControlCommand(request);
+    const watchlistResult = getFleetWatchlistCommand(request);
+
+    if (remoteResult.error) {
+        return remoteResult;
+    }
+    if (watchlistResult.error) {
+        return watchlistResult;
+    }
+
+    return {
+        status: {
+            remoteDamageControl: remoteResult.status,
+            fleetWatchlist: watchlistResult.status
+        },
+        command: remoteResult.command || watchlistResult.command || null
+    };
+}
+
+function acknowledgeFleetCommand(raw) {
+    const payload = raw || {};
+    const type = normalizeText(payload.type);
+
+    if (type === "cancel_fleet_members_to_watchlist") {
+        return { accepted: true, status: buildFleetWatchlistStatus() };
+    }
+    if (type === "add_fleet_members_to_watchlist" || String(payload.commandId || "").indexOf("watchlist-") === 0) {
+        return acknowledgeFleetWatchlistCommand(payload);
+    }
+
+    return acknowledgeRemoteDamageControlCommand(payload);
+}
+
 function getSummary() {
     const ships = getShips();
     const summary = {
@@ -600,6 +807,13 @@ module.exports = {
     setRemoteDamageControlEnabled,
     getRemoteDamageControlCommand,
     acknowledgeRemoteDamageControlCommand,
+    createFleetWatchlistCommand,
+    cancelFleetWatchlistCommand,
+    getFleetWatchlistStatus,
+    getFleetWatchlistCommand,
+    acknowledgeFleetWatchlistCommand,
+    getFleetCommand,
+    acknowledgeFleetCommand,
     report,
     normalizeShipType,
     offlineTimeoutMs: DEFAULT_OFFLINE_TIMEOUT_MS

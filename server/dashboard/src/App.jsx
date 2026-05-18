@@ -22,6 +22,10 @@ function App() {
   const [remoteDamageControl, setRemoteDamageControl] = useState(null);
   const [remoteDamageControlError, setRemoteDamageControlError] = useState("");
   const [remoteDamageControlUpdating, setRemoteDamageControlUpdating] = useState(false);
+  const [fleetWatchlist, setFleetWatchlist] = useState(null);
+  const [fleetWatchlistError, setFleetWatchlistError] = useState("");
+  const [fleetWatchlistUpdating, setFleetWatchlistUpdating] = useState(false);
+  const [fleetWatchlistCancelling, setFleetWatchlistCancelling] = useState(false);
   const [lastRefreshAt, setLastRefreshAt] = useState(null);
   const [error, setError] = useState("");
 
@@ -37,24 +41,34 @@ function App() {
 
     async function loadFleet() {
       try {
-        const [shipsResponse, summaryResponse, remoteDamageControlResponse] = await Promise.all([
+        const [shipsResponse, summaryResponse, remoteDamageControlResponse, fleetWatchlistResponse] = await Promise.all([
           fetch("/api/fleet/ships"),
           fetch("/api/fleet/summary"),
-          fetch("/api/fleet/remote-damage-control/status")
+          fetch("/api/fleet/remote-damage-control/status"),
+          fetch("/api/fleet/watchlist/status")
         ]);
         const shipsJson = await shipsResponse.json();
         const summaryJson = await summaryResponse.json();
         const remoteDamageControlJson = await remoteDamageControlResponse.json();
+        const fleetWatchlistJson = await fleetWatchlistResponse.json();
 
-        if (!shipsJson.success || !summaryJson.success || !remoteDamageControlJson.success) {
-          throw new Error(shipsJson.error || summaryJson.error || remoteDamageControlJson.error || "接口返回失败");
+        if (!shipsJson.success || !summaryJson.success || !remoteDamageControlJson.success || !fleetWatchlistJson.success) {
+          throw new Error(
+            shipsJson.error ||
+              summaryJson.error ||
+              remoteDamageControlJson.error ||
+              fleetWatchlistJson.error ||
+              "接口返回失败"
+          );
         }
 
         if (!cancelled) {
           setShips(shipsJson.ships || []);
           setSummary(summaryJson.summary || null);
           setRemoteDamageControl(remoteDamageControlJson.status || null);
+          setFleetWatchlist(fleetWatchlistJson.status || null);
           setRemoteDamageControlError("");
+          setFleetWatchlistError("");
           setLastRefreshAt(Date.now());
           setError("");
         }
@@ -211,6 +225,56 @@ function App() {
     }
   }
 
+  async function handleFleetWatchlistRun() {
+    setFleetWatchlistUpdating(true);
+    setFleetWatchlistError("");
+    try {
+      const response = await fetch("/api/fleet/watchlist/run", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({})
+      });
+      const json = await response.json();
+      if (!json.success) {
+        throw new Error(json.error || "关注列表指令下发失败");
+      }
+      setFleetWatchlist(json.status || null);
+    } catch (runError) {
+      setFleetWatchlistError(runError.message || "关注列表指令下发失败");
+    } finally {
+      setFleetWatchlistUpdating(false);
+    }
+  }
+
+  async function handleFleetWatchlistCancel() {
+    setFleetWatchlistCancelling(true);
+    setFleetWatchlistError("");
+    try {
+      const response = await fetch("/api/fleet/watchlist/cancel", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ reason: "用户终止" })
+      });
+      const json = await response.json();
+      if (!json.success) {
+        throw new Error(json.error || "关注列表终止失败");
+      }
+      setFleetWatchlist(json.status || null);
+    } catch (cancelError) {
+      setFleetWatchlistError(cancelError.message || "关注列表终止失败");
+    } finally {
+      setFleetWatchlistCancelling(false);
+    }
+  }
+
+  const fleetWatchlistActive = fleetWatchlist?.active === true;
+  const fleetWatchlistCancellingStatus = fleetWatchlist?.cancelling === true;
+  const fleetWatchlistAckCount = fleetWatchlist?.currentCommand?.acknowledgedCount ?? 0;
+
   return (
     <main className="min-h-screen px-4 py-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[1800px]">
@@ -222,7 +286,33 @@ function App() {
               汇总 EasyClick 客户端上报的护盾、装甲和损控状态，页面每 {REFRESH_MS / 1000} 秒自动刷新。
             </p>
           </div>
-          <div className="flex flex-wrap gap-2 text-sm text-slate-400">
+          <div className="flex flex-wrap items-center gap-2 text-sm text-slate-400">
+            <button
+              type="button"
+              disabled={fleetWatchlistUpdating || fleetWatchlistActive}
+              onClick={handleFleetWatchlistRun}
+              className={`rounded-full px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                fleetWatchlistActive
+                  ? "bg-fuchsia-500/15 text-fuchsia-200 hover:bg-fuchsia-500/25"
+                  : "bg-blue-500/15 text-blue-200 hover:bg-blue-500/25"
+              }`}
+            >
+              {fleetWatchlistUpdating
+                ? "下发中"
+                : fleetWatchlistActive
+                  ? `${fleetWatchlistCancellingStatus ? "关注列表终止中" : "关注列表执行中"} · ${fleetWatchlistAckCount} 回执`
+                  : "将舰队成员加入关注"}
+            </button>
+            {fleetWatchlistActive ? (
+              <button
+                type="button"
+                disabled={fleetWatchlistCancelling || fleetWatchlistCancellingStatus}
+                onClick={handleFleetWatchlistCancel}
+                className="rounded-full bg-red-500/15 px-4 py-2 text-sm font-medium text-red-200 transition hover:bg-red-500/25 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {fleetWatchlistCancelling || fleetWatchlistCancellingStatus ? "终止中" : "终止关注操作"}
+              </button>
+            ) : null}
             <span className="rounded-full border border-slate-800 bg-slate-950/75 px-4 py-2">
               最近刷新：{formatTime(lastRefreshAt)}
             </span>
@@ -231,6 +321,12 @@ function App() {
             </span>
           </div>
         </header>
+
+        {fleetWatchlistError ? (
+          <div className="mt-5 rounded-2xl border border-red-500/30 bg-red-950/30 px-4 py-3 text-sm text-red-200">
+            {fleetWatchlistError}
+          </div>
+        ) : null}
 
         {error ? (
           <div className="mt-5 rounded-2xl border border-red-500/30 bg-red-950/30 px-4 py-3 text-sm text-red-200">

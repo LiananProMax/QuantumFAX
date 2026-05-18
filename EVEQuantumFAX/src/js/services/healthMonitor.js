@@ -43,6 +43,31 @@ EVEQuantumFAX.healthMonitor = {
 
     EQUIPMENT_ACTIVE_COLORS: EVEQuantumFAX.healthMonitorColors.EQUIPMENT_ACTIVE_COLORS,
     TARGET_COLORS: EVEQuantumFAX.healthMonitorColors.TARGET_COLORS,
+    TEAMMATE_ICON_COLORS: EVEQuantumFAX.healthMonitorColors.TEAMMATE_ICON_COLORS,
+    ADD_TO_WATCHLIST_ICON: "add.png",
+    ADD_TO_WATCHLIST_FIND_REGION: { x: 1105, y: 67, ex: 1216, ey: 115 },
+    ADD_TO_WATCHLIST_CLICK_REGION: { x: 1046, y: 60, ex: 1266, ey: 125 },
+    ADD_TO_WATCHLIST_DISMISS_REGION: { x: 338, y: 89, ex: 955, ey: 634 },
+    ADD_TO_WATCHLIST_WEAK_THRESHOLD: 0.7,
+    ADD_TO_WATCHLIST_THRESHOLD: 0.9,
+    ADD_TO_WATCHLIST_MATCH_LIMIT: 1,
+    ADD_TO_WATCHLIST_MATCH_METHOD: 5,
+    FLEET_WATCHLIST_SCROLL_START_REGION: { x: 760, y: 393, ex: 1203, ey: 473 },
+    FLEET_WATCHLIST_SCROLL_END_REGION: { x: 755, y: 150, ex: 1198, ey: 218 },
+    FLEET_WATCHLIST_SCROLL_DURATION_MS: 450,
+    FLEET_WATCHLIST_ACTION_DELAY_MS: 350,
+    FLEET_WATCHLIST_CLICK_DELAY_MIN_MS: 1000,
+    FLEET_WATCHLIST_CLICK_DELAY_MAX_MS: 2000,
+    FLEET_WATCHLIST_POINTS_BEFORE_SCROLL: [
+        { x: 818, y: 202, actionRegion: { x: 824, y: 158, ex: 1122, ey: 202 } },
+        { x: 822, y: 337, actionRegion: { x: 836, y: 291, ex: 1185, ey: 347 } },
+        { x: 822, y: 424, actionRegion: { x: 833, y: 374, ex: 1183, ey: 433 } },
+        { x: 822, y: 506, actionRegion: { x: 836, y: 459, ex: 1193, ey: 517 } }
+    ],
+    FLEET_WATCHLIST_POINTS_AFTER_SCROLL: [
+        { x: 822, y: 369, actionRegion: { x: 841, y: 319, ex: 1188, ey: 375 } },
+        { x: 822, y: 450, actionRegion: { x: 840, y: 407, ex: 1194, ey: 457 } }
+    ],
 
     SHIELD_POINTS: [
         { percent: 0, x: 598, y: 671 },
@@ -100,6 +125,7 @@ EVEQuantumFAX.healthMonitor = {
     _openCvReady: false,
     _targetRgbList: null,
     _equipmentActiveRgbList: null,
+    _teammateIconRgbList: null,
     _templateCache: {},
     _lastShipEmergencySnapshot: null,
 
@@ -499,6 +525,252 @@ EVEQuantumFAX.healthMonitor = {
         }
     },
 
+    addFleetMembersToWatchlist: function (shouldStop) {
+        var result = this._createFleetWatchlistResult();
+        var screenImage = null;
+
+        if (this._isFleetWatchlistStopped(shouldStop, result)) {
+            return result;
+        }
+        if (!this.ensureScreenCapture() || !this._ensureOpenCV()) {
+            result.error = "截图权限或OpenCV初始化失败";
+            result.reason = result.error;
+            return result;
+        }
+
+        try {
+            screenImage = this._captureScreenTimed("watchlist.capture");
+            if (screenImage == null) {
+                result.error = "截图失败";
+                result.reason = result.error;
+                return result;
+            }
+
+            if (!this._processFleetWatchlistPoints(
+                screenImage,
+                this.FLEET_WATCHLIST_POINTS_BEFORE_SCROLL,
+                result,
+                shouldStop
+            )) {
+                return result;
+            }
+        } catch (error) {
+            result.error = "" + error;
+            result.reason = result.error;
+            return result;
+        } finally {
+            this._recycleImage(screenImage);
+        }
+
+        if (this._isFleetWatchlistStopped(shouldStop, result)) {
+            return result;
+        }
+        result.scrolled = this._swipeFleetWatchlist();
+        if (!this._sleepAfterFleetWatchlistAction(shouldStop, result)) {
+            return result;
+        }
+
+        try {
+            screenImage = this._captureScreenTimed("watchlist.capture");
+            if (screenImage == null) {
+                result.error = "上划后截图失败";
+                result.reason = result.error;
+                return result;
+            }
+
+            if (!this._processFleetWatchlistPoints(
+                screenImage,
+                this.FLEET_WATCHLIST_POINTS_AFTER_SCROLL,
+                result,
+                shouldStop
+            )) {
+                return result;
+            }
+            result.completed = true;
+            result.ok = true;
+            result.reason = "匹配 " + result.matchedCount + " 个队友图标，点击关注 " + result.addedCount + " 次";
+            if (result.fallbackCount > 0) {
+                result.reason += "，关闭 " + result.fallbackCount + " 次未命中菜单";
+            }
+            return result;
+        } catch (error2) {
+            result.error = "" + error2;
+            result.reason = result.error;
+            return result;
+        } finally {
+            this._recycleImage(screenImage);
+        }
+    },
+
+    _createFleetWatchlistResult: function () {
+        return {
+            ok: false,
+            completed: false,
+            matchedCount: 0,
+            addedCount: 0,
+            fallbackCount: 0,
+            checkedCount: 0,
+            scrolled: false,
+            cancelled: false,
+            reason: "",
+            error: ""
+        };
+    },
+
+    _processFleetWatchlistPoints: function (screenImage, points, result, shouldStop) {
+        var i;
+        var point;
+        var actionResult;
+
+        for (i = 0; i < points.length; i++) {
+            if (this._isFleetWatchlistStopped(shouldStop, result)) {
+                return false;
+            }
+            point = points[i];
+            result.checkedCount += 1;
+            if (!this._matchesTeammateIconColorAtPoint(screenImage, point)) {
+                continue;
+            }
+
+            result.matchedCount += 1;
+            actionResult = this._runAddFleetMemberToWatchlistAction(point.actionRegion, shouldStop, result);
+            if (actionResult.cancelled) {
+                return false;
+            }
+            if (actionResult.added) {
+                result.addedCount += 1;
+            }
+            if (actionResult.fallback) {
+                result.fallbackCount += 1;
+            }
+        }
+        return true;
+    },
+
+    _runAddFleetMemberToWatchlistAction: function (actionRegion, shouldStop, result) {
+        var point;
+        var foundAddButton;
+        var fallbackPoint;
+
+        if (this._isFleetWatchlistStopped(shouldStop, result)) {
+            return { added: false, fallback: false, cancelled: true };
+        }
+        if (!actionRegion) {
+            return { added: false, fallback: false };
+        }
+
+        point = this._randomPointInRegion(actionRegion);
+        clickPoint(point.x, point.y);
+        if (!this._sleepAfterFleetWatchlistAction(shouldStop, result)) {
+            return { added: false, fallback: false, cancelled: true };
+        }
+
+        foundAddButton = this._findAddToWatchlistButton();
+        if (this._isFleetWatchlistStopped(shouldStop, result)) {
+            return { added: false, fallback: false, cancelled: true };
+        }
+        if (foundAddButton) {
+            point = this._randomPointInRegion(this.ADD_TO_WATCHLIST_CLICK_REGION);
+            clickPoint(point.x, point.y);
+            if (!this._sleepAfterFleetWatchlistAction(shouldStop, result)) {
+                return { added: true, fallback: false, cancelled: true };
+            }
+            return { added: true, fallback: false };
+        }
+
+        fallbackPoint = this._randomPointInRegion(this.ADD_TO_WATCHLIST_DISMISS_REGION);
+        clickPoint(fallbackPoint.x, fallbackPoint.y);
+        if (!this._sleepAfterFleetWatchlistAction(shouldStop, result)) {
+            return { added: false, fallback: true, cancelled: true };
+        }
+        return { added: false, fallback: true };
+    },
+
+    _sleepAfterFleetWatchlistAction: function (shouldStop, result) {
+        sleep(this._randomInt(
+            this.FLEET_WATCHLIST_CLICK_DELAY_MIN_MS,
+            this.FLEET_WATCHLIST_CLICK_DELAY_MAX_MS
+        ));
+        return !this._isFleetWatchlistStopped(shouldStop, result);
+    },
+
+    _isFleetWatchlistStopped: function (shouldStop, result) {
+        if (!shouldStop || !shouldStop()) {
+            return false;
+        }
+
+        if (result) {
+            result.ok = true;
+            result.completed = false;
+            result.cancelled = true;
+            result.reason = "用户终止";
+        }
+        return true;
+    },
+
+    _findAddToWatchlistButton: function () {
+        var screenImage = null;
+        var templateImage = null;
+        var matches;
+        var region = this.ADD_TO_WATCHLIST_FIND_REGION;
+        var matchStart;
+
+        try {
+            templateImage = this._getTemplateImage(this.ADD_TO_WATCHLIST_ICON);
+            if (templateImage == null) {
+                logw("add to watchlist template missing: " + this.ADD_TO_WATCHLIST_ICON);
+                return false;
+            }
+
+            screenImage = this._captureScreenTimed("watchlist.menuCapture");
+            if (screenImage == null) {
+                return false;
+            }
+
+            matchStart = EVEQuantumFAX.perfStats ? EVEQuantumFAX.perfStats.now() : 0;
+            matches = image.findImage(
+                screenImage,
+                templateImage,
+                region.x,
+                region.y,
+                region.ex,
+                region.ey,
+                this.ADD_TO_WATCHLIST_WEAK_THRESHOLD,
+                this.ADD_TO_WATCHLIST_THRESHOLD,
+                this.ADD_TO_WATCHLIST_MATCH_LIMIT,
+                this.ADD_TO_WATCHLIST_MATCH_METHOD
+            );
+            if (EVEQuantumFAX.perfStats && matchStart) {
+                EVEQuantumFAX.perfStats.recordFrom("watchlist.addTemplate", matchStart);
+            }
+
+            return !!(matches && matches.length > 0);
+        } catch (error) {
+            logw("add to watchlist detection failed: " + error);
+            return false;
+        } finally {
+            this._recycleImage(screenImage);
+        }
+    },
+
+    _swipeFleetWatchlist: function () {
+        var startPoint = this._randomPointInRegion(this.FLEET_WATCHLIST_SCROLL_START_REGION);
+        var endPoint = this._randomPointInRegion(this.FLEET_WATCHLIST_SCROLL_END_REGION);
+
+        try {
+            return swipeToPoint(
+                startPoint.x,
+                startPoint.y,
+                endPoint.x,
+                endPoint.y,
+                this.FLEET_WATCHLIST_SCROLL_DURATION_MS
+            );
+        } catch (error) {
+            logw("fleet watchlist swipe failed: " + error);
+            return false;
+        }
+    },
+
     showHealthToast: function () {
         var result = this.detect();
         var message;
@@ -667,6 +939,21 @@ EVEQuantumFAX.healthMonitor = {
 
     _matchesAnyTargetColor: function (colorValue) {
         return this._matchesAnyColor(colorValue, this._getTargetRgbList(), this.COLOR_TOLERANCE);
+    },
+
+    _matchesAnyTeammateIconColor: function (colorValue) {
+        return this._matchesAnyColor(colorValue, this._getTeammateIconRgbList(), this.COLOR_TOLERANCE);
+    },
+
+    _matchesTeammateIconColorAtPoint: function (screenImage, point) {
+        var colorValue;
+
+        if (screenImage == null || !point) {
+            return false;
+        }
+
+        colorValue = image.pixelInImage(screenImage, point.x, point.y);
+        return this._matchesAnyTeammateIconColor(colorValue);
     },
 
     _isDamageControlActiveByColor: function (screenImage) {
@@ -896,6 +1183,21 @@ EVEQuantumFAX.healthMonitor = {
         }
 
         return this._targetRgbList;
+    },
+
+    _getTeammateIconRgbList: function () {
+        var i;
+
+        if (this._teammateIconRgbList) {
+            return this._teammateIconRgbList;
+        }
+
+        this._teammateIconRgbList = [];
+        for (i = 0; i < this.TEAMMATE_ICON_COLORS.length; i++) {
+            this._teammateIconRgbList.push(this._hexToRgb(this.TEAMMATE_ICON_COLORS[i]));
+        }
+
+        return this._teammateIconRgbList;
     },
 
     _hexToRgb: function (hexColor) {

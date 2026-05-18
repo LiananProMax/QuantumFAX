@@ -33,7 +33,12 @@ app.get("/", (req, res) => {
             "GET /api/fleet/remote-damage-control/status": "查询舰队远程损害管控轮转状态",
             "POST /api/fleet/remote-damage-control/settings": "开启或关闭舰队远程损害管控轮转",
             "GET /api/fleet/remote-damage-control/command": "客户端查询远程损害管控指令",
-            "POST /api/fleet/remote-damage-control/ack": "客户端回执远程损害管控执行结果"
+            "POST /api/fleet/remote-damage-control/ack": "客户端回执远程损害管控执行结果",
+            "GET /api/fleet/watchlist/status": "查询舰队成员加入关注列表指令状态",
+            "POST /api/fleet/watchlist/run": "下发舰队成员加入关注列表指令",
+            "POST /api/fleet/watchlist/cancel": "终止舰队成员加入关注列表指令",
+            "GET /api/fleet/commands": "客户端查询舰队通用指令",
+            "POST /api/fleet/commands/ack": "客户端回执舰队通用指令执行结果"
         }
     });
 });
