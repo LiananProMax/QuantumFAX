@@ -4,15 +4,15 @@
         "collapsed": false,
         "x": 8,
         "width": 140,
-        "y": 120,
+        "y": 98,
         "height": 420
     },
     "imageTab.rightPanel": {
         "pinned": true,
         "collapsed": false,
         "x": 8,
-        "width": 831,
+        "width": 495,
         "y": 8,
-        "height": 1088
+        "height": 497
     }
 }
