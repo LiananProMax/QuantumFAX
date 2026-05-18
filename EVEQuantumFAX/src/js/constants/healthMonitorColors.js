@@ -58,5 +58,42 @@ EVEQuantumFAX.healthMonitorColors = {
         "#560082",
         "#9519CF",
         "#7A2FA5"
+    ],
+
+    LOCKED_TEAMMATE_COLORS: [
+        "#7C3543",
+        "#8B3747",
+        "#9D4B59",
+        "#893946",
+        "#451C24",
+        "#B78A91",
+        "#72303F",
+        "#9E4A5A",
+        "#A46E7B",
+        "#893646",
+        "#A1485A",
+        "#8F3C4C",
+        "#58232D",
+        "#421921",
+        "#773843",
+        "#A34B5B"
+    ],
+
+    LOCKABLE_TEAMMATE_COLORS: [
+        "#B2BEBC",
+        "#9FAAA6",
+        "#B1BDB9",
+        "#A6B5B2",
+        "#A7B6B3",
+        "#A8B7B4",
+        "#A6B5B2",
+        "#A5B5B2",
+        "#323C3B",
+        "#98ABA9",
+        "#96A9A5",
+        "#98ABA9",
+        "#B2BEBA",
+        "#B8C1BE",
+        "#A2B0B0"
     ]
 };

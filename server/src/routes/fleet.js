@@ -118,9 +118,20 @@ router.get("/watchlist/status", (req, res) => {
 });
 
 router.post("/watchlist/run", (req, res) => {
+    const result = fleetStore.createFleetWatchlistCommand(req.body || {});
+    if (result.error) {
+        return res.status(409).json({
+            success: false,
+            error: result.error,
+            status: result.status,
+            remoteDamageControl: result.remoteDamageControl,
+            teammateLock: result.teammateLock
+        });
+    }
+
     res.json({
         success: true,
-        status: fleetStore.createFleetWatchlistCommand(req.body || {})
+        status: result
     });
 });
 
@@ -128,6 +139,40 @@ router.post("/watchlist/cancel", (req, res) => {
     res.json({
         success: true,
         status: fleetStore.cancelFleetWatchlistCommand(req.body || {})
+    });
+});
+
+router.get("/teammate-lock/status", (req, res) => {
+    res.json({
+        success: true,
+        status: fleetStore.getFleetTeammateLockStatus()
+    });
+});
+
+router.post("/teammate-lock/run", (req, res) => {
+    const result = fleetStore.createFleetTeammateLockCommand(req.body || {});
+    if (result.error) {
+        return res.status(409).json({
+            success: false,
+            error: result.error,
+            status: result.status,
+            remoteDamageControl: result.remoteDamageControl,
+            fleetWatchlist: result.fleetWatchlist
+        });
+    }
+
+    res.json({
+        success: true,
+        status: result.status,
+        remoteDamageControl: result.remoteDamageControl,
+        fleetWatchlist: result.fleetWatchlist
+    });
+});
+
+router.post("/teammate-lock/cancel", (req, res) => {
+    res.json({
+        success: true,
+        status: fleetStore.cancelFleetTeammateLockCommand(req.body || {})
     });
 });
 

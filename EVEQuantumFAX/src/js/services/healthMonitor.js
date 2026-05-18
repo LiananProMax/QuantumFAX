@@ -44,6 +44,8 @@ EVEQuantumFAX.healthMonitor = {
     EQUIPMENT_ACTIVE_COLORS: EVEQuantumFAX.healthMonitorColors.EQUIPMENT_ACTIVE_COLORS,
     TARGET_COLORS: EVEQuantumFAX.healthMonitorColors.TARGET_COLORS,
     TEAMMATE_ICON_COLORS: EVEQuantumFAX.healthMonitorColors.TEAMMATE_ICON_COLORS,
+    LOCKED_TEAMMATE_COLORS: EVEQuantumFAX.healthMonitorColors.LOCKED_TEAMMATE_COLORS,
+    LOCKABLE_TEAMMATE_COLORS: EVEQuantumFAX.healthMonitorColors.LOCKABLE_TEAMMATE_COLORS,
     ADD_TO_WATCHLIST_ICON: "add.png",
     ADD_TO_WATCHLIST_FIND_REGION: { x: 1105, y: 67, ex: 1216, ey: 115 },
     ADD_TO_WATCHLIST_CLICK_REGION: { x: 1046, y: 60, ex: 1266, ey: 125 },
@@ -67,6 +69,41 @@ EVEQuantumFAX.healthMonitor = {
     FLEET_WATCHLIST_POINTS_AFTER_SCROLL: [
         { x: 822, y: 369, actionRegion: { x: 841, y: 319, ex: 1188, ey: 375 } },
         { x: 822, y: 450, actionRegion: { x: 840, y: 407, ex: 1194, ey: 457 } }
+    ],
+    FLEET_TEAMMATE_LOCK_CLICK_DELAY_MIN_MS: 1000,
+    FLEET_TEAMMATE_LOCK_CLICK_DELAY_MAX_MS: 2000,
+    FLEET_TEAMMATE_LOCK_REQUIRED_MATCHES: 2,
+    FLEET_TEAMMATE_LOCK_GROUPS: [
+        {
+            clickRegion: { x: 894, y: 181, ex: 928, ey: 213 },
+            lockedPoints: [{ x: 738, y: 267 }, { x: 738, y: 268 }, { x: 738, y: 269 }],
+            lockablePoints: [{ x: 739, y: 266 }, { x: 722, y: 265 }, { x: 760, y: 265 }],
+            lockRegion: { x: 707, y: 237, ex: 922, ey: 290 }
+        },
+        {
+            clickRegion: { x: 969, y: 181, ex: 1007, ey: 216 },
+            lockedPoints: [{ x: 815, y: 268 }, { x: 816, y: 269 }, { x: 817, y: 268 }],
+            lockablePoints: [{ x: 816, y: 267 }, { x: 799, y: 267 }, { x: 833, y: 268 }],
+            lockRegion: { x: 789, y: 245, ex: 996, ey: 294 }
+        },
+        {
+            clickRegion: { x: 1045, y: 181, ex: 1080, ey: 215 },
+            lockedPoints: [{ x: 893, y: 269 }, { x: 894, y: 270 }, { x: 894, y: 269 }],
+            lockablePoints: [{ x: 893, y: 268 }, { x: 876, y: 267 }, { x: 909, y: 267 }],
+            lockRegion: { x: 860, y: 238, ex: 1067, ey: 294 }
+        },
+        {
+            clickRegion: { x: 1123, y: 181, ex: 1158, ey: 215 },
+            lockedPoints: [{ x: 971, y: 267 }, { x: 971, y: 268 }, { x: 972, y: 269 }],
+            lockablePoints: [{ x: 969, y: 267 }, { x: 953, y: 268 }, { x: 986, y: 268 }],
+            lockRegion: { x: 938, y: 238, ex: 1147, ey: 294 }
+        },
+        {
+            clickRegion: { x: 1197, y: 182, ex: 1236, ey: 211 },
+            lockedPoints: [{ x: 1046, y: 268 }, { x: 1046, y: 269 }, { x: 1047, y: 268 }],
+            lockablePoints: [{ x: 1046, y: 267 }, { x: 1030, y: 268 }, { x: 1063, y: 268 }],
+            lockRegion: { x: 1016, y: 239, ex: 1210, ey: 288 }
+        }
     ],
 
     SHIELD_POINTS: [
@@ -126,6 +163,8 @@ EVEQuantumFAX.healthMonitor = {
     _targetRgbList: null,
     _equipmentActiveRgbList: null,
     _teammateIconRgbList: null,
+    _lockedTeammateRgbList: null,
+    _lockableTeammateRgbList: null,
     _templateCache: {},
     _lastShipEmergencySnapshot: null,
 
@@ -602,6 +641,99 @@ EVEQuantumFAX.healthMonitor = {
         }
     },
 
+    lockFleetTeammates: function (shouldStop) {
+        var result = this._createFleetTeammateLockResult();
+        var groups = this.FLEET_TEAMMATE_LOCK_GROUPS;
+        var i;
+        var group;
+        var point;
+        var screenImage = null;
+        var lockedMatchCount;
+        var lockableMatchCount;
+
+        if (this._isFleetTeammateLockStopped(shouldStop, result)) {
+            return result;
+        }
+        if (!this.ensureScreenCapture()) {
+            result.error = "截图权限申请失败";
+            result.reason = result.error;
+            return result;
+        }
+
+        for (i = 0; i < groups.length; i++) {
+            if (this._isFleetTeammateLockStopped(shouldStop, result)) {
+                return result;
+            }
+
+            group = groups[i];
+            point = this._randomPointInRegion(group.clickRegion);
+            clickPoint(point.x, point.y);
+            if (!this._sleepAfterFleetTeammateLockAction(shouldStop, result)) {
+                return result;
+            }
+
+            try {
+                screenImage = this._captureScreenTimed("teammateLock.capture");
+                if (screenImage == null) {
+                    result.error = "截图失败";
+                    result.reason = result.error;
+                    return result;
+                }
+
+                result.checkedCount += 1;
+                lockedMatchCount = this._countColorMatchesAtPoints(
+                    screenImage,
+                    group.lockedPoints,
+                    this._getLockedTeammateRgbList()
+                );
+                if (lockedMatchCount >= this.FLEET_TEAMMATE_LOCK_REQUIRED_MATCHES) {
+                    result.alreadyLockedCount += 1;
+                    continue;
+                }
+                if (lockedMatchCount > 0) {
+                    result.uncertainCount += 1;
+                    continue;
+                }
+
+                lockableMatchCount = this._countColorMatchesAtPoints(
+                    screenImage,
+                    group.lockablePoints,
+                    this._getLockableTeammateRgbList()
+                );
+                if (lockableMatchCount < this.FLEET_TEAMMATE_LOCK_REQUIRED_MATCHES) {
+                    result.unavailableCount += 1;
+                    continue;
+                }
+
+                point = this._randomPointInRegion(group.lockRegion);
+                clickPoint(point.x, point.y);
+                result.lockedCount += 1;
+                if (!this._sleepAfterFleetTeammateLockAction(shouldStop, result)) {
+                    return result;
+                }
+            } catch (error) {
+                result.error = "" + error;
+                result.reason = result.error;
+                return result;
+            } finally {
+                this._recycleImage(screenImage);
+                screenImage = null;
+            }
+        }
+
+        result.completed = true;
+        result.ok = true;
+        result.reason = "检查 " + result.checkedCount + " 组，已锁定 " +
+            result.alreadyLockedCount + " 组，新锁定 " + result.lockedCount + " 组";
+        if (result.uncertainCount > 0) {
+            result.reason += "，跳过不确定 " + result.uncertainCount + " 组";
+        }
+        if (result.unavailableCount > 0) {
+            result.reason += "，不可锁定 " + result.unavailableCount + " 组";
+        }
+        return result;
+    },
+
     _createFleetWatchlistResult: function () {
         return {
             ok: false,
@@ -611,6 +743,21 @@ EVEQuantumFAX.healthMonitor = {
             fallbackCount: 0,
             checkedCount: 0,
             scrolled: false,
+            cancelled: false,
+            reason: "",
+            error: ""
+        };
+    },
+
+    _createFleetTeammateLockResult: function () {
+        return {
+            ok: false,
+            completed: false,
+            checkedCount: 0,
+            alreadyLockedCount: 0,
+            lockedCount: 0,
+            uncertainCount: 0,
+            unavailableCount: 0,
             cancelled: false,
             reason: "",
             error: ""
@@ -695,6 +842,28 @@ EVEQuantumFAX.healthMonitor = {
     },
 
     _isFleetWatchlistStopped: function (shouldStop, result) {
+        if (!shouldStop || !shouldStop()) {
+            return false;
+        }
+
+        if (result) {
+            result.ok = true;
+            result.completed = false;
+            result.cancelled = true;
+            result.reason = "用户终止";
+        }
+        return true;
+    },
+
+    _sleepAfterFleetTeammateLockAction: function (shouldStop, result) {
+        sleep(this._randomInt(
+            this.FLEET_TEAMMATE_LOCK_CLICK_DELAY_MIN_MS,
+            this.FLEET_TEAMMATE_LOCK_CLICK_DELAY_MAX_MS
+        ));
+        return !this._isFleetTeammateLockStopped(shouldStop, result);
+    },
+
+    _isFleetTeammateLockStopped: function (shouldStop, result) {
         if (!shouldStop || !shouldStop()) {
             return false;
         }
@@ -956,6 +1125,27 @@ EVEQuantumFAX.healthMonitor = {
         return this._matchesAnyTeammateIconColor(colorValue);
     },
 
+    _countColorMatchesAtPoints: function (screenImage, points, rgbList) {
+        var i;
+        var point;
+        var colorValue;
+        var count = 0;
+
+        if (screenImage == null || !points || !rgbList) {
+            return 0;
+        }
+
+        for (i = 0; i < points.length; i++) {
+            point = points[i];
+            colorValue = image.pixelInImage(screenImage, point.x, point.y);
+            if (this._matchesAnyColor(colorValue, rgbList, this.COLOR_TOLERANCE)) {
+                count += 1;
+            }
+        }
+
+        return count;
+    },
+
     _isDamageControlActiveByColor: function (screenImage) {
         var point = this.DAMAGE_CONTROL_ACTIVE_POINT;
         return this._matchesEquipmentActiveColorAtPoint(screenImage, point);
@@ -1198,6 +1388,36 @@ EVEQuantumFAX.healthMonitor = {
         }
 
         return this._teammateIconRgbList;
+    },
+
+    _getLockedTeammateRgbList: function () {
+        var i;
+
+        if (this._lockedTeammateRgbList) {
+            return this._lockedTeammateRgbList;
+        }
+
+        this._lockedTeammateRgbList = [];
+        for (i = 0; i < this.LOCKED_TEAMMATE_COLORS.length; i++) {
+            this._lockedTeammateRgbList.push(this._hexToRgb(this.LOCKED_TEAMMATE_COLORS[i]));
+        }
+
+        return this._lockedTeammateRgbList;
+    },
+
+    _getLockableTeammateRgbList: function () {
+        var i;
+
+        if (this._lockableTeammateRgbList) {
+            return this._lockableTeammateRgbList;
+        }
+
+        this._lockableTeammateRgbList = [];
+        for (i = 0; i < this.LOCKABLE_TEAMMATE_COLORS.length; i++) {
+            this._lockableTeammateRgbList.push(this._hexToRgb(this.LOCKABLE_TEAMMATE_COLORS[i]));
+        }
+
+        return this._lockableTeammateRgbList;
     },
 
     _hexToRgb: function (hexColor) {

@@ -16,6 +16,9 @@ EVEQuantumFAX.fleetCommandCenter = {
     _watchlistRunning: false,
     _watchlistCancelRequested: false,
     _watchlistCommandId: "",
+    _teammateLockRunning: false,
+    _teammateLockCancelRequested: false,
+    _teammateLockCommandId: "",
     _acking: false,
     _lastLoggedError: "",
     _lastLoggedAt: 0,
@@ -107,9 +110,48 @@ EVEQuantumFAX.fleetCommandCenter = {
             return { ok: true, cancelled: true, reason: command.reason || "用户终止" };
         }
 
+        if (command.type === "cancel_fleet_teammate_lock") {
+            this._lastHandledCommandId = command.commandId;
+            if (!command.targetCommandId || command.targetCommandId === this._teammateLockCommandId) {
+                this._teammateLockCancelRequested = true;
+                logger.warn("锁定队友：收到终止指令");
+            }
+            return { ok: true, cancelled: true, reason: command.reason || "用户终止" };
+        }
+
         if (command.type === "add_fleet_members_to_watchlist") {
             this._lastHandledCommandId = command.commandId;
+            if (this._isRemoteDamageControlEnabled()) {
+                reason = "远程损害管控开启中，跳过加入关注操作";
+                this._ack(command, false, reason, {
+                    ok: false,
+                    completed: false,
+                    error: reason
+                });
+                logger.warn("舰队关注列表：" + reason);
+                return { ok: true, skipped: true, reason: reason };
+            }
             return this._startFleetWatchlistWorker(command, logger);
+        }
+
+        if (command.type === "lock_fleet_teammates") {
+            if (!this._isLocalEligible()) {
+                this._lastHandledCommandId = command.commandId;
+                reason = "当前舰船不支持锁定队友";
+                this._ack(command, false, reason, {
+                    ok: false,
+                    completed: false,
+                    error: reason
+                });
+                logger.warn("锁定队友：" + reason);
+                return { ok: true, skipped: true, reason: reason };
+            }
+            if (this._watchlistRunning) {
+                this._watchlistCancelRequested = true;
+                return { ok: true, skipped: true, pending: true, reason: "等待关注列表操作终止" };
+            }
+            this._lastHandledCommandId = command.commandId;
+            return this._startFleetTeammateLockWorker(command, logger);
         }
 
         if (command.type !== "activate_remote_damage_control") {
@@ -256,8 +298,90 @@ EVEQuantumFAX.fleetCommandCenter = {
         });
     },
 
+    _startFleetTeammateLockWorker: function (command, logger) {
+        var workerThread;
+
+        if (this._teammateLockRunning) {
+            return { ok: true, skipped: true, pending: true };
+        }
+
+        this._teammateLockRunning = true;
+        this._teammateLockCancelRequested = false;
+        this._teammateLockCommandId = command.commandId;
+
+        try {
+            workerThread = thread.execAsync(function () {
+                EVEQuantumFAX.fleetCommandCenter._teammateLockWorker(command);
+            });
+            if (!workerThread) {
+                this._teammateLockRunning = false;
+                this._teammateLockCommandId = "";
+                return this._recordError("锁定队友执行线程启动失败");
+            }
+            logger.warn("锁定队友：开始执行锁定操作");
+            return { ok: true, scheduled: true };
+        } catch (error) {
+            this._teammateLockRunning = false;
+            this._teammateLockCommandId = "";
+            return this._recordError("" + error);
+        }
+    },
+
+    _teammateLockWorker: function (command) {
+        var result;
+        var completed;
+        var reason;
+
+        try {
+            result = this._lockFleetTeammates(command.commandId);
+            completed = result && result.completed === true;
+            reason = (result && (result.reason || result.error)) || (completed ? "已执行" : "执行失败");
+            this._ack(command, completed, reason, result);
+
+            if (result && result.cancelled) {
+                EVEQuantumFAX.logger.warn("锁定队友：已终止，" + reason);
+                EVEQuantumFAX.toast("已终止锁定队友操作");
+            } else if (completed) {
+                EVEQuantumFAX.logger.warn("锁定队友：已执行，" + reason);
+                EVEQuantumFAX.toast("已执行锁定队友操作");
+            } else {
+                EVEQuantumFAX.logger.warn("锁定队友：执行失败，" + reason);
+            }
+        } catch (error) {
+            result = { ok: false, completed: false, error: "" + error };
+            this._ack(command, false, "" + error, result);
+            EVEQuantumFAX.logger.warn("锁定队友：执行失败，" + error);
+        } finally {
+            if (this._teammateLockCommandId === command.commandId) {
+                this._teammateLockRunning = false;
+                this._teammateLockCancelRequested = false;
+                this._teammateLockCommandId = "";
+            }
+        }
+    },
+
+    _lockFleetTeammates: function (commandId) {
+        var self = this;
+
+        if (!EVEQuantumFAX.healthMonitor || !EVEQuantumFAX.healthMonitor.lockFleetTeammates) {
+            return { ok: false, completed: false, error: "锁定队友服务未加载" };
+        }
+        if (!this._isLocalEligible()) {
+            return { ok: false, completed: false, error: "当前舰船不支持锁定队友" };
+        }
+
+        return EVEQuantumFAX.healthMonitor.lockFleetTeammates(function () {
+            return self._teammateLockCancelRequested === true || self._teammateLockCommandId !== commandId;
+        });
+    },
+
     _isWatchlistCommandRunning: function (commandId) {
         return this._watchlistRunning && this._watchlistCommandId === commandId;
+    },
+
+    _isRemoteDamageControlEnabled: function () {
+        var status = this._lastStatus && this._lastStatus.remoteDamageControl;
+        return !!(status && status.enabled === true);
     },
 
     _ack: function (command, activated, reason, details) {
@@ -301,6 +425,11 @@ EVEQuantumFAX.fleetCommandCenter = {
                 matchedCount: Number(details.matchedCount || 0) || 0,
                 addedCount: Number(details.addedCount || 0) || 0,
                 fallbackCount: Number(details.fallbackCount || 0) || 0,
+                checkedCount: Number(details.checkedCount || 0) || 0,
+                alreadyLockedCount: Number(details.alreadyLockedCount || 0) || 0,
+                lockedCount: Number(details.lockedCount || 0) || 0,
+                uncertainCount: Number(details.uncertainCount || 0) || 0,
+                unavailableCount: Number(details.unavailableCount || 0) || 0,
                 cancelled: details.cancelled === true,
                 error: details.error || "",
                 resultAt: new Date().getTime()

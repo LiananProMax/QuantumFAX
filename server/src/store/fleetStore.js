@@ -21,6 +21,9 @@ const REMOTE_DAMAGE_CONTROL_COMMAND_TIMEOUT_MS = 8 * 1000;
 const FLEET_WATCHLIST_COMMAND_TIMEOUT_MS = 90 * 1000;
 const FLEET_WATCHLIST_CANCEL_GRACE_MS = 15 * 1000;
 const FLEET_WATCHLIST_RESULT_LIMIT = 20;
+const FLEET_TEAMMATE_LOCK_COMMAND_TIMEOUT_MS = 90 * 1000;
+const FLEET_TEAMMATE_LOCK_CANCEL_GRACE_MS = 15 * 1000;
+const FLEET_TEAMMATE_LOCK_RESULT_LIMIT = 20;
 
 const SHIP_TYPES = {
     apostle: { id: "apostle", label: "使徒" },
@@ -43,6 +46,7 @@ let state = {
     histories: {},
     remoteDamageControl: createDefaultRemoteDamageControlState(),
     fleetWatchlist: createDefaultFleetWatchlistState(),
+    fleetTeammateLock: createDefaultFleetTeammateLockState(),
     updatedAt: null
 };
 
@@ -60,6 +64,15 @@ function createDefaultRemoteDamageControlState() {
 }
 
 function createDefaultFleetWatchlistState() {
+    return {
+        commandSeq: 0,
+        currentCommand: null,
+        lastCommandResult: null,
+        updatedAt: null
+    };
+}
+
+function createDefaultFleetTeammateLockState() {
     return {
         commandSeq: 0,
         currentCommand: null,
@@ -90,6 +103,10 @@ function loadState() {
                 fleetWatchlist: {
                     ...createDefaultFleetWatchlistState(),
                     ...(data.fleetWatchlist || {})
+                },
+                fleetTeammateLock: {
+                    ...createDefaultFleetTeammateLockState(),
+                    ...(data.fleetTeammateLock || {})
                 },
                 updatedAt: data.updatedAt || null
             };
@@ -281,6 +298,14 @@ function ensureFleetWatchlistState() {
     }
     state.fleetWatchlist.commandSeq = Number(state.fleetWatchlist.commandSeq) || 0;
     return state.fleetWatchlist;
+}
+
+function ensureFleetTeammateLockState() {
+    if (!state.fleetTeammateLock) {
+        state.fleetTeammateLock = createDefaultFleetTeammateLockState();
+    }
+    state.fleetTeammateLock.commandSeq = Number(state.fleetTeammateLock.commandSeq) || 0;
+    return state.fleetTeammateLock;
 }
 
 function getOnlineRemoteDamageControlShips(now = Date.now()) {
@@ -495,11 +520,16 @@ function getRemoteDamageControlStatus() {
 function setRemoteDamageControlEnabled(enabled) {
     const control = ensureRemoteDamageControlState();
     const nextEnabled = toBool(enabled);
+    const now = Date.now();
 
     if (control.enabled !== nextEnabled) {
         control.enabled = nextEnabled;
         control.currentCommand = null;
-        control.updatedAt = new Date().toISOString();
+        control.updatedAt = new Date(now).toISOString();
+        if (nextEnabled) {
+            requestFleetWatchlistCancel(now, "远程损害管控已开启");
+            requestFleetTeammateLockCancel(now, "远程损害管控已开启");
+        }
         saveState();
     }
 
@@ -566,9 +596,26 @@ function acknowledgeRemoteDamageControlCommand(raw) {
 }
 
 function createFleetWatchlistCommand() {
-    const watchlist = ensureFleetWatchlistState();
     const now = Date.now();
+    const remoteStatus = buildRemoteDamageControlStatus(now);
+    const teammateLockStatus = buildFleetTeammateLockStatus(now);
+    const watchlist = ensureFleetWatchlistState();
     const commandSeq = (Number(watchlist.commandSeq) || 0) + 1;
+
+    if (remoteStatus.enabled) {
+        return {
+            error: "远程损害管控开启中，无法执行加入关注操作",
+            status: buildFleetWatchlistStatus(now),
+            remoteDamageControl: remoteStatus
+        };
+    }
+    if (teammateLockStatus.active) {
+        return {
+            error: "锁定队友操作执行中，无法执行加入关注操作",
+            status: buildFleetWatchlistStatus(now),
+            teammateLock: teammateLockStatus
+        };
+    }
 
     watchlist.commandSeq = commandSeq;
     watchlist.currentCommand = {
@@ -625,9 +672,29 @@ function getFleetWatchlistCommand(raw) {
     const status = buildFleetWatchlistStatus();
     const command = status.active ? ensureFleetWatchlistState().currentCommand : null;
     const acknowledgedClientIds = command && command.acknowledgedClientIds ? command.acknowledgedClientIds : {};
+    let remoteStatus = null;
+    let teammateLockStatus = null;
 
     if (!clientId) {
         return { error: "缺少 clientId" };
+    }
+    remoteStatus = command && !command.cancelRequestedAt
+        ? buildRemoteDamageControlStatus(status.now)
+        : null;
+    if (remoteStatus && remoteStatus.enabled) {
+        return {
+            status,
+            command: null
+        };
+    }
+    teammateLockStatus = command && !command.cancelRequestedAt
+        ? buildFleetTeammateLockStatus(status.now)
+        : null;
+    if (teammateLockStatus && teammateLockStatus.active) {
+        return {
+            status,
+            command: null
+        };
     }
 
     return {
@@ -648,20 +715,28 @@ function getFleetWatchlistCommand(raw) {
     };
 }
 
-function cancelFleetWatchlistCommand(raw) {
+function requestFleetWatchlistCancel(now, reason) {
     const watchlist = ensureFleetWatchlistState();
     const command = watchlist.currentCommand;
-    const now = Date.now();
 
     if (!command || Number(command.commandExpiresAt || 0) <= now) {
-        return buildFleetWatchlistStatus(now);
+        return false;
     }
 
     command.cancelRequestedAt = command.cancelRequestedAt || now;
-    command.cancelReason = normalizeText(raw && raw.reason) || "用户终止";
+    command.cancelReason = reason || "用户终止";
     command.commandExpiresAt = Math.min(Number(command.commandExpiresAt || 0), now + FLEET_WATCHLIST_CANCEL_GRACE_MS);
     watchlist.updatedAt = new Date(now).toISOString();
-    saveState();
+    return true;
+}
+
+function cancelFleetWatchlistCommand(raw) {
+    const now = Date.now();
+    const cancelled = requestFleetWatchlistCancel(now, normalizeText(raw && raw.reason) || "用户终止");
+
+    if (cancelled) {
+        saveState();
+    }
 
     return buildFleetWatchlistStatus(now);
 }
@@ -712,13 +787,224 @@ function acknowledgeFleetWatchlistCommand(raw) {
     return { accepted: true, status: buildFleetWatchlistStatus(now) };
 }
 
+function createFleetTeammateLockCommand() {
+    const now = Date.now();
+    const lockState = ensureFleetTeammateLockState();
+    const currentCommand = lockState.currentCommand;
+    const active = !!(currentCommand && Number(currentCommand.commandExpiresAt || 0) > now);
+    const eligibleShips = getOnlineRemoteDamageControlShips(now);
+    const commandSeq = (Number(lockState.commandSeq) || 0) + 1;
+    const remoteControl = ensureRemoteDamageControlState();
+    const targetClientIds = {};
+
+    if (active) {
+        return {
+            error: "锁定队友操作执行中",
+            status: buildFleetTeammateLockStatus(now)
+        };
+    }
+    if (eligibleShips.length === 0) {
+        return {
+            error: "暂无在线使徒或特勒马科斯",
+            status: buildFleetTeammateLockStatus(now),
+            remoteDamageControl: buildRemoteDamageControlStatus(now)
+        };
+    }
+
+    eligibleShips.forEach((ship) => {
+        targetClientIds[ship.clientId] = true;
+    });
+
+    remoteControl.enabled = false;
+    remoteControl.currentCommand = null;
+    remoteControl.lastDecisionReason = "锁定队友操作已暂停远程损害管控";
+    remoteControl.updatedAt = new Date(now).toISOString();
+    requestFleetWatchlistCancel(now, "锁定队友操作已下发");
+
+    lockState.commandSeq = commandSeq;
+    lockState.currentCommand = {
+        commandId: `teammate-lock-${commandSeq}-${now}`,
+        type: "lock_fleet_teammates",
+        requestedAt: now,
+        commandExpiresAt: now + FLEET_TEAMMATE_LOCK_COMMAND_TIMEOUT_MS,
+        cancelRequestedAt: null,
+        cancelReason: "",
+        targetClientIds,
+        targetCount: eligibleShips.length,
+        acknowledgedClientIds: {},
+        results: []
+    };
+    lockState.updatedAt = new Date(now).toISOString();
+    saveState();
+
+    return {
+        status: buildFleetTeammateLockStatus(now),
+        remoteDamageControl: buildRemoteDamageControlStatus(now),
+        fleetWatchlist: buildFleetWatchlistStatus(now)
+    };
+}
+
+function buildFleetTeammateLockStatus(now = Date.now()) {
+    const lockState = ensureFleetTeammateLockState();
+    const command = lockState.currentCommand || null;
+    const active = !!(command && Number(command.commandExpiresAt || 0) > now);
+    const cancelRequestedAt = command ? Number(command.cancelRequestedAt || 0) || null : null;
+    const acknowledgedClientIds = command && command.acknowledgedClientIds ? command.acknowledgedClientIds : {};
+    const acknowledgedCount = Object.keys(acknowledgedClientIds).length;
+    const eligibleShips = getOnlineRemoteDamageControlShips(now);
+
+    return {
+        active,
+        cancelling: active && !!cancelRequestedAt,
+        timeoutMs: FLEET_TEAMMATE_LOCK_COMMAND_TIMEOUT_MS,
+        eligibleShipTypes: REMOTE_DAMAGE_CONTROL_ELIGIBLE_TYPES.map((shipType) => SHIP_TYPES[shipType]),
+        eligibleCount: eligibleShips.length,
+        eligibleShips,
+        currentCommand: command ? {
+            commandId: command.commandId,
+            type: command.type,
+            requestedAt: command.requestedAt,
+            commandExpiresAt: command.commandExpiresAt,
+            cancelRequestedAt,
+            cancelReason: command.cancelReason || "",
+            targetCount: Number(command.targetCount || 0) || 0,
+            acknowledgedCount,
+            results: (command.results || []).slice(-FLEET_TEAMMATE_LOCK_RESULT_LIMIT)
+        } : null,
+        lastCommandResult: lockState.lastCommandResult || null,
+        updatedAt: lockState.updatedAt,
+        now
+    };
+}
+
+function getFleetTeammateLockStatus() {
+    return buildFleetTeammateLockStatus();
+}
+
+function getFleetTeammateLockCommand(raw) {
+    const request = raw || {};
+    const clientId = normalizeText(request.clientId);
+    const shipType = normalizeShipType(request.shipType);
+    const status = buildFleetTeammateLockStatus();
+    const command = status.active ? ensureFleetTeammateLockState().currentCommand : null;
+    const acknowledgedClientIds = command && command.acknowledgedClientIds ? command.acknowledgedClientIds : {};
+    const targetClientIds = command && command.targetClientIds ? command.targetClientIds : {};
+
+    if (!clientId) {
+        return { error: "缺少 clientId" };
+    }
+    if (!command ||
+        !targetClientIds[clientId] ||
+        !isRemoteDamageControlShipType(shipType || (state.ships[clientId] && state.ships[clientId].shipType))) {
+        return {
+            status,
+            command: null
+        };
+    }
+
+    return {
+        status,
+        command: command.cancelRequestedAt ? {
+            commandId: `${command.commandId}-cancel`,
+            type: "cancel_fleet_teammate_lock",
+            targetCommandId: command.commandId,
+            requestedAt: command.cancelRequestedAt,
+            commandExpiresAt: command.commandExpiresAt,
+            reason: command.cancelReason || "用户终止"
+        } : !acknowledgedClientIds[clientId] ? {
+            commandId: command.commandId,
+            type: command.type,
+            requestedAt: command.requestedAt,
+            commandExpiresAt: command.commandExpiresAt
+        } : null
+    };
+}
+
+function requestFleetTeammateLockCancel(now, reason) {
+    const lockState = ensureFleetTeammateLockState();
+    const command = lockState.currentCommand;
+
+    if (!command || Number(command.commandExpiresAt || 0) <= now) {
+        return false;
+    }
+
+    command.cancelRequestedAt = command.cancelRequestedAt || now;
+    command.cancelReason = reason || "用户终止";
+    command.commandExpiresAt = Math.min(Number(command.commandExpiresAt || 0), now + FLEET_TEAMMATE_LOCK_CANCEL_GRACE_MS);
+    lockState.updatedAt = new Date(now).toISOString();
+    return true;
+}
+
+function cancelFleetTeammateLockCommand(raw) {
+    const now = Date.now();
+    const cancelled = requestFleetTeammateLockCancel(now, normalizeText(raw && raw.reason) || "用户终止");
+
+    if (cancelled) {
+        saveState();
+    }
+
+    return buildFleetTeammateLockStatus(now);
+}
+
+function acknowledgeFleetTeammateLockCommand(raw) {
+    const lockState = ensureFleetTeammateLockState();
+    const payload = raw || {};
+    const clientId = normalizeText(payload.clientId);
+    const commandId = normalizeText(payload.commandId);
+    const completed = payload.completed !== undefined
+        ? toBool(payload.completed)
+        : toBool(payload.activated || payload.success);
+    const now = Date.now();
+    const command = lockState.currentCommand;
+    let result;
+
+    if (!clientId || !commandId) {
+        return { error: "缺少 clientId 或 commandId" };
+    }
+    if (!command || command.commandId !== commandId) {
+        return { accepted: false, status: buildFleetTeammateLockStatus(now) };
+    }
+
+    command.acknowledgedClientIds = command.acknowledgedClientIds || {};
+    command.results = command.results || [];
+    command.acknowledgedClientIds[clientId] = true;
+
+    result = {
+        clientId,
+        commandId,
+        completed,
+        reason: normalizeText(payload.reason),
+        checkedCount: Number(payload.checkedCount || 0) || 0,
+        alreadyLockedCount: Number(payload.alreadyLockedCount || 0) || 0,
+        lockedCount: Number(payload.lockedCount || 0) || 0,
+        uncertainCount: Number(payload.uncertainCount || 0) || 0,
+        unavailableCount: Number(payload.unavailableCount || 0) || 0,
+        cancelled: toBool(payload.cancelled),
+        error: normalizeText(payload.error),
+        resultAt: normalizeTimestamp(payload.resultAt),
+        receivedAt: now
+    };
+
+    command.results.push(result);
+    command.results = command.results.slice(-FLEET_TEAMMATE_LOCK_RESULT_LIMIT);
+    lockState.lastCommandResult = result;
+    lockState.updatedAt = new Date(now).toISOString();
+    saveState();
+
+    return { accepted: true, status: buildFleetTeammateLockStatus(now) };
+}
+
 function getFleetCommand(raw) {
     const request = raw || {};
     const remoteResult = getRemoteDamageControlCommand(request);
+    const teammateLockResult = getFleetTeammateLockCommand(request);
     const watchlistResult = getFleetWatchlistCommand(request);
 
     if (remoteResult.error) {
         return remoteResult;
+    }
+    if (teammateLockResult.error) {
+        return teammateLockResult;
     }
     if (watchlistResult.error) {
         return watchlistResult;
@@ -727,9 +1013,10 @@ function getFleetCommand(raw) {
     return {
         status: {
             remoteDamageControl: remoteResult.status,
+            fleetTeammateLock: teammateLockResult.status,
             fleetWatchlist: watchlistResult.status
         },
-        command: remoteResult.command || watchlistResult.command || null
+        command: remoteResult.command || teammateLockResult.command || watchlistResult.command || null
     };
 }
 
@@ -742,6 +1029,12 @@ function acknowledgeFleetCommand(raw) {
     }
     if (type === "add_fleet_members_to_watchlist" || String(payload.commandId || "").indexOf("watchlist-") === 0) {
         return acknowledgeFleetWatchlistCommand(payload);
+    }
+    if (type === "cancel_fleet_teammate_lock") {
+        return { accepted: true, status: buildFleetTeammateLockStatus() };
+    }
+    if (type === "lock_fleet_teammates" || String(payload.commandId || "").indexOf("teammate-lock-") === 0) {
+        return acknowledgeFleetTeammateLockCommand(payload);
     }
 
     return acknowledgeRemoteDamageControlCommand(payload);
@@ -812,6 +1105,11 @@ module.exports = {
     getFleetWatchlistStatus,
     getFleetWatchlistCommand,
     acknowledgeFleetWatchlistCommand,
+    createFleetTeammateLockCommand,
+    cancelFleetTeammateLockCommand,
+    getFleetTeammateLockStatus,
+    getFleetTeammateLockCommand,
+    acknowledgeFleetTeammateLockCommand,
     getFleetCommand,
     acknowledgeFleetCommand,
     report,

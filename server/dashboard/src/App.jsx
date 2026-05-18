@@ -26,6 +26,10 @@ function App() {
   const [fleetWatchlistError, setFleetWatchlistError] = useState("");
   const [fleetWatchlistUpdating, setFleetWatchlistUpdating] = useState(false);
   const [fleetWatchlistCancelling, setFleetWatchlistCancelling] = useState(false);
+  const [fleetTeammateLock, setFleetTeammateLock] = useState(null);
+  const [fleetTeammateLockError, setFleetTeammateLockError] = useState("");
+  const [fleetTeammateLockUpdating, setFleetTeammateLockUpdating] = useState(false);
+  const [fleetTeammateLockCancelling, setFleetTeammateLockCancelling] = useState(false);
   const [lastRefreshAt, setLastRefreshAt] = useState(null);
   const [error, setError] = useState("");
 
@@ -41,23 +45,38 @@ function App() {
 
     async function loadFleet() {
       try {
-        const [shipsResponse, summaryResponse, remoteDamageControlResponse, fleetWatchlistResponse] = await Promise.all([
+        const [
+          shipsResponse,
+          summaryResponse,
+          remoteDamageControlResponse,
+          fleetWatchlistResponse,
+          fleetTeammateLockResponse
+        ] = await Promise.all([
           fetch("/api/fleet/ships"),
           fetch("/api/fleet/summary"),
           fetch("/api/fleet/remote-damage-control/status"),
-          fetch("/api/fleet/watchlist/status")
+          fetch("/api/fleet/watchlist/status"),
+          fetch("/api/fleet/teammate-lock/status")
         ]);
         const shipsJson = await shipsResponse.json();
         const summaryJson = await summaryResponse.json();
         const remoteDamageControlJson = await remoteDamageControlResponse.json();
         const fleetWatchlistJson = await fleetWatchlistResponse.json();
+        const fleetTeammateLockJson = await fleetTeammateLockResponse.json();
 
-        if (!shipsJson.success || !summaryJson.success || !remoteDamageControlJson.success || !fleetWatchlistJson.success) {
+        if (
+          !shipsJson.success ||
+          !summaryJson.success ||
+          !remoteDamageControlJson.success ||
+          !fleetWatchlistJson.success ||
+          !fleetTeammateLockJson.success
+        ) {
           throw new Error(
             shipsJson.error ||
               summaryJson.error ||
               remoteDamageControlJson.error ||
               fleetWatchlistJson.error ||
+              fleetTeammateLockJson.error ||
               "接口返回失败"
           );
         }
@@ -67,8 +86,10 @@ function App() {
           setSummary(summaryJson.summary || null);
           setRemoteDamageControl(remoteDamageControlJson.status || null);
           setFleetWatchlist(fleetWatchlistJson.status || null);
+          setFleetTeammateLock(fleetTeammateLockJson.status || null);
           setRemoteDamageControlError("");
           setFleetWatchlistError("");
+          setFleetTeammateLockError("");
           setLastRefreshAt(Date.now());
           setError("");
         }
@@ -226,6 +247,11 @@ function App() {
   }
 
   async function handleFleetWatchlistRun() {
+    if (remoteDamageControl?.enabled === true) {
+      setFleetWatchlistError("远程损害管控开启中，无法执行加入关注操作");
+      return;
+    }
+
     setFleetWatchlistUpdating(true);
     setFleetWatchlistError("");
     try {
@@ -238,6 +264,15 @@ function App() {
       });
       const json = await response.json();
       if (!json.success) {
+        if (json.status) {
+          setFleetWatchlist(json.status);
+        }
+        if (json.remoteDamageControl) {
+          setRemoteDamageControl(json.remoteDamageControl);
+        }
+        if (json.teammateLock) {
+          setFleetTeammateLock(json.teammateLock);
+        }
         throw new Error(json.error || "关注列表指令下发失败");
       }
       setFleetWatchlist(json.status || null);
@@ -271,9 +306,94 @@ function App() {
     }
   }
 
+  async function handleFleetTeammateLockRun() {
+    setFleetTeammateLockUpdating(true);
+    setFleetTeammateLockError("");
+    setFleetWatchlistError("");
+    setRemoteDamageControlError("");
+    try {
+      const response = await fetch("/api/fleet/teammate-lock/run", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({})
+      });
+      const json = await response.json();
+      if (!json.success) {
+        if (json.status) {
+          setFleetTeammateLock(json.status);
+        }
+        if (json.remoteDamageControl) {
+          setRemoteDamageControl(json.remoteDamageControl);
+        }
+        if (json.fleetWatchlist) {
+          setFleetWatchlist(json.fleetWatchlist);
+        }
+        throw new Error(json.error || "锁定队友指令下发失败");
+      }
+      setFleetTeammateLock(json.status || null);
+      if (json.remoteDamageControl) {
+        setRemoteDamageControl(json.remoteDamageControl);
+      }
+      if (json.fleetWatchlist) {
+        setFleetWatchlist(json.fleetWatchlist);
+      }
+    } catch (runError) {
+      setFleetTeammateLockError(runError.message || "锁定队友指令下发失败");
+    } finally {
+      setFleetTeammateLockUpdating(false);
+    }
+  }
+
+  async function handleFleetTeammateLockCancel() {
+    setFleetTeammateLockCancelling(true);
+    setFleetTeammateLockError("");
+    try {
+      const response = await fetch("/api/fleet/teammate-lock/cancel", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ reason: "用户终止" })
+      });
+      const json = await response.json();
+      if (!json.success) {
+        throw new Error(json.error || "锁定队友终止失败");
+      }
+      setFleetTeammateLock(json.status || null);
+    } catch (cancelError) {
+      setFleetTeammateLockError(cancelError.message || "锁定队友终止失败");
+    } finally {
+      setFleetTeammateLockCancelling(false);
+    }
+  }
+
   const fleetWatchlistActive = fleetWatchlist?.active === true;
   const fleetWatchlistCancellingStatus = fleetWatchlist?.cancelling === true;
   const fleetWatchlistAckCount = fleetWatchlist?.currentCommand?.acknowledgedCount ?? 0;
+  const remoteDamageControlWatchlistBlocked = remoteDamageControl?.enabled === true;
+  const fleetTeammateLockActive = fleetTeammateLock?.active === true;
+  const fleetTeammateLockCancellingStatus = fleetTeammateLock?.cancelling === true;
+  const fleetTeammateLockAckCount = fleetTeammateLock?.currentCommand?.acknowledgedCount ?? 0;
+  const fleetTeammateLockTargetCount = fleetTeammateLock?.currentCommand?.targetCount ?? fleetTeammateLock?.eligibleCount ?? 0;
+  const fleetWatchlistRunDisabled =
+    fleetWatchlistUpdating || fleetWatchlistActive || remoteDamageControlWatchlistBlocked || fleetTeammateLockActive;
+  const fleetWatchlistRunLabel = fleetWatchlistUpdating
+    ? "下发中"
+    : fleetWatchlistActive
+      ? `${fleetWatchlistCancellingStatus ? "关注列表终止中" : "关注列表执行中"} · ${fleetWatchlistAckCount} 回执`
+      : fleetTeammateLockActive
+        ? "锁定队友执行中"
+      : remoteDamageControlWatchlistBlocked
+        ? "远程损害管控开启中"
+        : "将舰队成员加入关注";
+  const fleetTeammateLockRunDisabled = fleetTeammateLockUpdating || fleetTeammateLockActive;
+  const fleetTeammateLockRunLabel = fleetTeammateLockUpdating
+    ? "下发中"
+    : fleetTeammateLockActive
+      ? `${fleetTeammateLockCancellingStatus ? "锁定队友终止中" : "锁定队友执行中"} · ${fleetTeammateLockAckCount}/${fleetTeammateLockTargetCount} 回执`
+      : "锁定队友";
 
   return (
     <main className="min-h-screen px-4 py-4 sm:px-6 lg:px-8">
@@ -289,19 +409,18 @@ function App() {
           <div className="flex flex-wrap items-center gap-2 text-sm text-slate-400">
             <button
               type="button"
-              disabled={fleetWatchlistUpdating || fleetWatchlistActive}
+              disabled={fleetWatchlistRunDisabled}
               onClick={handleFleetWatchlistRun}
+              title={remoteDamageControlWatchlistBlocked ? "远程损害管控开启中，无法执行加入关注操作" : undefined}
               className={`rounded-full px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60 ${
                 fleetWatchlistActive
                   ? "bg-fuchsia-500/15 text-fuchsia-200 hover:bg-fuchsia-500/25"
-                  : "bg-blue-500/15 text-blue-200 hover:bg-blue-500/25"
+                  : remoteDamageControlWatchlistBlocked
+                    ? "bg-amber-500/15 text-amber-200 hover:bg-amber-500/25"
+                    : "bg-blue-500/15 text-blue-200 hover:bg-blue-500/25"
               }`}
             >
-              {fleetWatchlistUpdating
-                ? "下发中"
-                : fleetWatchlistActive
-                  ? `${fleetWatchlistCancellingStatus ? "关注列表终止中" : "关注列表执行中"} · ${fleetWatchlistAckCount} 回执`
-                  : "将舰队成员加入关注"}
+              {fleetWatchlistRunLabel}
             </button>
             {fleetWatchlistActive ? (
               <button
@@ -311,6 +430,29 @@ function App() {
                 className="rounded-full bg-red-500/15 px-4 py-2 text-sm font-medium text-red-200 transition hover:bg-red-500/25 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {fleetWatchlistCancelling || fleetWatchlistCancellingStatus ? "终止中" : "终止关注操作"}
+              </button>
+            ) : null}
+            <button
+              type="button"
+              disabled={fleetTeammateLockRunDisabled}
+              onClick={handleFleetTeammateLockRun}
+              title="下发后会暂停远程损害管控轮转，并取消正在进行的关注列表操作"
+              className={`rounded-full px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                fleetTeammateLockActive
+                  ? "bg-cyan-500/15 text-cyan-200 hover:bg-cyan-500/25"
+                  : "bg-emerald-500/15 text-emerald-200 hover:bg-emerald-500/25"
+              }`}
+            >
+              {fleetTeammateLockRunLabel}
+            </button>
+            {fleetTeammateLockActive ? (
+              <button
+                type="button"
+                disabled={fleetTeammateLockCancelling || fleetTeammateLockCancellingStatus}
+                onClick={handleFleetTeammateLockCancel}
+                className="rounded-full bg-red-500/15 px-4 py-2 text-sm font-medium text-red-200 transition hover:bg-red-500/25 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {fleetTeammateLockCancelling || fleetTeammateLockCancellingStatus ? "终止中" : "终止锁定队友"}
               </button>
             ) : null}
             <span className="rounded-full border border-slate-800 bg-slate-950/75 px-4 py-2">
@@ -325,6 +467,12 @@ function App() {
         {fleetWatchlistError ? (
           <div className="mt-5 rounded-2xl border border-red-500/30 bg-red-950/30 px-4 py-3 text-sm text-red-200">
             {fleetWatchlistError}
+          </div>
+        ) : null}
+
+        {fleetTeammateLockError ? (
+          <div className="mt-5 rounded-2xl border border-red-500/30 bg-red-950/30 px-4 py-3 text-sm text-red-200">
+            {fleetTeammateLockError}
           </div>
         ) : null}
 
