@@ -29,7 +29,11 @@ app.get("/", (req, res) => {
             "GET /api/fleet/ships": "查询舰队舰船状态",
             "GET /api/fleet/ships/:clientId/logs": "查询客户端运行日志",
             "GET /api/fleet/ships/:clientId/perf": "查询客户端性能指标",
-            "GET /api/fleet/summary": "查询舰队汇总"
+            "GET /api/fleet/summary": "查询舰队汇总",
+            "GET /api/fleet/remote-damage-control/status": "查询舰队远程损害管控轮转状态",
+            "POST /api/fleet/remote-damage-control/settings": "开启或关闭舰队远程损害管控轮转",
+            "GET /api/fleet/remote-damage-control/command": "客户端查询远程损害管控指令",
+            "POST /api/fleet/remote-damage-control/ack": "客户端回执远程损害管控执行结果"
         }
     });
 });

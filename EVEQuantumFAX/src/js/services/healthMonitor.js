@@ -11,6 +11,16 @@ EVEQuantumFAX.healthMonitor = {
     DAMAGE_CONTROL_ACTIVE_POINT: { x: 1232, y: 633 },
     DAMAGE_CONTROL_SHIELD_DROP_RATE_THRESHOLD: 40,
     DAMAGE_CONTROL_ARMOR_DROP_THRESHOLD: 10,
+    ARMOR_SUPPORT_SKILL_ICON: "armor01.png",
+    REMOTE_DAMAGE_CONTROL_SKILL_ICON: "armor02.png",
+    SUPPORT_SKILL_REGION: { x: 755, y: 642, ex: 779, ey: 674 },
+    ARMOR_SUPPORT_SKILL_ACTIVE_POINT: { x: 762, y: 567 },
+    REMOTE_DAMAGE_CONTROL_SKILL_ACTIVE_POINT: { x: 762, y: 634 },
+    REMOTE_DAMAGE_CONTROL_SKILL_CLICK_REGION: { x: 744, y: 638, ex: 776, ey: 673 },
+    SUPPORT_SKILL_WEAK_THRESHOLD: 0.7,
+    SUPPORT_SKILL_THRESHOLD: 0.9,
+    SUPPORT_SKILL_MATCH_LIMIT: 1,
+    SUPPORT_SKILL_MATCH_METHOD: 5,
     LOGISTICS_SUPPORT_MODULE_ACTIVE_POINT: { x: 1087, y: 557 },
     LOGISTICS_SUPPORT_MODULE_REGION: { x: 1063, y: 563, ex: 1107, ey: 606 },
     ARMOR_REPAIR_1_REGION: { x: 847, y: 560, ex: 891, ey: 609 },
@@ -173,6 +183,8 @@ EVEQuantumFAX.healthMonitor = {
             return result;
         }
 
+        result.remoteDamageControlSkill = this.detectRemoteDamageControlSkillStatus(screenImage, now);
+
         rates = this._calculateHealthDrops(detection, now);
         this._lastShipEmergencySnapshot = {
             timestamp: now,
@@ -238,8 +250,20 @@ EVEQuantumFAX.healthMonitor = {
             shieldDropRate: 0,
             armorDropRate: 0,
             armorDropPercent: 0,
+            remoteDamageControlSkill: null,
             reason: "",
             error: detection.error || ""
+        };
+    },
+
+    _createSupportSkillStatus: function () {
+        return {
+            ok: false,
+            available: false,
+            active: false,
+            canActivate: false,
+            reason: "",
+            error: ""
         };
     },
 
@@ -341,6 +365,64 @@ EVEQuantumFAX.healthMonitor = {
             logw("activate damage control failed: " + error);
             return false;
         }
+    },
+
+    getArmorSupportSkillStatus: function (screenImage) {
+        return this._detectSupportSkillStatus(
+            screenImage,
+            this.ARMOR_SUPPORT_SKILL_ICON,
+            this.ARMOR_SUPPORT_SKILL_ACTIVE_POINT,
+            "armorSupportSkill",
+            "armor support skill"
+        );
+    },
+
+    canActivateArmorSupportSkill: function (screenImage) {
+        return this.getArmorSupportSkillStatus(screenImage).canActivate;
+    },
+
+    isArmorSupportSkillActive: function (screenImage) {
+        return this._isSupportSkillActiveByColor(screenImage, this.ARMOR_SUPPORT_SKILL_ACTIVE_POINT);
+    },
+
+    getRemoteDamageControlSkillStatus: function (screenImage) {
+        return this._detectSupportSkillStatus(
+            screenImage,
+            this.REMOTE_DAMAGE_CONTROL_SKILL_ICON,
+            this.REMOTE_DAMAGE_CONTROL_SKILL_ACTIVE_POINT,
+            "remoteDamageControlSkill",
+            "remote damage control skill",
+            this.REMOTE_DAMAGE_CONTROL_SKILL_CLICK_REGION
+        );
+    },
+
+    canActivateRemoteDamageControlSkill: function (screenImage) {
+        return this.getRemoteDamageControlSkillStatus(screenImage).canActivate;
+    },
+
+    isRemoteDamageControlSkillActive: function (screenImage) {
+        return this._isSupportSkillActiveByColor(screenImage, this.REMOTE_DAMAGE_CONTROL_SKILL_ACTIVE_POINT);
+    },
+
+    detectRemoteDamageControlSkillStatus: function (screenImage, now) {
+        var status;
+
+        if (!this._shouldDetectRemoteDamageControlSkill()) {
+            return null;
+        }
+
+        status = this.getRemoteDamageControlSkillStatus(screenImage);
+        return this._createRemoteDamageControlSkillSnapshot(status, now);
+    },
+
+    activateRemoteDamageControlSkill: function (screenImage) {
+        return this._activateSupportSkill(
+            screenImage,
+            this.REMOTE_DAMAGE_CONTROL_SKILL_ICON,
+            this.REMOTE_DAMAGE_CONTROL_SKILL_ACTIVE_POINT,
+            "remoteDamageControlSkill",
+            "remote damage control skill"
+        );
     },
 
     isShipInSpace: function () {
@@ -590,6 +672,166 @@ EVEQuantumFAX.healthMonitor = {
     _isDamageControlActiveByColor: function (screenImage) {
         var point = this.DAMAGE_CONTROL_ACTIVE_POINT;
         return this._matchesEquipmentActiveColorAtPoint(screenImage, point);
+    },
+
+    _isSupportSkillActiveByColor: function (screenImage, activePoint) {
+        var ownsScreenImage = screenImage == null;
+
+        if (!this.ensureScreenCapture()) {
+            return false;
+        }
+
+        try {
+            if (ownsScreenImage) {
+                screenImage = this._captureScreenTimed("health.capture");
+            }
+            if (screenImage == null) {
+                return false;
+            }
+
+            return this._matchesEquipmentActiveColorAtPoint(screenImage, activePoint);
+        } catch (error) {
+            logw("support skill active color detection failed: " + error);
+            return false;
+        } finally {
+            if (ownsScreenImage) {
+                this._recycleImage(screenImage);
+            }
+        }
+    },
+
+    _detectSupportSkillStatus: function (screenImage, iconName, activePoint, metricName, logName) {
+        var ownsScreenImage = screenImage == null;
+        var templateImage = null;
+        var matches;
+        var region = this.SUPPORT_SKILL_REGION;
+        var matchStart;
+        var status = this._createSupportSkillStatus();
+
+        if (!this.ensureScreenCapture() || !this._ensureOpenCV()) {
+            status.error = "截图权限或OpenCV初始化失败";
+            return status;
+        }
+
+        try {
+            templateImage = this._getTemplateImage(iconName);
+            if (templateImage == null) {
+                status.error = "模板缺失：" + iconName;
+                logw(logName + " template missing: " + iconName);
+                return status;
+            }
+
+            if (ownsScreenImage) {
+                screenImage = this._captureScreenTimed("health.capture");
+            }
+            if (screenImage == null) {
+                status.error = "截图失败";
+                return status;
+            }
+
+            status.ok = true;
+            matchStart = EVEQuantumFAX.perfStats ? EVEQuantumFAX.perfStats.now() : 0;
+            matches = image.findImage(
+                screenImage,
+                templateImage,
+                region.x,
+                region.y,
+                region.ex,
+                region.ey,
+                this.SUPPORT_SKILL_WEAK_THRESHOLD,
+                this.SUPPORT_SKILL_THRESHOLD,
+                this.SUPPORT_SKILL_MATCH_LIMIT,
+                this.SUPPORT_SKILL_MATCH_METHOD
+            );
+            if (EVEQuantumFAX.perfStats && matchStart) {
+                EVEQuantumFAX.perfStats.recordFrom("health." + metricName, matchStart);
+            }
+
+            if (!(matches && matches.length > 0)) {
+                status.reason = "冷却中";
+                return status;
+            }
+
+            status.available = true;
+            status.active = this._matchesEquipmentActiveColorAtPoint(screenImage, activePoint);
+            status.canActivate = !status.active;
+            status.reason = status.active ? "激活中" : "可开启";
+            return status;
+        } catch (error) {
+            status.ok = false;
+            status.error = "" + error;
+            logw(logName + " detection failed: " + error);
+            return status;
+        } finally {
+            if (ownsScreenImage) {
+                this._recycleImage(screenImage);
+            }
+        }
+    },
+
+    _shouldDetectRemoteDamageControlSkill: function () {
+        var shipType;
+
+        if (!EVEQuantumFAX.configManager || !EVEQuantumFAX.config) {
+            return false;
+        }
+
+        shipType = EVEQuantumFAX.configManager.normalizeShipType(EVEQuantumFAX.config.shipType);
+        return shipType === "apostle" || shipType === "telemachus";
+    },
+
+    _createRemoteDamageControlSkillSnapshot: function (status, now) {
+        var state = "unknown";
+
+        status = status || this._createSupportSkillStatus();
+        if (status.active) {
+            state = "active";
+        } else if (status.canActivate) {
+            state = "available";
+        } else if (status.reason === "冷却中") {
+            state = "cooldown";
+        }
+
+        return {
+            ok: status.ok === true,
+            state: state,
+            active: status.active === true,
+            available: status.canActivate === true,
+            canActivate: status.canActivate === true,
+            reason: status.reason || "",
+            error: status.error || "",
+            observedAt: now || new Date().getTime()
+        };
+    },
+
+    _activateSupportSkill: function (screenImage, iconName, activePoint, metricName, logName, clickRegion) {
+        var status = this._detectSupportSkillStatus(screenImage, iconName, activePoint, metricName, logName);
+        var point;
+
+        if (status.active) {
+            status.activated = true;
+            status.reason = "已激活";
+            return status;
+        }
+
+        if (!status.ok || !status.canActivate) {
+            status.activated = false;
+            return status;
+        }
+
+        try {
+            point = clickRegion ? this._randomPointInRegion(clickRegion) : activePoint;
+            clickPoint(point.x, point.y);
+            status.activated = true;
+            status.reason = "已点击";
+            return status;
+        } catch (error) {
+            status.ok = false;
+            status.activated = false;
+            status.error = "" + error;
+            logw(logName + " activation failed: " + error);
+            return status;
+        }
     },
 
     _matchesEquipmentActiveColorAtPoint: function (screenImage, point) {

@@ -9,6 +9,7 @@ require("js/services/updater.js");
 require("js/constants/healthMonitorColors.js");
 require("js/services/healthMonitor.js");
 require("js/services/fleetReporter.js");
+require("js/services/fleetCommandCenter.js");
 require("js/services/clientLogReporter.js");
 require("js/services/perfReporter.js");
 require("js/services/permissionManager.js");

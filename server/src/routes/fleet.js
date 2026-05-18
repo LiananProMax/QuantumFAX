@@ -70,6 +70,46 @@ router.get("/summary", (req, res) => {
     });
 });
 
+router.get("/remote-damage-control/status", (req, res) => {
+    res.json({
+        success: true,
+        status: fleetStore.getRemoteDamageControlStatus()
+    });
+});
+
+router.post("/remote-damage-control/settings", (req, res) => {
+    res.json({
+        success: true,
+        status: fleetStore.setRemoteDamageControlEnabled(req.body && req.body.enabled)
+    });
+});
+
+router.get("/remote-damage-control/command", (req, res) => {
+    const result = fleetStore.getRemoteDamageControlCommand(req.query || {});
+    if (result.error) {
+        return res.status(400).json({ success: false, error: result.error });
+    }
+
+    res.json({
+        success: true,
+        status: result.status,
+        command: result.command
+    });
+});
+
+router.post("/remote-damage-control/ack", (req, res) => {
+    const result = fleetStore.acknowledgeRemoteDamageControlCommand(req.body || {});
+    if (result.error) {
+        return res.status(400).json({ success: false, error: result.error });
+    }
+
+    res.json({
+        success: true,
+        accepted: result.accepted,
+        status: result.status
+    });
+});
+
 router.get("/ships/:clientId/logs", (req, res) => {
     res.json({
         success: true,

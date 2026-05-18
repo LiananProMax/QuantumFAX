@@ -42,6 +42,7 @@ EVEQuantumFAX.fleetReporter = {
             armorLabel: healthResult.armor,
             emergencyTriggered: healthResult.triggered,
             damageControlActivated: healthResult.activated,
+            remoteDamageControlSkill: healthResult.remoteDamageControlSkill || null,
             shieldDropRate: healthResult.shieldDropRate,
             armorDropRate: healthResult.armorDropRate,
             armorDropPercent: healthResult.armorDropPercent,

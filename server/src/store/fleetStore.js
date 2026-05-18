@@ -12,6 +12,12 @@ const DATA_DIR = path.join(__dirname, "../../data");
 const STATE_FILE = path.join(DATA_DIR, "fleetState.json");
 const DEFAULT_HISTORY_LIMIT = parseInt(process.env.FLEET_HISTORY_LIMIT, 10) || 120;
 const DEFAULT_OFFLINE_TIMEOUT_MS = parseInt(process.env.FLEET_OFFLINE_TIMEOUT_MS, 10) || 15000;
+const REMOTE_DAMAGE_CONTROL_ACTIVATION_MS = 30 * 1000;
+const REMOTE_DAMAGE_CONTROL_REACTIVATION_DELAY_MS = 120 * 1000;
+const REMOTE_DAMAGE_CONTROL_COOLDOWN_MS =
+    REMOTE_DAMAGE_CONTROL_ACTIVATION_MS + REMOTE_DAMAGE_CONTROL_REACTIVATION_DELAY_MS;
+const REMOTE_DAMAGE_CONTROL_ELIGIBLE_TYPES = ["apostle", "telemachus"];
+const REMOTE_DAMAGE_CONTROL_COMMAND_TIMEOUT_MS = 8 * 1000;
 
 const SHIP_TYPES = {
     apostle: { id: "apostle", label: "使徒" },
@@ -32,8 +38,22 @@ const SHIP_TYPE_ALIASES = {
 let state = {
     ships: {},
     histories: {},
+    remoteDamageControl: createDefaultRemoteDamageControlState(),
     updatedAt: null
 };
+
+function createDefaultRemoteDamageControlState() {
+    return {
+        enabled: false,
+        commandSeq: 0,
+        currentCommand: null,
+        cooldowns: {},
+        lastAssignedClientId: "",
+        lastDecisionReason: "",
+        lastCommandResult: null,
+        updatedAt: null
+    };
+}
 
 function ensureDataDir() {
     if (!fs.existsSync(DATA_DIR)) {
@@ -49,6 +69,11 @@ function loadState() {
             state = {
                 ships: data.ships || {},
                 histories: data.histories || {},
+                remoteDamageControl: {
+                    ...createDefaultRemoteDamageControlState(),
+                    ...(data.remoteDamageControl || {}),
+                    cooldowns: (data.remoteDamageControl && data.remoteDamageControl.cooldowns) || {}
+                },
                 updatedAt: data.updatedAt || null
             };
         }
@@ -102,6 +127,38 @@ function toBool(value) {
     return value === true || value === "true" || value === 1 || value === "1";
 }
 
+function isRemoteDamageControlShipType(shipType) {
+    return REMOTE_DAMAGE_CONTROL_ELIGIBLE_TYPES.indexOf(normalizeShipType(shipType)) >= 0;
+}
+
+function normalizeRemoteDamageControlSkill(raw, now = Date.now()) {
+    const data = raw && typeof raw === "object" ? raw : null;
+    const reason = normalizeText(data && data.reason);
+    const stateText = normalizeText(data && data.state).toLowerCase();
+    const active = toBool(data && data.active);
+    const available = toBool(data && (data.available || data.canActivate));
+    let state = "unknown";
+
+    if (active || stateText === "active") {
+        state = "active";
+    } else if (available || stateText === "available") {
+        state = "available";
+    } else if (stateText === "cooldown" || reason.indexOf("冷却") >= 0 || reason.toLowerCase().indexOf("cooldown") >= 0) {
+        state = "cooldown";
+    }
+
+    return {
+        ok: toBool(data && data.ok),
+        state,
+        active: state === "active",
+        available: state === "available",
+        canActivate: state === "available",
+        reason,
+        error: normalizeText(data && data.error),
+        observedAt: normalizeTimestamp(data && data.observedAt) || now
+    };
+}
+
 function enrichShip(ship, now = Date.now()) {
     const lastSeenAt = Number(ship.lastSeenAt) || 0;
     const ageMs = lastSeenAt > 0 ? Math.max(0, now - lastSeenAt) : null;
@@ -144,6 +201,7 @@ function buildReport(raw) {
             armorLabel: normalizeText(raw.armorLabel || raw.armor),
             emergencyTriggered: toBool(raw.emergencyTriggered || raw.triggered),
             damageControlActivated: toBool(raw.damageControlActivated || raw.activated),
+            remoteDamageControlSkill: normalizeRemoteDamageControlSkill(raw.remoteDamageControlSkill, observedAt),
             shieldDropRate: Number(raw.shieldDropRate || raw.shieldDropRatePerSec || 0) || 0,
             armorDropRate: Number(raw.armorDropRate || raw.armorDropRatePerSec || 0) || 0,
             armorDropPercent: Number(raw.armorDropPercent || raw.armorDropDeltaPercent || 0) || 0,
@@ -168,6 +226,7 @@ function report(raw) {
         armorPercent: snapshot.armorPercent,
         emergencyTriggered: snapshot.emergencyTriggered,
         damageControlActivated: snapshot.damageControlActivated,
+        remoteDamageControlSkill: snapshot.remoteDamageControlSkill,
         reason: snapshot.reason
     });
 
@@ -188,6 +247,297 @@ function getShips() {
             }
             return b.lastSeenAt - a.lastSeenAt;
         });
+}
+
+function ensureRemoteDamageControlState() {
+    if (!state.remoteDamageControl) {
+        state.remoteDamageControl = createDefaultRemoteDamageControlState();
+    }
+    state.remoteDamageControl.cooldowns = state.remoteDamageControl.cooldowns || {};
+    state.remoteDamageControl.commandSeq = Number(state.remoteDamageControl.commandSeq) || 0;
+    return state.remoteDamageControl;
+}
+
+function getOnlineRemoteDamageControlShips(now = Date.now()) {
+    return Object.keys(state.ships)
+        .map((clientId) => enrichShip(state.ships[clientId], now))
+        .filter((ship) => ship.online && isRemoteDamageControlShipType(ship.shipType))
+        .sort((a, b) => a.clientId.localeCompare(b.clientId));
+}
+
+function getFreshRemoteDamageControlSkill(ship, now) {
+    const skill = ship.remoteDamageControlSkill && typeof ship.remoteDamageControlSkill === "object"
+        ? ship.remoteDamageControlSkill
+        : normalizeRemoteDamageControlSkill(null, now);
+    const observedAt = Number(skill.observedAt) || 0;
+    const ageMs = observedAt > 0 ? Math.max(0, now - observedAt) : null;
+
+    if (ageMs === null || ageMs > DEFAULT_OFFLINE_TIMEOUT_MS) {
+        return {
+            ...skill,
+            state: "unknown",
+            active: false,
+            available: false,
+            canActivate: false,
+            stale: true,
+            ageMs
+        };
+    }
+
+    return {
+        ...skill,
+        stale: false,
+        ageMs
+    };
+}
+
+function classifyRemoteDamageControlShips(eligibleShips, now) {
+    const groups = {
+        eligibleShips: [],
+        activeShips: [],
+        availableShips: [],
+        cooldownShips: [],
+        unknownShips: []
+    };
+
+    eligibleShips.forEach((ship) => {
+        const skill = getFreshRemoteDamageControlSkill(ship, now);
+        const item = {
+            clientId: ship.clientId,
+            shipType: ship.shipType,
+            shipTypeLabel: ship.shipTypeLabel,
+            shipName: ship.shipName,
+            ageMs: ship.ageMs,
+            remoteDamageControlSkill: skill
+        };
+
+        groups.eligibleShips.push(item);
+        if (skill.state === "active") {
+            groups.activeShips.push(item);
+        } else if (skill.state === "available") {
+            groups.availableShips.push(item);
+        } else if (skill.state === "cooldown") {
+            groups.cooldownShips.push(item);
+        } else {
+            groups.unknownShips.push(item);
+        }
+    });
+
+    return groups;
+}
+
+function pickNextRemoteDamageControlShip(eligibleShips, availableShips, control) {
+    const availableByClientId = {};
+    const lastIndex = eligibleShips.findIndex((ship) => ship.clientId === control.lastAssignedClientId);
+    const startIndex = lastIndex >= 0 ? (lastIndex + 1) % eligibleShips.length : 0;
+
+    availableShips.forEach((ship) => {
+        availableByClientId[ship.clientId] = true;
+    });
+
+    for (let offset = 0; offset < eligibleShips.length; offset += 1) {
+        const ship = eligibleShips[(startIndex + offset) % eligibleShips.length];
+        if (availableByClientId[ship.clientId]) {
+            return ship;
+        }
+    }
+
+    return availableShips[0] || null;
+}
+
+function createRemoteDamageControlCommand(ship, control, now) {
+    const commandSeq = (Number(control.commandSeq) || 0) + 1;
+    const command = {
+        commandId: `rdc-${commandSeq}-${now}`,
+        type: "activate_remote_damage_control",
+        clientId: ship.clientId,
+        shipType: ship.shipType,
+        shipTypeLabel: ship.shipTypeLabel,
+        shipName: ship.shipName || ship.shipTypeLabel,
+        assignedAt: now,
+        commandExpiresAt: now + REMOTE_DAMAGE_CONTROL_COMMAND_TIMEOUT_MS,
+        activationDurationMs: REMOTE_DAMAGE_CONTROL_ACTIVATION_MS,
+        reactivationDelayMs: REMOTE_DAMAGE_CONTROL_REACTIVATION_DELAY_MS,
+        acknowledgedAt: null,
+        activated: null,
+        resultReason: ""
+    };
+
+    control.commandSeq = commandSeq;
+    control.currentCommand = command;
+    control.lastAssignedClientId = ship.clientId;
+    control.lastDecisionReason = "已指派 " + command.shipName + " 开启远程损害管控";
+    control.updatedAt = new Date(now).toISOString();
+    return command;
+}
+
+function syncRemoteDamageControl(now = Date.now()) {
+    const control = ensureRemoteDamageControlState();
+    const eligibleShips = getOnlineRemoteDamageControlShips(now);
+    const groups = classifyRemoteDamageControlShips(eligibleShips, now);
+    const eligibleIds = {};
+    let changed = false;
+
+    eligibleShips.forEach((ship) => {
+        eligibleIds[ship.clientId] = true;
+    });
+
+    if (!control.enabled) {
+        if (control.currentCommand) {
+            control.currentCommand = null;
+            changed = true;
+        }
+        control.lastDecisionReason = "开关关闭";
+        return { control, groups, changed };
+    }
+
+    if (groups.activeShips.length > 0) {
+        if (control.currentCommand) {
+            control.currentCommand = null;
+            changed = true;
+        }
+        control.lastDecisionReason = "已有舰船处于远程损害管控激活状态";
+        return { control, groups, changed };
+    }
+
+    if (control.currentCommand &&
+        control.currentCommand.commandExpiresAt > now &&
+        eligibleIds[control.currentCommand.clientId]) {
+        control.lastDecisionReason = "等待 " + control.currentCommand.shipName + " 执行指令";
+        return { control, groups, changed };
+    }
+
+    if (control.currentCommand) {
+        control.currentCommand = null;
+        changed = true;
+    }
+
+    if (groups.availableShips.length > 0) {
+        const nextShip = pickNextRemoteDamageControlShip(groups.eligibleShips, groups.availableShips, control);
+        if (nextShip) {
+            createRemoteDamageControlCommand(nextShip, control, now);
+            changed = true;
+        }
+    } else if (groups.eligibleShips.length > 0) {
+        control.lastDecisionReason = "所有技能冷却中或等待状态更新";
+    } else {
+        control.lastDecisionReason = "暂无在线使徒或特勒马科斯";
+    }
+
+    return { control, groups, changed };
+}
+
+function buildRemoteDamageControlStatus(now = Date.now()) {
+    const synced = syncRemoteDamageControl(now);
+    const control = synced.control;
+    const groups = synced.groups;
+
+    if (synced.changed) {
+        saveState();
+    }
+
+    return {
+        enabled: control.enabled === true,
+        activationDurationMs: REMOTE_DAMAGE_CONTROL_ACTIVATION_MS,
+        reactivationDelayMs: REMOTE_DAMAGE_CONTROL_REACTIVATION_DELAY_MS,
+        cooldownMs: REMOTE_DAMAGE_CONTROL_COOLDOWN_MS,
+        eligibleShipTypes: REMOTE_DAMAGE_CONTROL_ELIGIBLE_TYPES.map((shipType) => SHIP_TYPES[shipType]),
+        requiredForContinuousCoverage: Math.ceil(REMOTE_DAMAGE_CONTROL_COOLDOWN_MS / REMOTE_DAMAGE_CONTROL_ACTIVATION_MS),
+        coverageSufficient: groups.eligibleShips.length >= Math.ceil(REMOTE_DAMAGE_CONTROL_COOLDOWN_MS / REMOTE_DAMAGE_CONTROL_ACTIVATION_MS),
+        eligibleCount: groups.eligibleShips.length,
+        activeCount: groups.activeShips.length,
+        availableCount: groups.availableShips.length,
+        cooldownCount: groups.cooldownShips.length,
+        unknownCount: groups.unknownShips.length,
+        eligibleShips: groups.eligibleShips,
+        activeShips: groups.activeShips,
+        availableShips: groups.availableShips,
+        cooldownShips: groups.cooldownShips,
+        unknownShips: groups.unknownShips,
+        currentCommand: control.currentCommand,
+        nextActionAt: control.currentCommand ? control.currentCommand.commandExpiresAt : null,
+        waitingReason: control.lastDecisionReason || "",
+        lastCommandResult: control.lastCommandResult || null,
+        updatedAt: control.updatedAt,
+        now
+    };
+}
+
+function getRemoteDamageControlStatus() {
+    return buildRemoteDamageControlStatus();
+}
+
+function setRemoteDamageControlEnabled(enabled) {
+    const control = ensureRemoteDamageControlState();
+    const nextEnabled = toBool(enabled);
+
+    if (control.enabled !== nextEnabled) {
+        control.enabled = nextEnabled;
+        control.currentCommand = null;
+        control.updatedAt = new Date().toISOString();
+        saveState();
+    }
+
+    return buildRemoteDamageControlStatus();
+}
+
+function getRemoteDamageControlCommand(raw) {
+    const request = raw || {};
+    const clientId = normalizeText(request.clientId);
+    const shipType = normalizeShipType(request.shipType);
+    const status = buildRemoteDamageControlStatus();
+    const command = status.currentCommand;
+
+    if (!clientId) {
+        return { error: "缺少 clientId" };
+    }
+
+    return {
+        status,
+        command: command &&
+            command.clientId === clientId &&
+            command.commandExpiresAt > status.now &&
+            isRemoteDamageControlShipType(shipType || (state.ships[clientId] && state.ships[clientId].shipType))
+            ? command
+            : null
+    };
+}
+
+function acknowledgeRemoteDamageControlCommand(raw) {
+    const control = ensureRemoteDamageControlState();
+    const payload = raw || {};
+    const clientId = normalizeText(payload.clientId);
+    const commandId = normalizeText(payload.commandId);
+    const activated = toBool(payload.activated);
+    const now = Date.now();
+
+    if (!clientId || !commandId) {
+        return { error: "缺少 clientId 或 commandId" };
+    }
+    if (!control.currentCommand ||
+        control.currentCommand.clientId !== clientId ||
+        control.currentCommand.commandId !== commandId) {
+        return { accepted: false, status: buildRemoteDamageControlStatus(now) };
+    }
+
+    control.currentCommand.acknowledgedAt = now;
+    control.currentCommand.activated = activated;
+    control.currentCommand.resultReason = normalizeText(payload.reason);
+    control.lastCommandResult = {
+        clientId,
+        commandId,
+        activated,
+        reason: normalizeText(payload.reason),
+        resultAt: normalizeTimestamp(payload.resultAt),
+        receivedAt: now
+    };
+    if (!activated) {
+        control.currentCommand = null;
+    }
+    control.updatedAt = new Date(now).toISOString();
+    saveState();
+
+    return { accepted: true, status: buildRemoteDamageControlStatus(now) };
 }
 
 function getSummary() {
@@ -246,6 +596,10 @@ module.exports = {
     getShips,
     getSummary,
     getHistory,
+    getRemoteDamageControlStatus,
+    setRemoteDamageControlEnabled,
+    getRemoteDamageControlCommand,
+    acknowledgeRemoteDamageControlCommand,
     report,
     normalizeShipType,
     offlineTimeoutMs: DEFAULT_OFFLINE_TIMEOUT_MS

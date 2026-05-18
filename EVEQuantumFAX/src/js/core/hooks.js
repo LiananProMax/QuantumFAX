@@ -46,6 +46,7 @@ EVEQuantumFAX.hooks = {
     onTick: function (context) {
         var iteration = context.extra.iteration || 0;
         EVEQuantumFAX.hooks._checkDamageControl(context, iteration);
+        EVEQuantumFAX.hooks._handleFleetCommands(context);
         EVEQuantumFAX.hooks._flushClientLogs(false);
     },
 
@@ -114,6 +115,24 @@ EVEQuantumFAX.hooks = {
         if (!reportResult.ok && !reportResult.skipped &&
             EVEQuantumFAX.fleetReporter.shouldLogError(reportResult.error)) {
             context.logger.warn("舰队上报失败：" + reportResult.error);
+        }
+    },
+
+    _handleFleetCommands: function (context) {
+        var start = EVEQuantumFAX.perfStats ? EVEQuantumFAX.perfStats.now() : 0;
+        var result;
+
+        if (!EVEQuantumFAX.fleetCommandCenter) {
+            return;
+        }
+
+        result = EVEQuantumFAX.fleetCommandCenter.handleRemoteDamageControl(context);
+        if (EVEQuantumFAX.perfStats && start) {
+            EVEQuantumFAX.perfStats.recordFrom("fleet.commands", start);
+        }
+        if (!result.ok && !result.skipped &&
+            EVEQuantumFAX.fleetCommandCenter.shouldLogError(result.error)) {
+            context.logger.warn("舰队指令执行失败：" + result.error);
         }
     },
 

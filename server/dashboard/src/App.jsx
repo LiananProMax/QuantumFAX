@@ -4,6 +4,7 @@ import ClientLogPanel from "./components/ClientLogPanel";
 import FleetGroupPanel from "./components/FleetGroupPanel";
 import HealthChart from "./components/HealthChart";
 import PerfMetricPanel from "./components/PerfMetricPanel";
+import RemoteDamageControlPanel from "./components/RemoteDamageControlPanel";
 import ShipRosterPanel from "./components/ShipRosterPanel";
 import StatCard from "./components/StatCard";
 import { REFRESH_MS } from "./constants";
@@ -18,6 +19,9 @@ function App() {
   const [logsError, setLogsError] = useState("");
   const [perfData, setPerfData] = useState(null);
   const [perfError, setPerfError] = useState("");
+  const [remoteDamageControl, setRemoteDamageControl] = useState(null);
+  const [remoteDamageControlError, setRemoteDamageControlError] = useState("");
+  const [remoteDamageControlUpdating, setRemoteDamageControlUpdating] = useState(false);
   const [lastRefreshAt, setLastRefreshAt] = useState(null);
   const [error, setError] = useState("");
 
@@ -33,20 +37,24 @@ function App() {
 
     async function loadFleet() {
       try {
-        const [shipsResponse, summaryResponse] = await Promise.all([
+        const [shipsResponse, summaryResponse, remoteDamageControlResponse] = await Promise.all([
           fetch("/api/fleet/ships"),
-          fetch("/api/fleet/summary")
+          fetch("/api/fleet/summary"),
+          fetch("/api/fleet/remote-damage-control/status")
         ]);
         const shipsJson = await shipsResponse.json();
         const summaryJson = await summaryResponse.json();
+        const remoteDamageControlJson = await remoteDamageControlResponse.json();
 
-        if (!shipsJson.success || !summaryJson.success) {
-          throw new Error(shipsJson.error || summaryJson.error || "接口返回失败");
+        if (!shipsJson.success || !summaryJson.success || !remoteDamageControlJson.success) {
+          throw new Error(shipsJson.error || summaryJson.error || remoteDamageControlJson.error || "接口返回失败");
         }
 
         if (!cancelled) {
           setShips(shipsJson.ships || []);
           setSummary(summaryJson.summary || null);
+          setRemoteDamageControl(remoteDamageControlJson.status || null);
+          setRemoteDamageControlError("");
           setLastRefreshAt(Date.now());
           setError("");
         }
@@ -180,6 +188,29 @@ function App() {
     };
   }, [selectedShip]);
 
+  async function handleRemoteDamageControlToggle(enabled) {
+    setRemoteDamageControlUpdating(true);
+    setRemoteDamageControlError("");
+    try {
+      const response = await fetch("/api/fleet/remote-damage-control/settings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ enabled })
+      });
+      const json = await response.json();
+      if (!json.success) {
+        throw new Error(json.error || "远程损害管控设置失败");
+      }
+      setRemoteDamageControl(json.status || null);
+    } catch (toggleError) {
+      setRemoteDamageControlError(toggleError.message || "远程损害管控设置失败");
+    } finally {
+      setRemoteDamageControlUpdating(false);
+    }
+  }
+
   return (
     <main className="min-h-screen px-4 py-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[1800px]">
@@ -247,6 +278,12 @@ function App() {
           </div>
 
           <aside className="space-y-5 xl:sticky xl:top-4 xl:self-start">
+            <RemoteDamageControlPanel
+              status={remoteDamageControl}
+              error={remoteDamageControlError}
+              updating={remoteDamageControlUpdating}
+              onToggle={handleRemoteDamageControlToggle}
+            />
             <ShipRosterPanel
               ships={ships}
               selectedClientId={selectedShip?.clientId || ""}
